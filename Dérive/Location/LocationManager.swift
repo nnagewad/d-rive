@@ -14,25 +14,42 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     @Published var latitude: Double?
     @Published var longitude: Double?
+    @Published var timestamp: Date?
 
     override init() {
         super.init()
         manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        manager.distanceFilter = 5
     }
 
     func start() {
         manager.requestWhenInUseAuthorization()
-        manager.startUpdatingLocation()
     }
-    
+
     func stop() {
         manager.stopUpdatingLocation()
     }
 
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.startUpdatingLocation()
+        default:
+            break
+        }
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.first else { return }
-        latitude = location.coordinate.latitude
-        longitude = location.coordinate.longitude
+        guard let location = locations.last else { return }
+        guard location.horizontalAccuracy > 0,
+              location.horizontalAccuracy <= 50 else { return }
+
+        DispatchQueue.main.async {
+            self.latitude = location.coordinate.latitude
+            self.longitude = location.coordinate.longitude
+            self.timestamp = location.timestamp
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
