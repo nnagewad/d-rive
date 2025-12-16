@@ -9,7 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
-
+    @StateObject private var geofenceManager = GeofenceManager()
+    
     var body: some View {
         VStack(spacing: 16) {
             if let lat = locationManager.latitude,
@@ -19,17 +20,23 @@ struct ContentView: View {
             } else {
                 Text("Waiting for location…")
             }
+            
+            if geofenceManager.isInsideGeofence {
+                Text("🟢 Inside geofence")
+            } else {
+                Text("🔴 Outside geofence")
+            }
         }
         .padding()
         .onAppear {
             locationManager.start()
+            geofenceManager.startMonitoring()
         }
         .onDisappear {
             locationManager.stop()
         }
     }
 }
-
 
 #Preview {
     ContentView()
