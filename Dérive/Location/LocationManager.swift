@@ -14,7 +14,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     @Published var latitude: Double?
     @Published var longitude: Double?
-    @Published var timestamp: Date?
 
     override init() {
         super.init()
@@ -48,7 +47,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         DispatchQueue.main.async {
             self.latitude = location.coordinate.latitude
             self.longitude = location.coordinate.longitude
-            self.timestamp = location.timestamp
         }
     }
 
