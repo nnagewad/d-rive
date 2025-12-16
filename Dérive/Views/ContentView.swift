@@ -29,11 +29,13 @@ struct ContentView: View {
             }
         }
         .padding()
-        .onAppear {
-            UNUserNotificationCenter.current().requestAuthorization(
-                options: [.alert, .sound]
-            ) { _, _ in }
-
+        .task {
+            do {
+                _ = try await UNUserNotificationCenter.current()
+                    .requestAuthorization(options: [.alert, .sound])
+            } catch {
+                print("Notification permission error:", error)
+            }
             locationManager.start()
             geofenceManager.startMonitoring()
         }
