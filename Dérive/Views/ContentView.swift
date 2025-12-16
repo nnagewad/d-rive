@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct ContentView: View {
     @StateObject private var locationManager = LocationManager()
@@ -29,6 +30,10 @@ struct ContentView: View {
         }
         .padding()
         .onAppear {
+            UNUserNotificationCenter.current().requestAuthorization(
+                options: [.alert, .sound]
+            ) { _, _ in }
+
             locationManager.start()
             geofenceManager.startMonitoring()
         }
