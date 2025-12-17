@@ -9,9 +9,12 @@ import SwiftUI
 import UserNotifications
 
 struct ContentView: View {
+
     @StateObject private var locationManager = LocationManager()
     @StateObject private var geofenceManager = GeofenceManager()
-    
+
+    private let notificationDelegate = NotificationDelegate()
+
     var body: some View {
         VStack(spacing: 16) {
             if let lat = locationManager.latitude,
@@ -21,29 +24,33 @@ struct ContentView: View {
             } else {
                 Text("Waiting for location…")
             }
-            
-            if geofenceManager.isInsideGeofence {
-                Text("🟢 Inside geofence")
-            } else {
-                Text("🔴 Outside geofence")
-            }
+
+            Text(
+                geofenceManager.isInsideGeofence
+                ? "🟢 Inside geofence"
+                : "🔴 Outside geofence"
+            )
         }
         .padding()
         .task {
-            do {
-                _ = try await UNUserNotificationCenter.current()
-                    .requestAuthorization(options: [.alert, .sound])
-            } catch {
-                print("Notification permission error:", error)
+            let center = UNUserNotificationCenter.current()
+            center.delegate = notificationDelegate
+
+            let granted = try? await center.requestAuthorization(
+                options: [.alert, .sound]
+            )
+
+            if granted == true {
+                locationManager.start()
+                geofenceManager.startMonitoring()
             }
-            locationManager.start()
-            geofenceManager.startMonitoring()
         }
         .onDisappear {
             locationManager.stop()
         }
     }
 }
+
 
 #Preview {
     ContentView()

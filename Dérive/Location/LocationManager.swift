@@ -1,15 +1,17 @@
 //
 //  LocationManager.swift
+//  Purpose: Live location (no geofencing)
 //  Dérive
 //
 //  Created by Nikin Nagewadia on 2025-12-16.
 //
 
-import Foundation
 import CoreLocation
 import Combine
 
+@MainActor
 final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+
     private let manager = CLLocationManager()
 
     @Published var latitude: Double?
@@ -31,26 +33,19 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch manager.authorizationStatus {
-        case .authorizedWhenInUse, .authorizedAlways:
+        if manager.authorizationStatus == .authorizedWhenInUse ||
+            manager.authorizationStatus == .authorizedAlways {
             manager.startUpdatingLocation()
-        default:
-            break
         }
     }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        guard location.horizontalAccuracy > 0,
+    func locationManager(_ manager: CLLocationManager,
+                         didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last,
+              location.horizontalAccuracy > 0,
               location.horizontalAccuracy <= 50 else { return }
 
-        DispatchQueue.main.async {
-            self.latitude = location.coordinate.latitude
-            self.longitude = location.coordinate.longitude
-        }
-    }
-
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error:", error)
+        latitude = location.coordinate.latitude
+        longitude = location.coordinate.longitude
     }
 }
