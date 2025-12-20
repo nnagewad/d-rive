@@ -9,6 +9,21 @@
 import CoreLocation
 import Combine
 import UserNotifications
+import os.log
+
+struct GeofenceConfiguration {
+    let latitude: Double
+    let longitude: Double
+    let radius: Double
+    let identifier: String
+
+    static let `default` = GeofenceConfiguration(
+        latitude: 51.61814,
+        longitude: -0.18463,
+        radius: 100,
+        identifier: "TestGeofence"
+    )
+}
 
 @MainActor
 final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelegate {
@@ -16,34 +31,36 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     @Published var isInsideGeofence = false
 
     private let manager = CLLocationManager()
+    private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceManager")
     private var isMonitoring = false
 
     override init() {
         super.init()
         manager.delegate = self
-        manager.requestAlwaysAuthorization()
     }
 
-    func startMonitoring() {
+    func startMonitoring(configuration: GeofenceConfiguration = .default) {
         guard !isMonitoring else { return }
+
+        manager.requestAlwaysAuthorization()
         isMonitoring = true
 
         let center = CLLocationCoordinate2D(
-            latitude: 51.61814,
-            longitude: -0.18463
+            latitude: configuration.latitude,
+            longitude: configuration.longitude
         )
 
         let region = CLCircularRegion(
             center: center,
-            radius: 100,
-            identifier: "TestGeofence"
+            radius: configuration.radius,
+            identifier: configuration.identifier
         )
 
         region.notifyOnEntry = true
         region.notifyOnExit = true
 
         manager.startMonitoring(for: region)
-        print("Started monitoring geofence")
+        logger.info("Started monitoring geofence: \(configuration.identifier)")
     }
 
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
@@ -54,6 +71,21 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         isInsideGeofence = false
         notify("Exited geofence")
+    }
+
+    func locationManager(_ manager: CLLocationManager,
+                        monitoringDidFailFor region: CLRegion?,
+                        withError error: Error) {
+        logger.error("Monitoring failed for region \(region?.identifier ?? "unknown"): \(error)")
+    }
+
+    func stopMonitoring() {
+        guard isMonitoring else { return }
+        isMonitoring = false
+
+        for region in manager.monitoredRegions {
+            manager.stopMonitoring(for: region)
+        }
     }
 
     private func notify(_ message: String) {
