@@ -11,13 +11,13 @@ import Combine
 import UserNotifications
 import os.log
 
-struct GeofenceConfiguration {
+struct GeofenceConfiguration: Sendable {
     let latitude: Double
     let longitude: Double
     let radius: Double
     let identifier: String
 
-    static let `default` = GeofenceConfiguration(
+    nonisolated static let `default` = GeofenceConfiguration(
         latitude: 51.61814,
         longitude: -0.18463,
         radius: 100,
