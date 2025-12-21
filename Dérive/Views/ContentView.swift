@@ -39,10 +39,17 @@ struct ContentView: View {
 
             do {
                 let granted = try await center.requestAuthorization(
-                    options: [.alert, .sound]
+                    options: [.alert, .sound, .badge]
                 )
 
                 if granted {
+                    // Verify settings are actually enabled
+                    let settings = await center.notificationSettings()
+                    guard settings.authorizationStatus == .authorized else {
+                        logger.warning("Notifications not fully authorized")
+                        return
+                    }
+
                     geofenceManager.startMonitoring()  // Requests "always" authorization
                     // Wait briefly for authorization, then start location updates
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

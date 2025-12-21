@@ -112,13 +112,24 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         let content = UNMutableNotificationContent()
         content.title = "Dérive"
         content.body = message
+        content.sound = .default
+        content.badge = 1
+
+        // Add trigger for background delivery
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
 
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
-            trigger: nil
+            trigger: trigger
         )
 
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                self.logger.error("Failed to deliver notification: \(error)")
+            } else {
+                self.logger.info("Notification delivered: \(message)")
+            }
+        }
     }
 }
