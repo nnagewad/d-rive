@@ -13,6 +13,7 @@ struct ContentView: View {
 
     @StateObject private var locationManager = LocationManager()
     @StateObject private var geofenceManager = GeofenceManager()
+    @Environment(\.scenePhase) private var scenePhase
 
     private let logger = Logger(subsystem: "com.derive.app", category: "ContentView")
 
@@ -42,8 +43,11 @@ struct ContentView: View {
                 )
 
                 if granted {
-                    locationManager.start()
-                    geofenceManager.startMonitoring()
+                    geofenceManager.startMonitoring()  // Requests "always" authorization
+                    // Wait briefly for authorization, then start location updates
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        locationManager.start()
+                    }
                 } else {
                     logger.warning("Notification permission denied")
                 }
@@ -54,6 +58,16 @@ struct ContentView: View {
         .onDisappear {
             locationManager.stop()
             geofenceManager.stopMonitoring()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .active:
+                locationManager.setForegroundMode(true)
+            case .inactive, .background:
+                locationManager.setForegroundMode(false)
+            @unknown default:
+                break
+            }
         }
     }
 }

@@ -18,8 +18,8 @@ struct GeofenceConfiguration: Sendable {
     let identifier: String
 
     nonisolated static let `default` = GeofenceConfiguration(
-        latitude: 51.61814,
-        longitude: -0.18463,
+        latitude: 51.615444181148085,
+        longitude:  -0.17822624747039645,
         radius: 100,
         identifier: "TestGeofence"
     )
@@ -60,6 +60,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         region.notifyOnExit = true
 
         manager.startMonitoring(for: region)
+        manager.requestState(for: region)
         logger.info("Started monitoring geofence: \(configuration.identifier)")
     }
 
@@ -77,6 +78,25 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
                         monitoringDidFailFor region: CLRegion?,
                         withError error: Error) {
         logger.error("Monitoring failed for region \(region?.identifier ?? "unknown"): \(error)")
+    }
+
+    func locationManager(_ manager: CLLocationManager,
+                        didDetermineState state: CLRegionState,
+                        for region: CLRegion) {
+        logger.info("Determined state: \(state.rawValue) for region \(region.identifier)")
+
+        switch state {
+        case .inside:
+            isInsideGeofence = true
+            logger.info("Device is INSIDE geofence")
+        case .outside:
+            isInsideGeofence = false
+            logger.info("Device is OUTSIDE geofence")
+        case .unknown:
+            logger.warning("Region state UNKNOWN - waiting for determination")
+        @unknown default:
+            logger.error("Unexpected region state")
+        }
     }
 
     func stopMonitoring() {

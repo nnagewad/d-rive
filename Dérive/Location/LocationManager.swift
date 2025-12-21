@@ -21,15 +21,25 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        manager.distanceFilter = 5
+        manager.distanceFilter = kCLDistanceFilterNone
     }
 
     func start() {
-        manager.requestWhenInUseAuthorization()
+        // Authorization is handled by GeofenceManager
     }
 
     func stop() {
         manager.stopUpdatingLocation()
+    }
+
+    func setForegroundMode(_ isForeground: Bool) {
+        if isForeground {
+            manager.desiredAccuracy = kCLLocationAccuracyBest
+            manager.distanceFilter = kCLDistanceFilterNone
+        } else {
+            manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            manager.distanceFilter = 10  // Battery optimization when backgrounded
+        }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
