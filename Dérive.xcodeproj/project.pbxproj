@@ -255,8 +255,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7GRXYQ9955;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Dérive/Info.plist";
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Dérive";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Dérive uses your location to detect when you enter or leave important places, even when the app is not open.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Dérive uses your location to determine your current position.";
@@ -297,8 +296,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7GRXYQ9955;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Dérive/Info.plist";
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Dérive";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Dérive uses your location to detect when you enter or leave important places, even when the app is not open.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Dérive uses your location to determine your current position.";
