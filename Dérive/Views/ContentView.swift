@@ -64,7 +64,6 @@ struct ContentView: View {
         }
         .onDisappear {
             locationManager.stop()
-            geofenceManager.stopMonitoring()
         }
         .onChange(of: scenePhase) { _, newPhase in
             switch newPhase {
