@@ -10,9 +10,22 @@
 		F0450E792EF1F171006BA7A0 /* Dérive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dérive.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F03026682EF892BD0090650A /* Exceptions for "Dérive" folder in "Dérive" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"De-rive-Info.plist",
+			);
+			target = F0450E782EF1F171006BA7A0 /* Dérive */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F0450E7B2EF1F171006BA7A0 /* Dérive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F03026682EF892BD0090650A /* Exceptions for "Dérive" folder in "Dérive" target */,
+			);
 			path = "Dérive";
 			sourceTree = "<group>";
 		};
@@ -256,6 +269,7 @@
 				DEVELOPMENT_TEAM = 7GRXYQ9955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "De-rive-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dérive";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Dérive uses your location to detect when you enter or leave important places, even when the app is not open.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Dérive uses your location to determine your current position.";
@@ -297,6 +311,7 @@
 				DEVELOPMENT_TEAM = 7GRXYQ9955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "De-rive-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dérive";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Dérive uses your location to detect when you enter or leave important places, even when the app is not open.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Dérive uses your location to determine your current position.";
