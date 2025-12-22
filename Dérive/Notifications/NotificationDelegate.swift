@@ -6,8 +6,11 @@
 //
 
 import UserNotifications
+import os.log
 
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+
+    private let logger = Logger(subsystem: "com.derive.app", category: "NotificationDelegate")
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -25,7 +28,7 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         // Handle notification tap when app is backgrounded/terminated
-        print("Notification received in background: \(response.notification.request.content.body)")
+        logger.info("Notification received in background: \(response.notification.request.content.body)")
         completionHandler()
     }
 }

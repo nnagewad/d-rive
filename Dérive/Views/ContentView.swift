@@ -39,7 +39,7 @@ struct ContentView: View {
 
             do {
                 let granted = try await center.requestAuthorization(
-                    options: [.alert, .sound, .badge]
+                    options: [.alert, .sound]
                 )
 
                 if granted {
@@ -51,10 +51,7 @@ struct ContentView: View {
                     }
 
                     geofenceManager.startMonitoring()  // Requests "always" authorization
-                    // Wait briefly for authorization, then start location updates
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        locationManager.start()
-                    }
+                    locationManager.start()
                 } else {
                     logger.warning("Notification permission denied")
                 }

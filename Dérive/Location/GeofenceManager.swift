@@ -113,7 +113,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         content.title = "Dérive"
         content.body = message
         content.sound = .default
-        content.badge = 1
 
         // Add trigger for background delivery
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)

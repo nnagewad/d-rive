@@ -5,7 +5,7 @@
 //  Created by Nikin Nagewadia on 2025-12-17.
 //
 
-import SwiftUI
+import UIKit
 import UserNotifications
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
