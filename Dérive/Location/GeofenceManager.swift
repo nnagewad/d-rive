@@ -20,7 +20,7 @@ struct GeofenceConfiguration: Sendable {
     nonisolated static let `default` = GeofenceConfiguration(
         latitude: 51.615444181148085,
         longitude:  -0.17822624747039645,
-        radius: 100,
+        radius: 400,
         identifier: "TestGeofence"
     )
 }
@@ -57,7 +57,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         )
 
         region.notifyOnEntry = true
-        region.notifyOnExit = true
+        region.notifyOnExit = false
 
         manager.startMonitoring(for: region)
         manager.requestState(for: region)
@@ -71,7 +71,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         isInsideGeofence = false
-        notify("Exited geofence")
+        // No notification on exit
     }
 
     func locationManager(_ manager: CLLocationManager,
