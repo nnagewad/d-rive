@@ -34,6 +34,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceManager")
     private var isMonitoring = false
 
+    // Notification category identifier - must match AppDelegate
+    private let geofenceEnterCategoryID = "GEOFENCE_ENTER"
+
     override init() {
         super.init()
         manager.delegate = self
@@ -113,6 +116,13 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         content.title = "Dérive"
         content.body = message
         content.sound = .default
+        content.categoryIdentifier = geofenceEnterCategoryID
+
+        // Include destination coordinates in userInfo for action handling
+        content.userInfo = [
+            "destinationLat": GeofenceConfiguration.default.latitude,
+            "destinationLon": GeofenceConfiguration.default.longitude
+        ]
 
         // Add trigger for background delivery
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
