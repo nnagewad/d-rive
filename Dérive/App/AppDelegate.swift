@@ -28,7 +28,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     private func registerNotificationCategories() {
-        // Create actions
+        // Create actions with foreground option to open app
         let appleMapsAction = UNNotificationAction(
             identifier: appleMapsActionID,
             title: "Open in Apple Maps",
@@ -41,12 +41,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             options: [.foreground]
         )
 
-        // Create category with actions
+        // Create category with options for better presentation
+        // .customDismissAction: Notifies app when user dismisses notification
+        // .hiddenPreviewsShowTitle: Shows title even when previews are hidden in system settings
         let geofenceCategory = UNNotificationCategory(
             identifier: geofenceEnterCategoryID,
             actions: [appleMapsAction, googleMapsAction],
             intentIdentifiers: [],
-            options: []
+            options: [.customDismissAction, .hiddenPreviewsShowTitle]
         )
 
         // Register the category

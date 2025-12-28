@@ -39,7 +39,7 @@ struct ContentView: View {
 
             do {
                 let granted = try await center.requestAuthorization(
-                    options: [.alert, .sound]
+                    options: [.alert, .sound, .badge]
                 )
 
                 if granted {
@@ -48,6 +48,17 @@ struct ContentView: View {
                     guard settings.authorizationStatus == .authorized else {
                         logger.warning("Notifications not fully authorized")
                         return
+                    }
+
+                    // Log notification presentation settings for debugging
+                    logger.info("Alert setting: \(settings.alertSetting.rawValue)")
+                    logger.info("Sound setting: \(settings.soundSetting.rawValue)")
+                    logger.info("Badge setting: \(settings.badgeSetting.rawValue)")
+                    logger.info("Notification center setting: \(settings.notificationCenterSetting.rawValue)")
+
+                    // Warn if critical settings are disabled
+                    if settings.alertSetting != .enabled {
+                        logger.warning("Alert notifications are disabled in system settings")
                     }
 
                     geofenceManager.startMonitoring()  // Requests "always" authorization
