@@ -23,8 +23,8 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler:
         @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // Allow banner even when app is foregrounded
-        completionHandler([.banner, .sound])
+        // Show as prominent banner with action buttons when app is foregrounded
+        completionHandler([.banner, .list, .sound])
     }
 
     func userNotificationCenter(
