@@ -18,8 +18,8 @@ struct GeofenceConfiguration: Sendable {
     let identifier: String
 
     nonisolated static let `default` = GeofenceConfiguration(
-        latitude: 43.50777298987344,
-        longitude:  -79.6309120030685,
+        latitude: 43.539171192704025,
+        longitude: -79.66271380779142,
         radius: 100,
         identifier: "TestGeofence"
     )
