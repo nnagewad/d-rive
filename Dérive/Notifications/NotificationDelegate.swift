@@ -49,11 +49,11 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         switch actionIdentifier {
         case appleMapsActionID:
             logger.info("Opening Apple Maps for destination: \(lat), \(lon)")
-            openAppleMaps(latitude: lat, longitude: lon)
+            MapNavigationService.shared.openAppleMaps(latitude: lat, longitude: lon)
 
         case googleMapsActionID:
             logger.info("Opening Google Maps for destination: \(lat), \(lon)")
-            openGoogleMaps(latitude: lat, longitude: lon)
+            MapNavigationService.shared.openGoogleMaps(latitude: lat, longitude: lon)
 
         case UNNotificationDefaultActionIdentifier:
             // User tapped the notification itself (not an action button)
@@ -64,58 +64,5 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
 
         completionHandler()
-    }
-
-    // MARK: - Map URL Helpers
-
-    private func openAppleMaps(latitude: Double, longitude: Double) {
-        // Apple Maps URL with walking directions
-        let urlString = "https://maps.apple.com/?saddr=Current+Location&daddr=\(latitude),\(longitude)&dirflg=w"
-
-        guard let url = URL(string: urlString) else {
-            logger.error("Invalid Apple Maps URL")
-            return
-        }
-
-        UIApplication.shared.open(url) { success in
-            if success {
-                self.logger.info("Opened Apple Maps successfully")
-            } else {
-                self.logger.error("Failed to open Apple Maps")
-            }
-        }
-    }
-
-    private func openGoogleMaps(latitude: Double, longitude: Double) {
-        // Try Google Maps app first
-        let appURLString = "comgooglemaps://?daddr=\(latitude),\(longitude)&directionsmode=walking"
-
-        if let appURL = URL(string: appURLString),
-           UIApplication.shared.canOpenURL(appURL) {
-            // Google Maps app is installed
-            UIApplication.shared.open(appURL) { success in
-                if success {
-                    self.logger.info("Opened Google Maps app successfully")
-                } else {
-                    self.logger.error("Failed to open Google Maps app")
-                }
-            }
-        } else {
-            // Fallback to web version
-            let webURLString = "https://www.google.com/maps/dir/?api=1&destination=\(latitude),\(longitude)&travelmode=walking"
-
-            guard let webURL = URL(string: webURLString) else {
-                logger.error("Invalid Google Maps web URL")
-                return
-            }
-
-            UIApplication.shared.open(webURL) { success in
-                if success {
-                    self.logger.info("Opened Google Maps web version successfully")
-                } else {
-                    self.logger.error("Failed to open Google Maps web version")
-                }
-            }
-        }
     }
 }

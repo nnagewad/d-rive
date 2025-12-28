@@ -10,22 +10,9 @@
 		F0450E792EF1F171006BA7A0 /* Dérive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dérive.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F03026682EF892BD0090650A /* Exceptions for "Dérive" folder in "Dérive" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"De-rive-Info.plist",
-			);
-			target = F0450E782EF1F171006BA7A0 /* Dérive */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F0450E7B2EF1F171006BA7A0 /* Dérive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F03026682EF892BD0090650A /* Exceptions for "Dérive" folder in "Dérive" target */,
-			);
 			path = "Dérive";
 			sourceTree = "<group>";
 		};
