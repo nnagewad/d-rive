@@ -8,6 +8,24 @@
 import Foundation
 import os.log
 
+// Internal struct for decoding JSON (without radius field)
+private struct GeofenceJSON: Codable {
+    let id: String
+    let name: String
+    let group: String
+    let city: String
+    let country: String
+    let source: String
+    let latitude: Double
+    let longitude: Double
+}
+
+private struct GeofenceBundleJSON: Codable {
+    let version: String
+    let defaultRadius: Double
+    let geofences: [GeofenceJSON]
+}
+
 enum GeofenceLoaderError: Error, LocalizedError {
     case fileNotFound
     case invalidJSON(Error)
@@ -60,10 +78,10 @@ final class GeofenceLoaderService {
         }
 
         // 3. Decode JSON
-        let bundle: GeofenceBundle
+        let bundle: GeofenceBundleJSON
         do {
             let decoder = JSONDecoder()
-            bundle = try decoder.decode(GeofenceBundle.self, from: data)
+            bundle = try decoder.decode(GeofenceBundleJSON.self, from: data)
         } catch {
             logger.error("Failed to decode geofences.json: \(error)")
             throw GeofenceLoaderError.decodingFailed(error)
