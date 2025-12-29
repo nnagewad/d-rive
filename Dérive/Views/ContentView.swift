@@ -61,8 +61,18 @@ struct ContentView: View {
                         logger.warning("Alert notifications are disabled in system settings")
                     }
 
-                    geofenceManager.startMonitoring()  // Requests "always" authorization
-                    locationManager.start()
+                    // Load and start monitoring geofences
+                    do {
+                        let geofences = try GeofenceLoaderService.shared.loadGeofences()
+                        geofenceManager.startMonitoring(configurations: geofences)
+                        locationManager.start()
+                    } catch {
+                        logger.error("Failed to load geofences: \(error.localizedDescription)")
+                        // Fallback to default single geofence
+                        logger.warning("Falling back to default geofence")
+                        geofenceManager.startMonitoring()
+                        locationManager.start()
+                    }
                 } else {
                     logger.warning("Notification permission denied")
                 }

@@ -11,18 +11,39 @@ import Combine
 import UserNotifications
 import os.log
 
-struct GeofenceConfiguration: Sendable {
+struct GeofenceConfiguration: Codable, Sendable, Identifiable {
+    let id: String
+    let name: String
+    let group: String
+    let city: String
+    let country: String
+    let source: String
     let latitude: Double
     let longitude: Double
     let radius: Double
-    let identifier: String
+    let enabled: Bool
+
+    // Legacy identifier for backward compatibility
+    var identifier: String { id }
 
     nonisolated static let `default` = GeofenceConfiguration(
+        id: "TestGeofence",
+        name: "Test Location",
+        group: "test",
+        city: "Unknown",
+        country: "Unknown",
+        source: "manual",
         latitude: 43.539171192704025,
         longitude: -79.66271380779142,
         radius: 100,
-        identifier: "TestGeofence"
+        enabled: true
     )
+}
+
+struct GeofenceBundle: Codable {
+    let version: String
+    let defaultRadius: Double
+    let geofences: [GeofenceConfiguration]
 }
 
 @MainActor
@@ -34,6 +55,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceManager")
     private var isMonitoring = false
 
+    // Store geofence configurations for notification handling
+    private var activeGeofences: [String: GeofenceConfiguration] = [:]
+
     // Notification category identifier - must match AppDelegate
     private let geofenceEnterCategoryID = "GEOFENCE_ENTER"
 
@@ -42,34 +66,72 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         manager.delegate = self
     }
 
-    func startMonitoring(configuration: GeofenceConfiguration = .default) {
-        guard !isMonitoring else { return }
+    /// Start monitoring multiple geofences from configurations
+    func startMonitoring(configurations: [GeofenceConfiguration]) {
+        guard !isMonitoring else {
+            logger.warning("Already monitoring geofences")
+            return
+        }
 
+        logger.info("Starting monitoring for \(configurations.count) geofences")
+
+        // Request authorization
         manager.requestAlwaysAuthorization()
         isMonitoring = true
 
-        let center = CLLocationCoordinate2D(
-            latitude: configuration.latitude,
-            longitude: configuration.longitude
-        )
+        // Clear any existing regions first
+        for region in manager.monitoredRegions {
+            manager.stopMonitoring(for: region)
+        }
 
-        let region = CLCircularRegion(
-            center: center,
-            radius: configuration.radius,
-            identifier: configuration.identifier
-        )
+        // Clear active configurations
+        activeGeofences.removeAll()
 
-        region.notifyOnEntry = true
-        region.notifyOnExit = false
+        // Start monitoring each enabled geofence
+        for config in configurations {
+            let center = CLLocationCoordinate2D(
+                latitude: config.latitude,
+                longitude: config.longitude
+            )
 
-        manager.startMonitoring(for: region)
-        manager.requestState(for: region)
-        logger.info("Started monitoring geofence: \(configuration.identifier)")
+            let region = CLCircularRegion(
+                center: center,
+                radius: config.radius,
+                identifier: config.id
+            )
+
+            region.notifyOnEntry = true
+            region.notifyOnExit = false
+
+            // Store configuration for later notification handling
+            activeGeofences[config.id] = config
+
+            // Start monitoring
+            manager.startMonitoring(for: region)
+            manager.requestState(for: region)
+
+            logger.info("Started monitoring: \(config.name) [\(config.id)]")
+        }
+
+        logger.info("Successfully started monitoring \(configurations.count) geofences")
+    }
+
+    /// Legacy method for backward compatibility - uses single default geofence
+    func startMonitoring(configuration: GeofenceConfiguration = .default) {
+        startMonitoring(configurations: [configuration])
     }
 
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         isInsideGeofence = true
-        notify("Entered geofence")
+
+        // Look up the configuration for this region
+        guard let config = activeGeofences[region.identifier] else {
+            logger.error("No configuration found for entered region: \(region.identifier)")
+            return
+        }
+
+        logger.info("Entered geofence: \(config.name)")
+        notify(config)
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
@@ -111,17 +173,19 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
     }
 
-    private func notify(_ message: String) {
+    private func notify(_ configuration: GeofenceConfiguration) {
         let content = UNMutableNotificationContent()
         content.title = "Dérive"
-        content.body = message
+        content.body = "You've arrived at \(configuration.name)!"
         content.sound = .default
         content.categoryIdentifier = geofenceEnterCategoryID
 
         // Include destination coordinates in userInfo for action handling
         content.userInfo = [
-            "destinationLat": GeofenceConfiguration.default.latitude,
-            "destinationLon": GeofenceConfiguration.default.longitude
+            "destinationLat": configuration.latitude,
+            "destinationLon": configuration.longitude,
+            "geofenceId": configuration.id,
+            "geofenceName": configuration.name
         ]
 
         // Add trigger for background delivery
@@ -137,7 +201,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             if let error = error {
                 self.logger.error("Failed to deliver notification: \(error)")
             } else {
-                self.logger.info("Notification delivered: \(message)")
+                self.logger.info("Notification delivered for: \(configuration.name)")
             }
         }
     }
