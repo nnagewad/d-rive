@@ -19,19 +19,51 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            if let lat = locationManager.latitude,
-               let lon = locationManager.longitude {
-                Text(String(format: "Lat: %.5f", lat))
-                Text(String(format: "Lon: %.5f", lon))
-            } else {
-                Text("Waiting for location…")
+            // Location Display
+            VStack(spacing: 8) {
+                if let lat = locationManager.latitude,
+                   let lon = locationManager.longitude {
+                    Text(String(format: "Lat: %.5f", lat))
+                        .font(.system(.body, design: .monospaced))
+                    Text(String(format: "Lon: %.5f", lon))
+                        .font(.system(.body, design: .monospaced))
+                } else {
+                    Text("Waiting for location…")
+                }
+
+                Text(
+                    geofenceManager.isInsideGeofence
+                    ? "🟢 Inside geofence"
+                    : "🔴 Outside geofence"
+                )
+                .font(.headline)
+
+                Text("Distance: \(geofenceManager.currentDistance)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
 
-            Text(
-                geofenceManager.isInsideGeofence
-                ? "🟢 Inside geofence"
-                : "🔴 Outside geofence"
-            )
+            Divider()
+
+            // Debug Log Viewer
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Debug Logs")
+                    .font(.headline)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(geofenceManager.debugLogs, id: \.self) { log in
+                            Text(log)
+                                .font(.system(.caption, design: .monospaced))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                .frame(maxHeight: 300)
+                .padding(8)
+                .background(Color.secondary.opacity(0.1))
+                .cornerRadius(8)
+            }
         }
         .padding()
         .task {

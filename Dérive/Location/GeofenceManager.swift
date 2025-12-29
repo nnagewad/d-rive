@@ -11,6 +11,14 @@ import Combine
 import UserNotifications
 import os.log
 
+// MARK: - Distance Calculation Helper
+extension CLLocation {
+    func distance(from coordinate: CLLocationCoordinate2D) -> CLLocationDistance {
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        return self.distance(from: location)
+    }
+}
+
 struct GeofenceConfiguration: Codable, Sendable, Identifiable {
     let id: String
     let name: String
@@ -33,13 +41,30 @@ struct GeofenceBundle: Codable {
 final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var isInsideGeofence = false
+    @Published var debugLogs: [String] = []
+    @Published var currentDistance: String = "—"
 
     private let manager = CLLocationManager()
     private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceManager")
     private var isMonitoring = false
+    private let maxLogEntries = 100
 
     // Store geofence configurations for notification handling
     private var activeGeofences: [String: GeofenceConfiguration] = [:]
+
+    // Track which geofences we're currently inside
+    private var insideGeofences: Set<String> = [] {
+        didSet {
+            isInsideGeofence = !insideGeofences.isEmpty
+        }
+    }
+
+    // Track initial state determinations to send notifications
+    private var pendingInitialStates: Set<String> = []
+
+    // Track last notification time to prevent duplicates (region + GPS triggering together)
+    private var lastNotificationTime: [String: Date] = [:]
+    private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
 
     // Notification category identifier - must match AppDelegate
     private let geofenceEnterCategoryID = "GEOFENCE_ENTER"
@@ -50,16 +75,24 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     /// Start monitoring multiple geofences from configurations
+    /// Uses hybrid approach: Region monitoring (works when terminated) + GPS (precise when running)
     func startMonitoring(configurations: [GeofenceConfiguration]) {
         guard !isMonitoring else {
             logger.warning("Already monitoring geofences")
             return
         }
 
-        logger.info("Starting monitoring for \(configurations.count) geofences")
+        logger.info("Starting hybrid monitoring for \(configurations.count) geofences")
 
         // Request authorization
         manager.requestAlwaysAuthorization()
+
+        // Configure for GPS accuracy
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.distanceFilter = 10  // Update every 10 meters
+        manager.allowsBackgroundLocationUpdates = true
+        manager.pausesLocationUpdatesAutomatically = false
+
         isMonitoring = true
 
         // Clear any existing regions first
@@ -67,11 +100,17 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             manager.stopMonitoring(for: region)
         }
 
-        // Clear active configurations
+        // Clear active configurations and inside state
         activeGeofences.removeAll()
+        insideGeofences.removeAll()
+        pendingInitialStates.removeAll()
 
-        // Start monitoring each enabled geofence
+        // Setup both region monitoring AND GPS tracking
         for config in configurations {
+            // Store configuration
+            activeGeofences[config.id] = config
+
+            // Setup region monitoring (works when app is terminated)
             let center = CLLocationCoordinate2D(
                 latitude: config.latitude,
                 longitude: config.longitude
@@ -84,77 +123,145 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             )
 
             region.notifyOnEntry = true
-            region.notifyOnExit = false
+            region.notifyOnExit = true
 
-            // Store configuration for later notification handling
-            activeGeofences[config.id] = config
-
-            // Start monitoring
+            // Start region monitoring
             manager.startMonitoring(for: region)
-            manager.requestState(for: region)
 
-            logger.info("Started monitoring: \(config.name) [\(config.id)]")
+            logger.info("Configured geofence: \(config.name) [\(config.id)] - \(config.radius)m radius")
         }
 
-        logger.info("Successfully started monitoring \(configurations.count) geofences")
+        // Start continuous GPS location updates for precise tracking
+        manager.startUpdatingLocation()
+
+        logger.info("Successfully started hybrid monitoring (Region + GPS) for \(configurations.count) geofences")
+        addDebugLog("📡 Started hybrid monitoring")
     }
 
-    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-        isInsideGeofence = true
+    // MARK: - GPS Location Updates
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
 
-        // Look up the configuration for this region
+        // Check distance from each geofence
+        for (id, config) in activeGeofences {
+            let center = CLLocationCoordinate2D(
+                latitude: config.latitude,
+                longitude: config.longitude
+            )
+
+            let distance = location.distance(from: center)
+            let wasInside = insideGeofences.contains(id)
+            let isInside = distance <= config.radius
+
+            // Update current distance for UI
+            currentDistance = "\(Int(distance))m / \(Int(config.radius))m"
+
+            // Log distance for debugging
+            let distanceLog = "📍 \(Int(distance))m from \(config.name)"
+            logger.debug("Distance to \(config.name): \(Int(distance))m (radius: \(Int(config.radius))m)")
+            addDebugLog(distanceLog)
+
+            // State changed - entered geofence
+            if !wasInside && isInside {
+                insideGeofences.insert(id)
+                let enterLog = "✅ ENTERED: \(config.name) at \(Int(distance))m"
+                logger.info("✅ ENTERED: \(config.name) - Distance: \(Int(distance))m")
+                addDebugLog(enterLog)
+                notify(config)
+            }
+            // State changed - exited geofence
+            else if wasInside && !isInside {
+                insideGeofences.remove(id)
+                let exitLog = "🚪 EXITED: \(config.name) at \(Int(distance))m"
+                logger.info("🚪 EXITED: \(config.name) - Distance: \(Int(distance))m")
+                addDebugLog(exitLog)
+            }
+        }
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        logger.info("Authorization changed: \(manager.authorizationStatus.rawValue)")
+    }
+
+    // MARK: - Region Monitoring (for terminated state)
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        insideGeofences.insert(region.identifier)
+
         guard let config = activeGeofences[region.identifier] else {
             logger.error("No configuration found for entered region: \(region.identifier)")
             return
         }
 
-        logger.info("Entered geofence: \(config.name)")
+        logger.info("🌍 REGION ENTER: \(config.name)")
+        addDebugLog("🌍 Region enter: \(config.name)")
         notify(config)
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        isInsideGeofence = false
-        // No notification on exit
+        insideGeofences.remove(region.identifier)
+
+        if let config = activeGeofences[region.identifier] {
+            logger.info("🌍 REGION EXIT: \(config.name)")
+            addDebugLog("🌍 Region exit: \(config.name)")
+        }
     }
 
     func locationManager(_ manager: CLLocationManager,
                         monitoringDidFailFor region: CLRegion?,
                         withError error: Error) {
-        logger.error("Monitoring failed for region \(region?.identifier ?? "unknown"): \(error)")
-    }
-
-    func locationManager(_ manager: CLLocationManager,
-                        didDetermineState state: CLRegionState,
-                        for region: CLRegion) {
-        logger.info("Determined state: \(state.rawValue) for region \(region.identifier)")
-
-        switch state {
-        case .inside:
-            isInsideGeofence = true
-            logger.info("Device is INSIDE geofence")
-        case .outside:
-            isInsideGeofence = false
-            logger.info("Device is OUTSIDE geofence")
-        case .unknown:
-            logger.warning("Region state UNKNOWN - waiting for determination")
-        @unknown default:
-            logger.error("Unexpected region state")
-        }
+        logger.error("❌ Region monitoring failed for \(region?.identifier ?? "unknown"): \(error)")
+        addDebugLog("❌ Region monitoring failed")
     }
 
     func stopMonitoring() {
         guard isMonitoring else { return }
         isMonitoring = false
 
+        // Stop GPS updates
+        manager.stopUpdatingLocation()
+
+        // Stop region monitoring
         for region in manager.monitoredRegions {
             manager.stopMonitoring(for: region)
+        }
+
+        // Clear state
+        activeGeofences.removeAll()
+        insideGeofences.removeAll()
+        pendingInitialStates.removeAll()
+    }
+
+    private func addDebugLog(_ message: String) {
+        let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
+        let logEntry = "[\(timestamp)] \(message)"
+
+        debugLogs.insert(logEntry, at: 0)
+
+        // Keep only the most recent entries
+        if debugLogs.count > maxLogEntries {
+            debugLogs.removeLast()
         }
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
+        // Check cooldown to prevent duplicate notifications
+        if let lastTime = lastNotificationTime[configuration.id] {
+            let timeSinceLastNotification = Date().timeIntervalSince(lastTime)
+            if timeSinceLastNotification < notificationCooldown {
+                logger.info("⏱️ Skipping notification (cooldown) - sent \(Int(timeSinceLastNotification))s ago")
+                addDebugLog("⏱️ Notification skipped (cooldown)")
+                return
+            }
+        }
+
+        lastNotificationTime[configuration.id] = Date()
+
+        logger.info("🔔 Attempting to send notification for: \(configuration.name)")
+        addDebugLog("🔔 Sending notification for \(configuration.name)")
+
         let content = UNMutableNotificationContent()
         content.title = "Dérive"
-        content.body = "You've close to \(configuration.name)!"
+        content.body = "You're close to \(configuration.name)!"
         content.sound = .default
         content.categoryIdentifier = geofenceEnterCategoryID
 
@@ -176,10 +283,15 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         )
 
         UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                self.logger.error("Failed to deliver notification: \(error)")
-            } else {
-                self.logger.info("Notification delivered for: \(configuration.name)")
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                if let error = error {
+                    self.logger.error("❌ Notification failed: \(error.localizedDescription)")
+                    self.addDebugLog("❌ Notification failed: \(error.localizedDescription)")
+                } else {
+                    self.logger.info("✅ Notification scheduled for: \(configuration.name)")
+                    self.addDebugLog("✅ Notification scheduled")
+                }
             }
         }
     }

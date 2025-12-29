@@ -1,16 +1,16 @@
 {
   "version": "1.0",
-  "defaultRadius": 100,
+  "defaultRadius": 325,
   "geofences": [
       {
-          "id": "richards_park_mississauga_canada",
-          "name": "Richards Park",
+          "id": "bruecknerGardens",
+          "name": "Brueckner Rhododendron Gardens",
           "group": "Park",
           "city": "Mississauga",
           "country": "Canada",
-          "source": "New York Times",
-          "latitude": 43.53590493084773,
-          "longitude": -79.59981510169915
+          "source": "Test",
+          "latitude": 43.54028887073881,
+          "longitude": -79.59634463137338
       }
   ]
 }
