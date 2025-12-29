@@ -68,9 +68,6 @@ struct ContentView: View {
                         locationManager.start()
                     } catch {
                         logger.error("Failed to load geofences: \(error.localizedDescription)")
-                        // Fallback to default single geofence
-                        logger.warning("Falling back to default geofence")
-                        geofenceManager.startMonitoring()
                         locationManager.start()
                     }
                 } else {

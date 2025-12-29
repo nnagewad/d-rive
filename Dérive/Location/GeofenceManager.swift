@@ -21,23 +21,6 @@ struct GeofenceConfiguration: Codable, Sendable, Identifiable {
     let latitude: Double
     let longitude: Double
     let radius: Double
-    let enabled: Bool
-
-    // Legacy identifier for backward compatibility
-    var identifier: String { id }
-
-    nonisolated static let `default` = GeofenceConfiguration(
-        id: "TestGeofence",
-        name: "Test Location",
-        group: "test",
-        city: "Unknown",
-        country: "Unknown",
-        source: "manual",
-        latitude: 43.539171192704025,
-        longitude: -79.66271380779142,
-        radius: 100,
-        enabled: true
-    )
 }
 
 struct GeofenceBundle: Codable {
@@ -116,11 +99,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         logger.info("Successfully started monitoring \(configurations.count) geofences")
     }
 
-    /// Legacy method for backward compatibility - uses single default geofence
-    func startMonitoring(configuration: GeofenceConfiguration = .default) {
-        startMonitoring(configurations: [configuration])
-    }
-
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         isInsideGeofence = true
 
@@ -176,7 +154,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private func notify(_ configuration: GeofenceConfiguration) {
         let content = UNMutableNotificationContent()
         content.title = "Dérive"
-        content.body = "You've arrived at \(configuration.name)!"
+        content.body = "You've close to \(configuration.name)!"
         content.sound = .default
         content.categoryIdentifier = geofenceEnterCategoryID
 

@@ -69,7 +69,7 @@ final class GeofenceLoaderService {
             throw GeofenceLoaderError.decodingFailed(error)
         }
 
-        // 4. Apply defaultRadius to geofences that don't have one
+        // 4. Apply defaultRadius to geofences
         let geofencesWithRadius = bundle.geofences.map { geofence in
             GeofenceConfiguration(
                 id: geofence.id,
@@ -80,29 +80,24 @@ final class GeofenceLoaderService {
                 source: geofence.source,
                 latitude: geofence.latitude,
                 longitude: geofence.longitude,
-                radius: bundle.defaultRadius,
-                enabled: geofence.enabled
+                radius: bundle.defaultRadius
             )
         }
 
-        // 5. Filter enabled geofences
-        let enabledGeofences = geofencesWithRadius.filter { $0.enabled }
+        logger.info("Loaded \(geofencesWithRadius.count) geofences")
 
-        logger.info("Loaded \(bundle.geofences.count) total geofences")
-        logger.info("Enabled geofences: \(enabledGeofences.count)")
-
-        // 6. Validate we have at least one enabled geofence
-        guard !enabledGeofences.isEmpty else {
-            logger.warning("No enabled geofences found")
+        // 5. Validate we have at least one geofence
+        guard !geofencesWithRadius.isEmpty else {
+            logger.warning("No geofences found in JSON")
             throw GeofenceLoaderError.noGeofences
         }
 
-        // 7. Check 20-geofence iOS limit
-        if enabledGeofences.count > 20 {
-            logger.warning("⚠️ iOS limits monitoring to 20 geofences. Found \(enabledGeofences.count) enabled geofences. Only the first 20 will be monitored.")
+        // 6. Check 20-geofence iOS limit
+        if geofencesWithRadius.count > 20 {
+            logger.warning("⚠️ iOS limits monitoring to 20 geofences. Found \(geofencesWithRadius.count) geofences. Only the first 20 will be monitored.")
         }
 
-        // 8. Return enabled geofences (iOS will handle 20 limit automatically)
-        return enabledGeofences
+        // 7. Return all geofences (iOS will handle 20 limit automatically)
+        return geofencesWithRadius
     }
 }

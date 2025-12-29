@@ -2,38 +2,15 @@
   "version": "1.0",
   "defaultRadius": 100,
   "geofences": [
-    {
-      "id": "pub_mississauga_irish",
-      "name": "Irish Pub Mississauga",
-      "group": "bars",
-      "city": "Mississauga",
-      "country": "Canada",
-      "source": "manual",
-      "latitude": 43.539171192704025,
-      "longitude": -79.66271380779142,
-      "enabled": true
-    },
-    {
-      "id": "marks_work_wearhouse",
-      "name": "Mark's Work Wearhouse",
-      "group": "retail",
-      "city": "Mississauga",
-      "country": "Canada",
-      "source": "manual",
-      "latitude": 43.5392,
-      "longitude": -79.6628,
-      "enabled": true
-    },
-    {
-      "id": "test_location",
-      "name": "Test Location",
-      "group": "test",
-      "city": "Mississauga",
-      "country": "Canada",
-      "source": "manual",
-      "latitude": 43.5400,
-      "longitude": -79.6650,
-      "enabled": false
-    }
+      {
+          "id": "richards_park_mississauga_canada",
+          "name": "Richards Park",
+          "group": "Park",
+          "city": "Mississauga",
+          "country": "Canada",
+          "source": "New York Times",
+          "latitude": 43.53590493084773,
+          "longitude": -79.59981510169915
+      }
   ]
 }
