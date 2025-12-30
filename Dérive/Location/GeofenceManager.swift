@@ -37,14 +37,22 @@ struct GeofenceBundle: Codable {
     let geofences: [GeofenceConfiguration]
 }
 
+struct GeofenceInfo: Identifiable {
+    let id: String
+    let name: String
+    let distance: Int
+}
+
 @MainActor
 final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var isInsideGeofence = false
     @Published var debugLogs: [String] = []
     @Published var currentDistance: String = "—"
+    @Published var geofenceInfoList: [GeofenceInfo] = []
 
     private let manager = CLLocationManager()
+    private var currentLocation: CLLocation?
     private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceManager")
     private var isMonitoring = false
     private let maxLogEntries = 100
@@ -65,9 +73,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     // Track last notification time to prevent duplicates (region + GPS triggering together)
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
-
-    // Notification category identifier - must match AppDelegate
-    private let geofenceEnterCategoryID = "GEOFENCE_ENTER"
 
     override init() {
         super.init()
@@ -142,6 +147,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
 
+        currentLocation = location
+        var geofenceDistances: [(id: String, name: String, distance: Int)] = []
+
         // Check distance from each geofence
         for (id, config) in activeGeofences {
             let center = CLLocationCoordinate2D(
@@ -152,6 +160,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             let distance = location.distance(from: center)
             let wasInside = insideGeofences.contains(id)
             let isInside = distance <= config.radius
+
+            // Store distance for geofence list
+            geofenceDistances.append((id: id, name: config.name, distance: Int(distance)))
 
             // Update current distance for UI
             currentDistance = "\(Int(distance))m / \(Int(config.radius))m"
@@ -177,6 +188,11 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
                 addDebugLog(exitLog)
             }
         }
+
+        // Update geofence info list sorted by distance
+        geofenceInfoList = geofenceDistances
+            .sorted { $0.distance < $1.distance }
+            .map { GeofenceInfo(id: $0.id, name: $0.name, distance: $0.distance) }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -263,14 +279,16 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         content.title = "Dérive"
         content.body = "You're close to \(configuration.name)!"
         content.sound = .default
-        content.categoryIdentifier = geofenceEnterCategoryID
 
         // Include destination coordinates in userInfo for action handling
         content.userInfo = [
             "destinationLat": configuration.latitude,
             "destinationLon": configuration.longitude,
             "geofenceId": configuration.id,
-            "geofenceName": configuration.name
+            "geofenceName": configuration.name,
+            "geofenceGroup": configuration.group,
+            "geofenceCity": configuration.city,
+            "geofenceCountry": configuration.country
         ]
 
         // Add trigger for background delivery

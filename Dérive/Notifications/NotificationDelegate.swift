@@ -13,10 +13,6 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
     private let logger = Logger(subsystem: "com.derive.app", category: "NotificationDelegate")
 
-    // Notification action identifiers - must match AppDelegate
-    private let appleMapsActionID = "OPEN_APPLE_MAPS"
-    private let googleMapsActionID = "OPEN_GOOGLE_MAPS"
-
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -48,32 +44,38 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let userInfo = response.notification.request.content.userInfo
         let actionIdentifier = response.actionIdentifier
 
-        logger.info("Notification action received: \(actionIdentifier)")
+        logger.info("📬 Notification action received: \(actionIdentifier)")
 
         // Extract destination coordinates from userInfo
         guard let lat = userInfo["destinationLat"] as? Double,
               let lon = userInfo["destinationLon"] as? Double else {
-            logger.error("Missing destination coordinates in notification userInfo")
+            logger.error("❌ Missing destination coordinates in notification userInfo")
             completionHandler()
             return
         }
 
-        // Handle different actions
-        switch actionIdentifier {
-        case appleMapsActionID:
-            logger.info("Opening Apple Maps for destination: \(lat), \(lon)")
-            MapNavigationService.shared.openAppleMaps(latitude: lat, longitude: lon)
+        let name = userInfo["geofenceName"] as? String ?? "Unknown Location"
+        let group = userInfo["geofenceGroup"] as? String ?? ""
+        let city = userInfo["geofenceCity"] as? String ?? ""
+        let country = userInfo["geofenceCountry"] as? String ?? ""
 
-        case googleMapsActionID:
-            logger.info("Opening Google Maps for destination: \(lat), \(lon)")
-            MapNavigationService.shared.openGoogleMaps(latitude: lat, longitude: lon)
+        // Handle notification tap (user tapped the notification body)
+        if actionIdentifier == UNNotificationDefaultActionIdentifier {
+            logger.info("🗺️ Notification tapped - navigating to map selection for: \(name)")
 
-        case UNNotificationDefaultActionIdentifier:
-            // User tapped the notification itself (not an action button)
-            logger.info("Notification tapped: \(response.notification.request.content.body)")
-
-        default:
-            logger.warning("Unknown action identifier: \(actionIdentifier)")
+            // Navigate to MapSelectionView
+            Task { @MainActor in
+                NavigationCoordinator.shared.navigateToMapSelection(
+                    latitude: lat,
+                    longitude: lon,
+                    name: name,
+                    group: group,
+                    city: city,
+                    country: country
+                )
+            }
+        } else {
+            logger.warning("⚠️ Unknown action identifier: \(actionIdentifier)")
         }
 
         completionHandler()

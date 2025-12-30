@@ -16,6 +16,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     @Published var latitude: Double?
     @Published var longitude: Double?
+    @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
     override init() {
         super.init()
@@ -43,6 +44,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authorizationStatus = manager.authorizationStatus
         if manager.authorizationStatus == .authorizedWhenInUse ||
             manager.authorizationStatus == .authorizedAlways {
             manager.startUpdatingLocation()

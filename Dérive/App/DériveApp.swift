@@ -11,10 +11,24 @@ import SwiftUI
 struct DeriveApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var navigationCoordinator = NavigationCoordinator.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack(path: $navigationCoordinator.navigationPath) {
+                DebugView()
+                    .navigationDestination(for: MapDestination.self) { destination in
+                        MapSelectionView(
+                            latitude: destination.latitude,
+                            longitude: destination.longitude,
+                            locationName: destination.name,
+                            group: destination.group,
+                            city: destination.city,
+                            country: destination.country
+                        )
+                    }
+            }
+            .environmentObject(navigationCoordinator)
         }
     }
 }
