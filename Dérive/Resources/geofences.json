@@ -1,16 +1,26 @@
 {
   "version": "1.0",
-  "defaultRadius": 325,
+  "defaultRadius": 400,
   "geofences": [
       {
-          "id": "bruecknerGardens",
-          "name": "Brueckner Rhododendron Gardens",
-          "group": "Park",
-          "city": "Mississauga",
-          "country": "Canada",
+          "id": "woodsideParkStation",
+          "name": "Woodside Park Tube Station",
+          "group": "Tube Station",
+          "city": "London",
+          "country": "England",
           "source": "Test",
-          "latitude": 43.54028887073881,
-          "longitude": -79.59634463137338
+          "latitude": 51.61904552115669,
+          "longitude": -0.18494553446105455
+      },
+      {
+          "id": "sainsbury_sGrocery",
+          "name": "Sainsbury's",
+          "group": "Grocery",
+          "city": "London",
+          "country": "England",
+          "source": "Test",
+          "latitude": 51.61790178146248,
+          "longitude": -0.1759673655832128
       }
   ]
 }

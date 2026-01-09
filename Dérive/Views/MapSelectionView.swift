@@ -41,23 +41,6 @@ struct MapSelectionView: View {
 
             // Location Info
             VStack(spacing: 12) {
-                // Name
-                Text(locationName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-
-                // Group Tag
-                if !group.isEmpty {
-                    Text(group)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.accentColor)
-                        .cornerRadius(8)
-                }
 
                 VStack(spacing: 4) {
                     // City, Country
@@ -115,7 +98,7 @@ struct MapSelectionView: View {
             Spacer()
         }
         .padding(.top)
-        .navigationTitle("Navigate to \(locationName)")
+        .navigationTitle("\(locationName)")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

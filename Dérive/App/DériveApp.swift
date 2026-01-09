@@ -16,7 +16,7 @@ struct DeriveApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack(path: $navigationCoordinator.navigationPath) {
-                DebugView()
+                LocationListView()
                     .navigationDestination(for: MapDestination.self) { destination in
                         MapSelectionView(
                             latitude: destination.latitude,
