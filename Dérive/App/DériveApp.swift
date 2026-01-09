@@ -33,6 +33,13 @@ struct DeriveApp: App {
                     Label("Locations", systemImage: "mappin.and.ellipse")
                 }
 
+                NavigationStack {
+                    SettingsView()
+                }
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
+
                 #if DEBUG
                 NavigationStack {
                     DebugView()

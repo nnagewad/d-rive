@@ -61,18 +61,22 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
         // Handle notification tap (user tapped the notification body)
         if actionIdentifier == UNNotificationDefaultActionIdentifier {
-            logger.info("🗺️ Notification tapped - navigating to map selection for: \(name)")
-
-            // Navigate to MapSelectionView
             Task { @MainActor in
-                NavigationCoordinator.shared.navigateToMapSelection(
-                    latitude: lat,
-                    longitude: lon,
-                    name: name,
-                    group: group,
-                    city: city,
-                    country: country
-                )
+                // Check if user has a default map app set
+                if let defaultMapApp = SettingsService.shared.defaultMapApp {
+                    logger.info("🗺️ Notification tapped - opening \(defaultMapApp.displayName) for: \(name)")
+                    MapNavigationService.shared.openMapApp(defaultMapApp, latitude: lat, longitude: lon)
+                } else {
+                    logger.info("🗺️ Notification tapped - navigating to map selection for: \(name)")
+                    NavigationCoordinator.shared.navigateToMapSelection(
+                        latitude: lat,
+                        longitude: lon,
+                        name: name,
+                        group: group,
+                        city: city,
+                        country: country
+                    )
+                }
             }
         } else {
             logger.warning("⚠️ Unknown action identifier: \(actionIdentifier)")

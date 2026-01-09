@@ -68,4 +68,13 @@ final class MapNavigationService {
             }
         }
     }
+
+    func openMapApp(_ mapApp: MapApp, latitude: Double, longitude: Double) {
+        switch mapApp {
+        case .appleMaps:
+            openAppleMaps(latitude: latitude, longitude: longitude)
+        case .googleMaps:
+            openGoogleMaps(latitude: latitude, longitude: longitude)
+        }
+    }
 }
