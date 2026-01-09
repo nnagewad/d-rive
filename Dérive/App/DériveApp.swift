@@ -15,18 +15,32 @@ struct DeriveApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $navigationCoordinator.navigationPath) {
-                LocationListView()
-                    .navigationDestination(for: MapDestination.self) { destination in
-                        MapSelectionView(
-                            latitude: destination.latitude,
-                            longitude: destination.longitude,
-                            locationName: destination.name,
-                            group: destination.group,
-                            city: destination.city,
-                            country: destination.country
-                        )
-                    }
+            TabView {
+                NavigationStack(path: $navigationCoordinator.navigationPath) {
+                    LocationListView()
+                        .navigationDestination(for: MapDestination.self) { destination in
+                            MapSelectionView(
+                                latitude: destination.latitude,
+                                longitude: destination.longitude,
+                                locationName: destination.name,
+                                group: destination.group,
+                                city: destination.city,
+                                country: destination.country
+                            )
+                        }
+                }
+                .tabItem {
+                    Label("Locations", systemImage: "mappin.and.ellipse")
+                }
+
+                #if DEBUG
+                NavigationStack {
+                    DebugView()
+                }
+                .tabItem {
+                    Label("Debug", systemImage: "ladybug")
+                }
+                #endif
             }
             .environmentObject(navigationCoordinator)
         }
