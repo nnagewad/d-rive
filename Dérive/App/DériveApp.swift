@@ -39,15 +39,6 @@ struct DeriveApp: App {
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }
-
-                #if DEBUG
-                NavigationStack {
-                    DebugView()
-                }
-                .tabItem {
-                    Label("Debug", systemImage: "ladybug")
-                }
-                #endif
             }
             .environmentObject(navigationCoordinator)
         }

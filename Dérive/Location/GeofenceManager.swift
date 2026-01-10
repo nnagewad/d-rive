@@ -46,6 +46,8 @@ struct GeofenceInfo: Identifiable {
 @MainActor
 final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
+    static let shared = GeofenceManager()
+
     @Published var isInsideGeofence = false
     @Published var debugLogs: [String] = []
     @Published var currentDistance: String = "—"
@@ -203,6 +205,11 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         insideGeofences.insert(region.identifier)
 
+        // If activeGeofences is empty (app was terminated), reload configurations
+        if activeGeofences.isEmpty {
+            reloadGeofenceConfigurations()
+        }
+
         guard let config = activeGeofences[region.identifier] else {
             logger.error("No configuration found for entered region: \(region.identifier)")
             return
@@ -211,6 +218,19 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         logger.info("🌍 REGION ENTER: \(config.name)")
         addDebugLog("🌍 Region enter: \(config.name)")
         notify(config)
+    }
+
+    /// Reloads geofence configurations from disk (used when app is woken from terminated state)
+    private func reloadGeofenceConfigurations() {
+        do {
+            let geofences = try GeofenceLoaderService.shared.loadGeofences()
+            for config in geofences {
+                activeGeofences[config.id] = config
+            }
+            logger.info("Reloaded \(geofences.count) geofence configurations after app wake")
+        } catch {
+            logger.error("Failed to reload geofences: \(error.localizedDescription)")
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {

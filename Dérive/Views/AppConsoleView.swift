@@ -1,6 +1,6 @@
 //
-//  DebugView.swift
-//  Dérive
+//  AppConsoleView.swift
+//  Dérive
 //
 //  Created by Nikin Nagewadia on 2025-12-16.
 //
@@ -10,10 +10,10 @@ import UserNotifications
 import CoreLocation
 import os.log
 
-struct DebugView: View {
+struct AppConsoleView: View {
 
     @StateObject private var locationManager = LocationManager()
-    @StateObject private var geofenceManager = GeofenceManager()
+    @ObservedObject private var geofenceManager = GeofenceManager.shared
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var navigationCoordinator: NavigationCoordinator
 
@@ -21,7 +21,7 @@ struct DebugView: View {
     @State private var alertSetting: String = "Unknown"
     @State private var soundSetting: String = "Unknown"
 
-    private let logger = Logger(subsystem: "com.derive.app", category: "DebugView")
+    private let logger = Logger(subsystem: "com.derive.app", category: "AppConsoleView")
 
     // MARK: - Computed Properties
 
@@ -62,7 +62,7 @@ struct DebugView: View {
         ScrollView {
             VStack(spacing: 20) {
                 // Header
-                Text("Debug Screen")
+                Text("App Console")
                     .font(.title)
                     .fontWeight(.bold)
 
@@ -232,72 +232,34 @@ struct DebugView: View {
         }
         .task {
             let center = UNUserNotificationCenter.current()
+            let settings = await center.notificationSettings()
 
-            do {
-                let granted = try await center.requestAuthorization(
-                    options: [.alert, .sound, .badge]
-                )
-
-                if granted {
-                    // Verify settings are actually enabled
-                    let settings = await center.notificationSettings()
-
-                    // Store notification settings for display
-                    switch settings.authorizationStatus {
-                    case .authorized: notificationAuthStatus = "Authorized"
-                    case .denied: notificationAuthStatus = "Denied"
-                    case .notDetermined: notificationAuthStatus = "Not Determined"
-                    case .provisional: notificationAuthStatus = "Provisional"
-                    case .ephemeral: notificationAuthStatus = "Ephemeral"
-                    @unknown default: notificationAuthStatus = "Unknown"
-                    }
-
-                    switch settings.alertSetting {
-                    case .enabled: alertSetting = "Enabled"
-                    case .disabled: alertSetting = "Disabled"
-                    case .notSupported: alertSetting = "Not Supported"
-                    @unknown default: alertSetting = "Unknown"
-                    }
-
-                    switch settings.soundSetting {
-                    case .enabled: soundSetting = "Enabled"
-                    case .disabled: soundSetting = "Disabled"
-                    case .notSupported: soundSetting = "Not Supported"
-                    @unknown default: soundSetting = "Unknown"
-                    }
-
-                    guard settings.authorizationStatus == .authorized else {
-                        logger.warning("Notifications not fully authorized")
-                        return
-                    }
-
-                    // Log notification presentation settings for debugging
-                    logger.info("Alert setting: \(settings.alertSetting.rawValue)")
-                    logger.info("Sound setting: \(settings.soundSetting.rawValue)")
-                    logger.info("Badge setting: \(settings.badgeSetting.rawValue)")
-                    logger.info("Notification center setting: \(settings.notificationCenterSetting.rawValue)")
-
-                    // Warn if critical settings are disabled
-                    if settings.alertSetting != .enabled {
-                        logger.warning("Alert notifications are disabled in system settings")
-                    }
-
-                    // Load and start monitoring geofences
-                    do {
-                        let geofences = try GeofenceLoaderService.shared.loadGeofences()
-                        geofenceManager.startMonitoring(configurations: geofences)
-                        locationManager.start()
-                    } catch {
-                        logger.error("Failed to load geofences: \(error.localizedDescription)")
-                        locationManager.start()
-                    }
-                } else {
-                    notificationAuthStatus = "Denied"
-                    logger.warning("Notification permission denied")
-                }
-            } catch {
-                logger.error("Failed to request notification authorization: \(error)")
+            // Store notification settings for display
+            switch settings.authorizationStatus {
+            case .authorized: notificationAuthStatus = "Authorized"
+            case .denied: notificationAuthStatus = "Denied"
+            case .notDetermined: notificationAuthStatus = "Not Determined"
+            case .provisional: notificationAuthStatus = "Provisional"
+            case .ephemeral: notificationAuthStatus = "Ephemeral"
+            @unknown default: notificationAuthStatus = "Unknown"
             }
+
+            switch settings.alertSetting {
+            case .enabled: alertSetting = "Enabled"
+            case .disabled: alertSetting = "Disabled"
+            case .notSupported: alertSetting = "Not Supported"
+            @unknown default: alertSetting = "Unknown"
+            }
+
+            switch settings.soundSetting {
+            case .enabled: soundSetting = "Enabled"
+            case .disabled: soundSetting = "Disabled"
+            case .notSupported: soundSetting = "Not Supported"
+            @unknown default: soundSetting = "Unknown"
+            }
+
+            // Start location updates for display in console
+            locationManager.start()
         }
         .onDisappear {
             locationManager.stop()
@@ -317,6 +279,6 @@ struct DebugView: View {
 
 
 #Preview {
-    DebugView()
+    AppConsoleView()
         .environmentObject(NavigationCoordinator.shared)
 }

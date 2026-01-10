@@ -9,18 +9,18 @@
           "city": "London",
           "country": "England",
           "source": "Test",
-          "latitude": 51.61904552115669,
-          "longitude": -0.18494553446105455
+          "latitude": 51.61800398216026,
+          "longitude": -0.18534410066907775
       },
       {
-          "id": "sainsbury_sGrocery",
-          "name": "Sainsbury's",
+          "id": "waitrose_Grocery",
+          "name": "Waitrose",
           "group": "Grocery",
           "city": "London",
           "country": "England",
           "source": "Test",
-          "latitude": 51.61790178146248,
-          "longitude": -0.1759673655832128
+          "latitude": 51.61153548371642,
+          "longitude": -0.18000731638305068
       }
   ]
 }
