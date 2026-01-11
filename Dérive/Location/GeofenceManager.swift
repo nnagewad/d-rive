@@ -72,7 +72,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private var lastRegionUpdateLocation: CLLocation?
 
     // Re-evaluate which 20 geofences to monitor after moving this distance (meters)
-    private let regionUpdateDistanceThreshold: Double = 500
+    private let regionUpdateDistanceThreshold: Double = 2500
 
     // iOS Core Location limit for monitored regions
     private let maxMonitoredRegions = 20
