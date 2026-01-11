@@ -49,6 +49,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     @MainActor
     private func startGeofenceMonitoring() {
+        // Only start monitoring if a city is selected and downloaded
+        guard GeofenceLoaderService.shared.canLoadGeofences() else {
+            logger.info("No city selected yet, skipping geofence monitoring")
+            return
+        }
+
         do {
             let geofences = try GeofenceLoaderService.shared.loadGeofences()
             GeofenceManager.shared.startMonitoring(configurations: geofences)
@@ -56,5 +62,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         } catch {
             logger.error("Failed to load geofences: \(error.localizedDescription)")
         }
+    }
+
+    /// Called when a city is selected to start monitoring
+    @MainActor
+    func restartGeofenceMonitoring() {
+        // Stop any existing monitoring first
+        GeofenceManager.shared.stopMonitoring()
+
+        // Start fresh with new city
+        startGeofenceMonitoring()
     }
 }
