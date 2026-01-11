@@ -59,8 +59,23 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private var isMonitoring = false
     private let maxLogEntries = 100
 
-    // Store geofence configurations for notification handling
+    // Store ALL geofence configurations (for UI and distance calculations)
+    private var allGeofences: [GeofenceConfiguration] = []
+
+    // Store only the currently monitored geofences (max 20) for notification handling
     private var activeGeofences: [String: GeofenceConfiguration] = [:]
+
+    // Track which geofence IDs are currently being monitored by Core Location
+    private var monitoredGeofenceIds: Set<String> = []
+
+    // Track location where we last updated monitored regions
+    private var lastRegionUpdateLocation: CLLocation?
+
+    // Re-evaluate which 20 geofences to monitor after moving this distance (meters)
+    private let regionUpdateDistanceThreshold: Double = 500
+
+    // iOS Core Location limit for monitored regions
+    private let maxMonitoredRegions = 20
 
     // Track which geofences we're currently inside
     private var insideGeofences: Set<String> = [] {
@@ -83,13 +98,14 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     /// Start monitoring multiple geofences from configurations
     /// Uses hybrid approach: Region monitoring (works when terminated) + GPS (precise when running)
+    /// Only the nearest 20 geofences are monitored due to iOS Core Location limits.
     func startMonitoring(configurations: [GeofenceConfiguration]) {
         guard !isMonitoring else {
             logger.warning("Already monitoring geofences")
             return
         }
 
-        logger.info("Starting hybrid monitoring for \(configurations.count) geofences")
+        logger.info("Starting hybrid monitoring for \(configurations.count) geofences (will monitor nearest \(self.maxMonitoredRegions))")
 
         // Request authorization
         manager.requestAlwaysAuthorization()
@@ -107,72 +123,97 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             manager.stopMonitoring(for: region)
         }
 
-        // Clear active configurations and inside state
+        // Clear state
+        allGeofences = configurations
         activeGeofences.removeAll()
+        monitoredGeofenceIds.removeAll()
         insideGeofences.removeAll()
         pendingInitialStates.removeAll()
+        lastRegionUpdateLocation = nil
 
-        // Setup both region monitoring AND GPS tracking
+        // Log all geofences loaded
         for config in configurations {
-            // Store configuration
-            activeGeofences[config.id] = config
-
-            // Setup region monitoring (works when app is terminated)
-            let center = CLLocationCoordinate2D(
-                latitude: config.latitude,
-                longitude: config.longitude
-            )
-
-            let region = CLCircularRegion(
-                center: center,
-                radius: config.radius,
-                identifier: config.id
-            )
-
-            region.notifyOnEntry = true
-            region.notifyOnExit = true
-
-            // Start region monitoring
-            manager.startMonitoring(for: region)
-
-            logger.info("Configured geofence: \(config.name) [\(config.id)] - \(config.radius)m radius")
+            logger.debug("Loaded geofence: \(config.name) [\(config.id)] - \(config.radius)m radius")
         }
 
-        // Start continuous GPS location updates for precise tracking
+        // Register geofences immediately so they work even if app is terminated
+        if let lastLocation = manager.location {
+            // Use last known location to select nearest 20
+            logger.info("Using last known location to select initial geofences")
+            updateMonitoredRegions(for: lastLocation)
+        } else {
+            // No location available - register first 20 as fallback
+            // These will be updated once we get an actual location
+            logger.info("No location available, registering first \(self.maxMonitoredRegions) geofences as fallback")
+            registerFallbackGeofences()
+        }
+
+        // Start significant location change monitoring (works when app is terminated)
+        // This wakes the app when user travels several km, allowing us to update monitored geofences
+        manager.startMonitoringSignificantLocationChanges()
+
+        // Start continuous GPS location updates for precise tracking when app is running
         manager.startUpdatingLocation()
 
-        logger.info("Successfully started hybrid monitoring (Region + GPS) for \(configurations.count) geofences")
-        addDebugLog("📡 Started hybrid monitoring")
+        logger.info("Started monitoring: regions + GPS + significant location changes")
+        addDebugLog("📡 Started hybrid monitoring (\(configurations.count) locations)")
     }
 
-    // MARK: - GPS Location Updates
+    // MARK: - GPS Location Updates (also handles significant location changes)
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
 
+        // If allGeofences is empty, app was woken from terminated state - reload configurations
+        if allGeofences.isEmpty {
+            reloadGeofenceConfigurations()
+        }
+
         currentLocation = location
+
+        // Check if we need to update which regions are monitored
+        let shouldUpdateRegions: Bool
+        if lastRegionUpdateLocation == nil {
+            // First location update - select initial nearest geofences
+            shouldUpdateRegions = true
+        } else if let lastLocation = lastRegionUpdateLocation {
+            // Re-evaluate if we've moved significantly
+            let distanceMoved = location.distance(from: lastLocation)
+            shouldUpdateRegions = distanceMoved >= regionUpdateDistanceThreshold
+        } else {
+            shouldUpdateRegions = false
+        }
+
+        if shouldUpdateRegions {
+            updateMonitoredRegions(for: location)
+        }
+
+        // Calculate distances for ALL geofences (for UI display)
         var geofenceDistances: [(id: String, name: String, distance: Int)] = []
+        for config in allGeofences {
+            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+            let distance = location.distance(from: center)
+            geofenceDistances.append((id: config.id, name: config.name, distance: Int(distance)))
+        }
 
-        // Check distance from each geofence
+        // Update geofence info list sorted by distance (shows ALL locations)
+        geofenceInfoList = geofenceDistances
+            .sorted { $0.distance < $1.distance }
+            .map { GeofenceInfo(id: $0.id, name: $0.name, distance: $0.distance) }
+
+        // Check entry/exit only for actively monitored geofences
         for (id, config) in activeGeofences {
-            let center = CLLocationCoordinate2D(
-                latitude: config.latitude,
-                longitude: config.longitude
-            )
-
+            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
             let distance = location.distance(from: center)
             let wasInside = insideGeofences.contains(id)
             let isInside = distance <= config.radius
 
-            // Store distance for geofence list
-            geofenceDistances.append((id: id, name: config.name, distance: Int(distance)))
-
-            // Update current distance for UI
-            currentDistance = "\(Int(distance))m / \(Int(config.radius))m"
+            // Update current distance for UI (show nearest monitored)
+            if id == geofenceInfoList.first?.id {
+                currentDistance = "\(Int(distance))m / \(Int(config.radius))m"
+            }
 
             // Log distance for debugging
-            let distanceLog = "📍 \(Int(distance))m from \(config.name)"
             logger.debug("Distance to \(config.name): \(Int(distance))m (radius: \(Int(config.radius))m)")
-            addDebugLog(distanceLog)
 
             // State changed - entered geofence
             if !wasInside && isInside {
@@ -190,11 +231,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
                 addDebugLog(exitLog)
             }
         }
-
-        // Update geofence info list sorted by distance
-        geofenceInfoList = geofenceDistances
-            .sorted { $0.distance < $1.distance }
-            .map { GeofenceInfo(id: $0.id, name: $0.name, distance: $0.distance) }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -224,10 +260,16 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private func reloadGeofenceConfigurations() {
         do {
             let geofences = try GeofenceLoaderService.shared.loadGeofences()
-            for config in geofences {
+            allGeofences = geofences
+
+            // Rebuild activeGeofences from currently monitored regions
+            let monitoredIds = Set(manager.monitoredRegions.map { $0.identifier })
+            for config in geofences where monitoredIds.contains(config.id) {
                 activeGeofences[config.id] = config
             }
-            logger.info("Reloaded \(geofences.count) geofence configurations after app wake")
+            monitoredGeofenceIds = monitoredIds
+
+            logger.info("Reloaded \(geofences.count) geofence configurations after app wake (\(monitoredIds.count) monitored)")
         } catch {
             logger.error("Failed to reload geofences: \(error.localizedDescription)")
         }
@@ -253,8 +295,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         guard isMonitoring else { return }
         isMonitoring = false
 
-        // Stop GPS updates
+        // Stop all location updates
         manager.stopUpdatingLocation()
+        manager.stopMonitoringSignificantLocationChanges()
 
         // Stop region monitoring
         for region in manager.monitoredRegions {
@@ -262,9 +305,88 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
 
         // Clear state
+        allGeofences.removeAll()
         activeGeofences.removeAll()
+        monitoredGeofenceIds.removeAll()
         insideGeofences.removeAll()
         pendingInitialStates.removeAll()
+        lastRegionUpdateLocation = nil
+    }
+
+    // MARK: - Dynamic Region Management
+
+    /// Updates which geofences are monitored based on proximity to the given location.
+    /// Only the nearest 20 geofences will be monitored (iOS Core Location limit).
+    private func updateMonitoredRegions(for location: CLLocation) {
+        // Calculate distances and sort by proximity
+        let sortedByDistance = allGeofences.map { config -> (config: GeofenceConfiguration, distance: Double) in
+            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+            let distance = location.distance(from: center)
+            return (config, distance)
+        }.sorted { $0.distance < $1.distance }
+
+        // Take the nearest 20 (or all if fewer than 20)
+        let nearest = Array(sortedByDistance.prefix(maxMonitoredRegions))
+        let nearestIds = Set(nearest.map { $0.config.id })
+
+        // Check if the set of nearest geofences has changed
+        if nearestIds == monitoredGeofenceIds {
+            logger.debug("Nearest \(nearestIds.count) geofences unchanged, skipping region update")
+            return
+        }
+
+        logger.info("Updating monitored regions: \(nearestIds.count) nearest geofences")
+
+        // Find which regions to stop and start monitoring
+        let toStop = monitoredGeofenceIds.subtracting(nearestIds)
+        let toStart = nearestIds.subtracting(monitoredGeofenceIds)
+
+        // Stop monitoring regions that are no longer in the nearest set
+        for regionId in toStop {
+            if let region = manager.monitoredRegions.first(where: { $0.identifier == regionId }) {
+                manager.stopMonitoring(for: region)
+                activeGeofences.removeValue(forKey: regionId)
+                logger.debug("Stopped monitoring: \(regionId)")
+            }
+        }
+
+        // Start monitoring new nearest regions
+        for (config, distance) in nearest where toStart.contains(config.id) {
+            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+            let region = CLCircularRegion(center: center, radius: config.radius, identifier: config.id)
+            region.notifyOnEntry = true
+            region.notifyOnExit = true
+
+            manager.startMonitoring(for: region)
+            activeGeofences[config.id] = config
+            logger.info("Started monitoring: \(config.name) (\(Int(distance))m away)")
+        }
+
+        // Update tracked state
+        monitoredGeofenceIds = nearestIds
+        lastRegionUpdateLocation = location
+
+        addDebugLog("📍 Monitoring \(monitoredGeofenceIds.count) nearest geofences")
+    }
+
+    /// Registers the first N geofences as a fallback when no location is available.
+    /// These will be replaced with the nearest geofences once we get a location update.
+    private func registerFallbackGeofences() {
+        let fallbackGeofences = Array(allGeofences.prefix(maxMonitoredRegions))
+
+        for config in fallbackGeofences {
+            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+            let region = CLCircularRegion(center: center, radius: config.radius, identifier: config.id)
+            region.notifyOnEntry = true
+            region.notifyOnExit = true
+
+            manager.startMonitoring(for: region)
+            activeGeofences[config.id] = config
+            monitoredGeofenceIds.insert(config.id)
+            logger.debug("Fallback registered: \(config.name)")
+        }
+
+        addDebugLog("📍 Registered \(fallbackGeofences.count) fallback geofences")
     }
 
     private func addDebugLog(_ message: String) {

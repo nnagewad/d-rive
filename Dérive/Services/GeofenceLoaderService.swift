@@ -110,12 +110,12 @@ final class GeofenceLoaderService {
             throw GeofenceLoaderError.noGeofences
         }
 
-        // 6. Check 20-geofence iOS limit
+        // 6. Log if exceeding iOS 20-geofence limit (GeofenceManager handles dynamic selection)
         if geofencesWithRadius.count > 20 {
-            logger.warning("⚠️ iOS limits monitoring to 20 geofences. Found \(geofencesWithRadius.count) geofences. Only the first 20 will be monitored.")
+            logger.info("Found \(geofencesWithRadius.count) geofences. GeofenceManager will monitor the nearest 20.")
         }
 
-        // 7. Return all geofences (iOS will handle 20 limit automatically)
+        // 7. Return all geofences (GeofenceManager selects nearest 20 to monitor)
         return geofencesWithRadius
     }
 }
