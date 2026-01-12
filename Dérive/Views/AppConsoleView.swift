@@ -6,279 +6,160 @@
 //
 
 import SwiftUI
-import UserNotifications
+import UIKit
 import CoreLocation
-import os.log
+import MapKit
 
 struct AppConsoleView: View {
 
     @StateObject private var locationManager = LocationManager()
     @ObservedObject private var geofenceManager = GeofenceManager.shared
-    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var navigationCoordinator: NavigationCoordinator
 
-    @State private var notificationAuthStatus: String = "Unknown"
-    @State private var alertSetting: String = "Unknown"
-    @State private var soundSetting: String = "Unknown"
-
-    private let logger = Logger(subsystem: "com.derive.app", category: "AppConsoleView")
-
-    // MARK: - Computed Properties
-
-    private var locationAuthorizationStatus: String {
-        switch locationManager.authorizationStatus {
-        case .notDetermined: return "Not Determined"
-        case .restricted: return "Restricted"
-        case .denied: return "Denied"
-        case .authorizedAlways: return "Authorized (Always)"
-        case .authorizedWhenInUse: return "Authorized (When In Use)"
-        @unknown default: return "Unknown"
-        }
-    }
-
-    private var locationAuthColor: Color {
-        switch locationManager.authorizationStatus {
-        case .authorizedAlways, .authorizedWhenInUse: return .green
-        case .denied: return .red
-        case .restricted: return .orange
-        default: return .gray
-        }
-    }
-
-    private var scenePhaseName: String {
-        switch scenePhase {
-        case .active: return "Active"
-        case .inactive: return "Inactive"
-        case .background: return "Background"
-        @unknown default: return "Unknown"
-        }
-    }
-
-    private var locationModeName: String {
-        scenePhase == .active ? "Foreground (High Accuracy)" : "Background (Reduced)"
-    }
+    @State private var locationDescription: String = "an unknown location"
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Header
-                Text("App Console")
-                    .font(.title)
-                    .fontWeight(.bold)
+                // Your coordinates section
+                VStack(alignment: .leading, spacing: 0) {
+                    // Section header
+                    Text("Your coordinates")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
 
-                Divider()
-
-                // Current Location
-                GroupBox(label: Text("Current Location").font(.headline)) {
-                    VStack(spacing: 8) {
-                        if let lat = locationManager.latitude,
-                           let lon = locationManager.longitude {
-                            Text(String(format: "Lat: %.5f", lat))
-                                .font(.system(.body, design: .monospaced))
-                            Text(String(format: "Lon: %.5f", lon))
-                                .font(.system(.body, design: .monospaced))
-                        } else {
-                            Text("Waiting for location…")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-
-                Divider()
-
-                // Location Authorization
-                GroupBox(label: Text("Location Authorization").font(.headline)) {
-                    VStack(spacing: 4) {
-                        HStack {
-                            Image(systemName: "location.fill")
-                                .foregroundColor(locationAuthColor)
-                            Text(locationAuthorizationStatus)
-                                .font(.caption)
-                                .foregroundColor(locationAuthColor)
-                            Spacer()
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                Divider()
-
-                // Geofence Status
-                GroupBox(label: Text("Geofence Status").font(.headline)) {
-                    VStack(spacing: 8) {
-                        Text(
-                            geofenceManager.isInsideGeofence
-                            ? "🟢 Inside geofence"
-                            : "🔴 Outside geofence"
+                    // Coordinates card
+                    VStack(spacing: 0) {
+                        // Latitude row
+                        SettingsRow(
+                            title: "Latitude",
+                            value: locationManager.latitude.map { String(format: "%.5f", $0) } ?? "—"
                         )
-                        .font(.subheadline)
-                        .fontWeight(.medium)
 
-                        Text("Distance: \(geofenceManager.currentDistance)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Divider()
+                            .padding(.leading, 16)
+
+                        // Longitude row
+                        SettingsRow(
+                            title: "Longitude",
+                            value: locationManager.longitude.map { String(format: "%.5f", $0) } ?? "—"
+                        )
                     }
-                    .frame(maxWidth: .infinity)
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding(.horizontal, 16)
+
+                    // Footer text
+                    Text("Based on your coordinates you are presently located in \(locationDescription).")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .padding(.bottom, 6)
                 }
 
-                Divider()
-
-                // Active Geofences List
-                GroupBox(label: Text("Active Geofences (\(geofenceManager.geofenceInfoList.count))").font(.headline)) {
-                    if geofenceManager.geofenceInfoList.isEmpty {
-                        Text("No geofences loaded")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 4) {
-                                ForEach(geofenceManager.geofenceInfoList) { geofence in
-                                    HStack {
-                                        Text(geofence.name)
-                                            .font(.caption)
-                                        Spacer()
-                                        Text("\(geofence.distance)m")
-                                            .font(.caption)
-                                            .fontDesign(.monospaced)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                            }
-                        }
-                        .frame(maxHeight: 150)
+                // Active geofences section
+                VStack(alignment: .leading, spacing: 0) {
+                    // Geofences card
+                    VStack(spacing: 0) {
+                        SettingsRow(
+                            title: "Active geofences",
+                            value: "\(geofenceManager.geofenceInfoList.count)"
+                        )
                     }
-                }
+                    .background(Color(UIColor.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding(.horizontal, 16)
 
-                Divider()
-
-                // Notification Settings
-                GroupBox(label: Text("Notification Settings").font(.headline)) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Authorization:")
-                                .font(.caption)
-                            Text(notificationAuthStatus)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        HStack {
-                            Text("Alerts:")
-                                .font(.caption)
-                            Text(alertSetting)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        HStack {
-                            Text("Sounds:")
-                                .font(.caption)
-                            Text(soundSetting)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                Divider()
-
-                // App State
-                GroupBox(label: Text("App State").font(.headline)) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Scene Phase:")
-                                .font(.caption)
-                            Text(scenePhaseName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        HStack {
-                            Text("Location Mode:")
-                                .font(.caption)
-                            Text(locationModeName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                Divider()
-
-                // Debug Logs
-                GroupBox(label: Text("Debug Logs").font(.headline)) {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 4) {
-                            ForEach(geofenceManager.debugLogs, id: \.self) { log in
-                                Text(log)
-                                    .font(.system(.caption, design: .monospaced))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                        }
-                    }
-                    .frame(maxHeight: 250)
-                    .padding(8)
-                    .background(Color.secondary.opacity(0.05))
-                    .cornerRadius(8)
+                    // Footer text
+                    Text("Dérive can monitor up to 20 nearest geofences based on your location.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                        .padding(.bottom, 6)
                 }
             }
-            .padding()
+            .padding(.top, 16)
+            .padding(.bottom, 50)
         }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle("App Console")
+        .navigationBarTitleDisplayMode(.inline)
         .task {
-            let center = UNUserNotificationCenter.current()
-            let settings = await center.notificationSettings()
-
-            // Store notification settings for display
-            switch settings.authorizationStatus {
-            case .authorized: notificationAuthStatus = "Authorized"
-            case .denied: notificationAuthStatus = "Denied"
-            case .notDetermined: notificationAuthStatus = "Not Determined"
-            case .provisional: notificationAuthStatus = "Provisional"
-            case .ephemeral: notificationAuthStatus = "Ephemeral"
-            @unknown default: notificationAuthStatus = "Unknown"
-            }
-
-            switch settings.alertSetting {
-            case .enabled: alertSetting = "Enabled"
-            case .disabled: alertSetting = "Disabled"
-            case .notSupported: alertSetting = "Not Supported"
-            @unknown default: alertSetting = "Unknown"
-            }
-
-            switch settings.soundSetting {
-            case .enabled: soundSetting = "Enabled"
-            case .disabled: soundSetting = "Disabled"
-            case .notSupported: soundSetting = "Not Supported"
-            @unknown default: soundSetting = "Unknown"
-            }
-
-            // Start location updates for display in console
             locationManager.start()
         }
         .onDisappear {
             locationManager.stop()
         }
-        .onChange(of: scenePhase) { _, newPhase in
-            switch newPhase {
-            case .active:
-                locationManager.setForegroundMode(true)
-            case .inactive, .background:
-                locationManager.setForegroundMode(false)
-            @unknown default:
-                break
+        .onChange(of: locationManager.latitude) { _, _ in
+            reverseGeocode()
+        }
+        .onChange(of: locationManager.longitude) { _, _ in
+            reverseGeocode()
+        }
+    }
+
+    private func reverseGeocode() {
+        guard let lat = locationManager.latitude,
+              let lon = locationManager.longitude else {
+            locationDescription = "an unknown location"
+            return
+        }
+
+        let location = CLLocation(latitude: lat, longitude: lon)
+        guard let request = MKReverseGeocodingRequest(location: location) else {
+            locationDescription = "your current area"
+            return
+        }
+
+        Task {
+            do {
+                let mapItems = try await request.mapItems
+                if let mapItem = mapItems.first {
+                    if let shortAddress = mapItem.address?.shortAddress, !shortAddress.isEmpty {
+                        locationDescription = shortAddress
+                    } else if let fullAddress = mapItem.address?.fullAddress, !fullAddress.isEmpty {
+                        locationDescription = fullAddress
+                    } else {
+                        locationDescription = "your current area"
+                    }
+                }
+            } catch {
+                locationDescription = "your current area"
             }
         }
     }
 }
 
+// MARK: - Settings Row Component
+
+private struct SettingsRow: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.body)
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Text(value)
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(height: 44)
+        .padding(.horizontal, 16)
+    }
+}
 
 #Preview {
-    AppConsoleView()
-        .environmentObject(NavigationCoordinator.shared)
+    NavigationStack {
+        AppConsoleView()
+            .environmentObject(NavigationCoordinator.shared)
+    }
 }

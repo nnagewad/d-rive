@@ -33,16 +33,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         manager.stopUpdatingLocation()
     }
 
-    func setForegroundMode(_ isForeground: Bool) {
-        if isForeground {
-            manager.desiredAccuracy = kCLLocationAccuracyBest
-            manager.distanceFilter = kCLDistanceFilterNone
-        } else {
-            manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-            manager.distanceFilter = 10  // Battery optimization when backgrounded
-        }
-    }
-
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         authorizationStatus = manager.authorizationStatus
         if manager.authorizationStatus == .authorizedWhenInUse ||

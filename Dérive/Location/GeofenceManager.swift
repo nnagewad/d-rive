@@ -48,16 +48,12 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     static let shared = GeofenceManager()
 
-    @Published var isInsideGeofence = false
-    @Published var debugLogs: [String] = []
-    @Published var currentDistance: String = "—"
     @Published var geofenceInfoList: [GeofenceInfo] = []
 
     private let manager = CLLocationManager()
     private var currentLocation: CLLocation?
     private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceManager")
     private var isMonitoring = false
-    private let maxLogEntries = 100
 
     // Store ALL geofence configurations (for UI and distance calculations)
     private var allGeofences: [GeofenceConfiguration] = []
@@ -78,11 +74,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
     private let maxMonitoredRegions = 20
 
     // Track which geofences we're currently inside
-    private var insideGeofences: Set<String> = [] {
-        didSet {
-            isInsideGeofence = !insideGeofences.isEmpty
-        }
-    }
+    private var insideGeofences: Set<String> = []
 
     // Track initial state determinations to send notifications
     private var pendingInitialStates: Set<String> = []
@@ -150,7 +142,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         manager.startMonitoringSignificantLocationChanges()
 
         logger.info("Started monitoring: regions + significant location changes")
-        addDebugLog("📡 Started monitoring (\(configurations.count) locations)")
     }
 
     // MARK: - GPS Location Updates (also handles significant location changes)
@@ -201,28 +192,19 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             let wasInside = insideGeofences.contains(id)
             let isInside = distance <= config.radius
 
-            // Update current distance for UI (show nearest monitored)
-            if id == geofenceInfoList.first?.id {
-                currentDistance = "\(Int(distance))m / \(Int(config.radius))m"
-            }
-
             // Log distance for debugging
             logger.debug("Distance to \(config.name): \(Int(distance))m (radius: \(Int(config.radius))m)")
 
             // State changed - entered geofence
             if !wasInside && isInside {
                 insideGeofences.insert(id)
-                let enterLog = "✅ ENTERED: \(config.name) at \(Int(distance))m"
                 logger.info("✅ ENTERED: \(config.name) - Distance: \(Int(distance))m")
-                addDebugLog(enterLog)
                 notify(config)
             }
             // State changed - exited geofence
             else if wasInside && !isInside {
                 insideGeofences.remove(id)
-                let exitLog = "🚪 EXITED: \(config.name) at \(Int(distance))m"
                 logger.info("🚪 EXITED: \(config.name) - Distance: \(Int(distance))m")
-                addDebugLog(exitLog)
             }
         }
     }
@@ -246,7 +228,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
 
         logger.info("🌍 REGION ENTER: \(config.name)")
-        addDebugLog("🌍 Region enter: \(config.name)")
         notify(config)
     }
 
@@ -274,7 +255,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
 
         if let config = activeGeofences[region.identifier] {
             logger.info("🌍 REGION EXIT: \(config.name)")
-            addDebugLog("🌍 Region exit: \(config.name)")
         }
     }
 
@@ -282,7 +262,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
                         monitoringDidFailFor region: CLRegion?,
                         withError error: Error) {
         logger.error("❌ Region monitoring failed for \(region?.identifier ?? "unknown"): \(error)")
-        addDebugLog("❌ Region monitoring failed")
     }
 
     func stopMonitoring() {
@@ -358,8 +337,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         // Update tracked state
         monitoredGeofenceIds = nearestIds
         lastRegionUpdateLocation = location
-
-        addDebugLog("📍 Monitoring \(monitoredGeofenceIds.count) nearest geofences")
     }
 
     /// Registers the first N geofences as a fallback when no location is available.
@@ -378,20 +355,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             monitoredGeofenceIds.insert(config.id)
             logger.debug("Fallback registered: \(config.name)")
         }
-
-        addDebugLog("📍 Registered \(fallbackGeofences.count) fallback geofences")
-    }
-
-    private func addDebugLog(_ message: String) {
-        let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
-        let logEntry = "[\(timestamp)] \(message)"
-
-        debugLogs.insert(logEntry, at: 0)
-
-        // Keep only the most recent entries
-        if debugLogs.count > maxLogEntries {
-            debugLogs.removeLast()
-        }
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
@@ -400,7 +363,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             let timeSinceLastNotification = Date().timeIntervalSince(lastTime)
             if timeSinceLastNotification < notificationCooldown {
                 logger.info("⏱️ Skipping notification (cooldown) - sent \(Int(timeSinceLastNotification))s ago")
-                addDebugLog("⏱️ Notification skipped (cooldown)")
                 return
             }
         }
@@ -408,7 +370,6 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         lastNotificationTime[configuration.id] = Date()
 
         logger.info("🔔 Attempting to send notification for: \(configuration.name)")
-        addDebugLog("🔔 Sending notification for \(configuration.name)")
 
         let content = UNMutableNotificationContent()
         content.title = "Dérive"
@@ -440,10 +401,8 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
                 guard let self = self else { return }
                 if let error = error {
                     self.logger.error("❌ Notification failed: \(error.localizedDescription)")
-                    self.addDebugLog("❌ Notification failed: \(error.localizedDescription)")
                 } else {
                     self.logger.info("✅ Notification scheduled for: \(configuration.name)")
-                    self.addDebugLog("✅ Notification scheduled")
                 }
             }
         }
