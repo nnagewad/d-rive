@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import os.log
 
 struct CityListView: View {
@@ -86,6 +87,7 @@ struct CityListView: View {
                 try await cityService.downloadCity(city)
                 try cityService.selectCity(city.id)
                 hasSelectedCity = true
+                restartGeofenceMonitoring()
                 logger.info("Downloaded and selected city: \(city.name)")
             } catch {
                 logger.error("Failed to download city: \(error.localizedDescription)")
@@ -99,12 +101,18 @@ struct CityListView: View {
         do {
             try cityService.selectCity(city.id)
             hasSelectedCity = true
+            restartGeofenceMonitoring()
             logger.info("Selected city: \(city.name)")
         } catch {
             logger.error("Failed to select city: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
             showingError = true
         }
+    }
+
+    private func restartGeofenceMonitoring() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        appDelegate.restartGeofenceMonitoring()
     }
 }
 

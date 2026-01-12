@@ -39,7 +39,7 @@ final class CityService: ObservableObject {
     static let shared = CityService()
 
     // GitHub raw content base URL
-    private let baseURL = "https://raw.githubusercontent.com/nnagewad/derive-cities/main"
+    private let baseURL = "https://raw.githubusercontent.com/nnagewad/city-guides/main"
 
     // Published properties for UI
     @Published var manifest: CityManifest?

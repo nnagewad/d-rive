@@ -110,11 +110,8 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         // Request authorization
         manager.requestAlwaysAuthorization()
 
-        // Configure for GPS accuracy
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter = 10  // Update every 10 meters
+        // Configure for background region monitoring
         manager.allowsBackgroundLocationUpdates = true
-        manager.pausesLocationUpdatesAutomatically = false
 
         isMonitoring = true
 
@@ -152,11 +149,8 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         // This wakes the app when user travels several km, allowing us to update monitored geofences
         manager.startMonitoringSignificantLocationChanges()
 
-        // Start continuous GPS location updates for precise tracking when app is running
-        manager.startUpdatingLocation()
-
-        logger.info("Started monitoring: regions + GPS + significant location changes")
-        addDebugLog("📡 Started hybrid monitoring (\(configurations.count) locations)")
+        logger.info("Started monitoring: regions + significant location changes")
+        addDebugLog("📡 Started monitoring (\(configurations.count) locations)")
     }
 
     // MARK: - GPS Location Updates (also handles significant location changes)
@@ -295,8 +289,7 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         guard isMonitoring else { return }
         isMonitoring = false
 
-        // Stop all location updates
-        manager.stopUpdatingLocation()
+        // Stop location updates
         manager.stopMonitoringSignificantLocationChanges()
 
         // Stop region monitoring
