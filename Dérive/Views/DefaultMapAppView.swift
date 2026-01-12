@@ -4,41 +4,92 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct DefaultMapAppView: View {
     @ObservedObject private var settings = SettingsService.shared
 
     var body: some View {
-        Form {
-            Section {
-                Button {
-                    settings.defaultMapApp = nil
-                } label: {
-                    HStack {
-                        Image(systemName: settings.defaultMapApp == nil ? "circle.inset.filled" : "circle")
-                            .foregroundStyle(settings.defaultMapApp == nil ? Color.accentColor : .secondary)
-                        Text("Don't set default map app")
-                    }
-                }
-                .foregroundStyle(.primary)
-
-                ForEach(MapApp.allCases) { app in
+        ScrollView {
+            VStack(spacing: 0) {
+                // Options card
+                VStack(spacing: 0) {
+                    // Ask Next Time option
                     Button {
-                        settings.defaultMapApp = app
+                        settings.defaultMapApp = nil
                     } label: {
-                        HStack {
-                            Image(systemName: settings.defaultMapApp == app ? "circle.inset.filled" : "circle")
-                                .foregroundStyle(settings.defaultMapApp == app ? Color.accentColor : .secondary)
-                            Text(app.displayName)
+                        SettingsOptionRow(
+                            title: "Ask Next Time",
+                            isSelected: settings.defaultMapApp == nil
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider()
+                        .padding(.leading, 16)
+
+                    // Map app options
+                    ForEach(Array(MapApp.allCases.enumerated()), id: \.element.id) { index, app in
+                        Button {
+                            settings.defaultMapApp = app
+                        } label: {
+                            SettingsOptionRow(
+                                title: app.displayName,
+                                isSelected: settings.defaultMapApp == app
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        if index < MapApp.allCases.count - 1 {
+                            Divider()
+                                .padding(.leading, 16)
                         }
                     }
-                    .foregroundStyle(.primary)
                 }
-            } footer: {
-                Text("When set, tapping a notification will open your preferred map app directly instead of showing the map selection screen.")
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 16)
+
+                // Footer text
+                Text("When set, selecting the notification will open your preferred map app.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 6)
+            }
+            .padding(.top, 16)
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle("Default Map App")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - Settings Option Row Component
+
+private struct SettingsOptionRow: View {
+    let title: String
+    let isSelected: Bool
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.body)
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.body.weight(.semibold))
+                    .foregroundColor(.blue)
             }
         }
-        .navigationTitle("Default Map App")
+        .frame(height: 44)
+        .padding(.horizontal, 16)
+        .contentShape(Rectangle())
     }
 }
 
