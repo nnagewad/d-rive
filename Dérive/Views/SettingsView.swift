@@ -34,10 +34,7 @@ struct SettingsView: View {
                         NavigationLink {
                             AppConsoleView()
                         } label: {
-                            SettingsNavigationRow(
-                                title: "App Console",
-                                detail: nil
-                            )
+                            SettingsInfoRow(title: "App Console")
                         }
                     }
                     .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -99,6 +96,29 @@ private struct SettingsNavigationRow: View {
             Image(systemName: "chevron.right")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(Color(UIColor.tertiaryLabel))
+        }
+        .frame(height: 44)
+        .padding(.horizontal, 16)
+        .contentShape(Rectangle())
+    }
+}
+
+// MARK: - Settings Info Row Component
+
+private struct SettingsInfoRow: View {
+    let title: String
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.body)
+                .foregroundColor(.primary)
+
+            Spacer()
+
+            Image(systemName: "info.circle")
+                .font(.body)
+                .foregroundColor(.blue)
         }
         .frame(height: 44)
         .padding(.horizontal, 16)
