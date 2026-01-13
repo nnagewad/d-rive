@@ -145,14 +145,20 @@ struct CityRow: View {
                 .buttonStyle(.plain)
             }
         }
-        .frame(height: 44)
+        .frame(height: 60)
     }
 
     private var rowContent: some View {
         HStack {
-            Text(city.name)
-                .font(.body)
-                .foregroundStyle(Color.primary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(city.name)
+                    .font(.body)
+                    .foregroundStyle(Color.primary)
+
+                Text(city.country)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
 
             Spacer()
 
