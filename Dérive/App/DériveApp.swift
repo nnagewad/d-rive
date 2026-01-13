@@ -12,30 +12,11 @@ struct DeriveApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var navigationCoordinator = NavigationCoordinator.shared
-    @State private var hasSelectedCity = CityService.shared.hasSelectedCity()
 
     var body: some Scene {
         WindowGroup {
-            if hasSelectedCity {
-                mainTabView
-            } else {
-                NavigationStack {
-                    CityListView(hasSelectedCity: $hasSelectedCity)
-                }
-                .onChange(of: hasSelectedCity) { _, newValue in
-                    if newValue {
-                        // City was selected, start geofence monitoring
-                        appDelegate.restartGeofenceMonitoring()
-                    }
-                }
-            }
-        }
-    }
-
-    private var mainTabView: some View {
-        TabView {
             NavigationStack(path: $navigationCoordinator.navigationPath) {
-                LocationListView()
+                CityListView()
                     .navigationDestination(for: MapDestination.self) { destination in
                         MapSelectionView(
                             latitude: destination.latitude,
@@ -47,30 +28,7 @@ struct DeriveApp: App {
                         )
                     }
             }
-            .tabItem {
-                Label("Locations", systemImage: "mappin.and.ellipse")
-            }
-
-            NavigationStack {
-                CityListView(hasSelectedCity: $hasSelectedCity)
-                    .onChange(of: hasSelectedCity) { _, newValue in
-                        if newValue {
-                            // City changed, restart monitoring
-                            appDelegate.restartGeofenceMonitoring()
-                        }
-                    }
-            }
-            .tabItem {
-                Label("Cities", systemImage: "building.2")
-            }
-
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem {
-                Label("Settings", systemImage: "gearshape")
-            }
+            .environmentObject(navigationCoordinator)
         }
-        .environmentObject(navigationCoordinator)
     }
 }
