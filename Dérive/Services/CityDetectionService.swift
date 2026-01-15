@@ -118,8 +118,7 @@ final class CityDetectionService {
         }
 
         guard let city = matchingCity else {
-            logger.info("City '\(cityName)' not in manifest")
-            sendCityUnavailableNotification(cityName: cityName, countryName: countryName)
+            logger.info("City '\(cityName)' not in manifest - no notification")
             return
         }
 
