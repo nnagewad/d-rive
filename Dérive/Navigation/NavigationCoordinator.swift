@@ -66,4 +66,11 @@ final class NavigationCoordinator: ObservableObject {
         navigationPath = NavigationPath()
         currentDestination = nil
     }
+
+    func navigateToCityList() {
+        logger.info("🗺️ Navigating to city list")
+        // CityListView is the root, so clear the navigation path to return there
+        navigationPath = NavigationPath()
+        currentDestination = nil
+    }
 }

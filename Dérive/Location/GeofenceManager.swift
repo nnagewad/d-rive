@@ -170,6 +170,11 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
 
         if shouldUpdateRegions {
             updateMonitoredRegions(for: location)
+
+            // Check for city change on significant location updates
+            Task { @MainActor in
+                CityDetectionService.shared.checkCity(for: location)
+            }
         }
 
         // Calculate distances for ALL geofences (for UI display)

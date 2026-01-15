@@ -46,7 +46,23 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
         logger.info("📬 Notification action received: \(actionIdentifier)")
 
-        // Extract destination coordinates from userInfo
+        // Check if this is a city-related notification
+        if let action = userInfo["action"] as? String {
+            switch action {
+            case "switchCity":
+                handleCitySwitchNotification(userInfo: userInfo)
+                completionHandler()
+                return
+            case "openCityList":
+                handleOpenCityListNotification(userInfo: userInfo)
+                completionHandler()
+                return
+            default:
+                break
+            }
+        }
+
+        // Extract destination coordinates from userInfo (geofence notification)
         guard let lat = userInfo["destinationLat"] as? Double,
               let lon = userInfo["destinationLon"] as? Double else {
             logger.error("❌ Missing destination coordinates in notification userInfo")
@@ -83,5 +99,28 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
 
         completionHandler()
+    }
+
+    private func handleCitySwitchNotification(userInfo: [AnyHashable: Any]) {
+        guard let cityId = userInfo["cityId"] as? String else {
+            logger.error("❌ Missing cityId in city switch notification")
+            return
+        }
+
+        let cityName = userInfo["cityName"] as? String ?? cityId
+        logger.info("🌍 City switch notification tapped - switching to: \(cityName)")
+
+        Task { @MainActor in
+            CityDetectionService.shared.switchToCity(cityId: cityId)
+        }
+    }
+
+    private func handleOpenCityListNotification(userInfo: [AnyHashable: Any]) {
+        let cityName = userInfo["cityName"] as? String ?? "unknown"
+        logger.info("🌍 Open city list notification tapped - detected city: \(cityName)")
+
+        Task { @MainActor in
+            NavigationCoordinator.shared.navigateToCityList()
+        }
     }
 }
