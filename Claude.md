@@ -1,5 +1,11 @@
+# GUIDING PRINCIPLE THROUGHOUT
+- Don't repeat yourself. That goes for code and design
+- Always aim to refactor code
+- Often check if there is opportunities to refactor and componentize
+
 # Code Development Rules
 - NEVER ever mention a co-authored-by or similar aspects. In particular, never mention the tool used to create the commit message or PR.
+- Feel free to suggest improved folder structure.
 
 # Code principles
 - Simplicity: Write simple, straightforward code
