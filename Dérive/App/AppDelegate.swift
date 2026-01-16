@@ -13,7 +13,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let notificationDelegate = NotificationDelegate()
     private let logger = Logger(subsystem: "com.derive.app", category: "AppDelegate")
-    private var citySwitchObserver: NSObjectProtocol?
 
     func application(
         _ application: UIApplication,
@@ -21,19 +20,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
 
         UNUserNotificationCenter.current().delegate = notificationDelegate
-
-        // Listen for automatic city switches
-        citySwitchObserver = NotificationCenter.default.addObserver(
-            forName: .citySwitchedAutomatically,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let cityName = notification.userInfo?["cityName"] as? String else { return }
-            self?.logger.info("Auto-switched to city: \(cityName)")
-            Task { @MainActor in
-                self?.restartGeofenceMonitoring()
-            }
-        }
 
         // Request notification authorization and start geofence monitoring
         Task { @MainActor in
