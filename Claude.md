@@ -60,7 +60,7 @@ Two-part update (in order):
 1. Receive Figma designs via MCP
 2. Analyze for common patterns (rows, cards, buttons, typography, colors)
 3. Document design tokens and component specs
-4. Build shared component library
+4. Build shared component library (ensure that language is in SwiftUI and uses UI colors)
 5. Assemble full screens from components
 
 **Proposed Structure**:
