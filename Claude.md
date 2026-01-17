@@ -57,7 +57,7 @@ Two-part update (in order):
 **Status**: Waiting for Figma designs
 
 **Approach**:
-1. Receive Figma designs via MCP
+1. Receive Figma designs via MCP (go through each page in Figma App)
 2. Analyze for common patterns (rows, cards, buttons, typography, colors)
 3. Document design tokens and component specs
 4. Build shared component library (ensure that language is in SwiftUI and uses UI colors)
