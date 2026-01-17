@@ -43,3 +43,49 @@ Nothing must be arbitrary or left to chance. Care and accuracy in the design pro
 Design makes an important contribution to the preservation of the environment. It conserves resources and minimises physical and visual pollution throughout the lifecycle of the product.
 ## 10. Good design is as little design as possible
 Less, but better - because it concentrates on the essential aspects, and the products are not burdened with non-essentials. Back to purity, back to simplicity.
+
+---
+
+# Architecture Overhaul Plan - January 17, 2026
+
+Two-part update (in order):
+1. **UI Component System** - Figma designs → reusable SwiftUI components → screens
+2. **Database Migration** - GitHub JSON → Supabase + local SQLite *(after UI complete)*
+
+## Part 1: UI Component System
+
+**Status**: Waiting for Figma designs
+
+**Approach**:
+1. Receive Figma designs via MCP
+2. Analyze for common patterns (rows, cards, buttons, typography, colors)
+3. Document design tokens and component specs
+4. Build shared component library
+5. Assemble full screens from components
+
+**Proposed Structure**:
+```
+Dérive/
+├── Components/
+│   ├── DesignTokens.swift      # Colors, fonts, spacing constants
+│   ├── Rows/
+│   ├── Buttons/
+│   ├── Cards/
+    ├── (Ensure that a preview is readily available in each file)
+│   └── ...
+├── Views/
+│   └── (Build new UI using the Components. Ensure that a preview is ready available in each file)
+```
+
+## Part 2: Create new Database
+
+**Current**: JSON on GitHub + local JSON cache
+**Target**: Supabase PostgreSQL + local SwiftData/SQLite
+
+**Schema**: Will determine once Components and UI have all been created.
+
+**Rough plan of files to modify**:
+- `Dérive/Services/CityService.swift` - Replace JSON with Supabase + SwiftData
+- `Dérive/Models/City.swift` - Update to SwiftData @Model
+- `Dérive/App/DériveApp.swift` - Add SwiftData modelContainer
+- New: `SupabaseService.swift`, `CityModel.swift`, `GeofenceModel.swift`
