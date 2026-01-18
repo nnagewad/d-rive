@@ -46,40 +46,40 @@ Less, but better - because it concentrates on the essential aspects, and the pro
 
 ---
 
+# APP Functionality
+
+## General Setup
+- User selects a curated list for a city
+- They then download the list
+- User can accept to get notifications that they are nearby a place, which opens iOS notification and location settings for the app
+- When user terminates the app the settings made by the user is retained
+
+## Notifications
+- Once the user downloads a list and they want to be notified when the user enters the locaitons geofence (which is 400m radius of the location) they get the iOS banner notification. The banner appears no matter whether the app is in foreground, background, or terminated.
+- When the user selects the banner the app opens with the sheet on the foreground for that location.
+
+---
+
+# File template
+For every .Swift document be sure to start with a comment based on the following format:
+
+//
+//  [Document name].swift
+//  Purpose: [Purpose of this file]
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on [YYYY-MM-DD].
+//
+
+---
+
 # Architecture Overhaul Plan - January 17, 2026
 
-Two-part update (in order):
-1. **UI Component System** - Figma designs → reusable SwiftUI components → screens
-2. **Database Migration** - GitHub JSON → Supabase + local SQLite *(after UI complete)*
+**Database Migration** - Supabase + local SQLite
 
-## Part 1: UI Component System
+## Create new Database
 
-**Status**: Waiting for Figma designs
-
-**Approach**:
-1. Receive Figma designs via MCP (go through each page in Figma App)
-2. Analyze for common patterns (rows, cards, buttons, typography, colors)
-3. Document design tokens and component specs
-4. Build shared component library (ensure that language is in SwiftUI and uses UI colors)
-5. Assemble full screens from components
-
-**Proposed Structure**:
-```
-Dérive/
-├── Components/
-│   ├── DesignTokens.swift      # Colors, fonts, spacing constants
-│   ├── Rows/
-│   ├── Buttons/
-│   ├── Cards/
-    ├── (Ensure that a preview is readily available in each file)
-│   └── ...
-├── Views/
-│   └── (Build new UI using the Components. Ensure that a preview is ready available in each file)
-```
-
-## Part 2: Create new Database
-
-**Current**: JSON on GitHub + local JSON cache
+**Current**: local SwiftData/SQLite for testing purposes
 **Target**: Supabase PostgreSQL + local SwiftData/SQLite
 
 **Schema**: Will determine once Components and UI have all been created.
