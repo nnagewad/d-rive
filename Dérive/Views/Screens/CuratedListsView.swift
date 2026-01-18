@@ -147,11 +147,7 @@ struct ListDetailView: View {
     // MARK: - Header
 
     private var header: some View {
-        NavigationHeader(title: "", onBack: { navigationPath.removeLast() }) {
-            if list.isDownloaded {
-                IconButton(systemName: "checkmark.circle.fill", style: .filled) {}
-            }
-        }
+        NavigationHeader(title: "", onBack: { navigationPath.removeLast() })
     }
 
     // MARK: - Info Section
