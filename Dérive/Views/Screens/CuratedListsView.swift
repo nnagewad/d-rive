@@ -101,6 +101,7 @@ struct CuratedListsView: View {
 // MARK: - List Detail View
 
 struct ListDetailView: View {
+    @Environment(\.modelContext) private var modelContext
     @Bindable var list: CuratedListData
     @Binding var navigationPath: NavigationPath
     @State private var isDownloading = false
@@ -204,7 +205,7 @@ struct ListDetailView: View {
     private func handleNotifyToggleChange(from oldValue: Bool, to newValue: Bool) {
         // Only check permissions when turning ON
         guard newValue == true else {
-            reloadGeofences()
+            saveAndReload()
             return
         }
 
@@ -219,9 +220,8 @@ struct ListDetailView: View {
                         // Permissions not granted - show alert and turn toggle off
                         list.notifyWhenNearby = false
                         showPermissionAlert = true
-                    } else {
-                        reloadGeofences()
                     }
+                    saveAndReload()
                 }
             }
             return
@@ -240,9 +240,14 @@ struct ListDetailView: View {
                     list.notifyWhenNearby = false
                 }
 
-                reloadGeofences()
+                saveAndReload()
             }
         }
+    }
+
+    private func saveAndReload() {
+        try? modelContext.save()
+        reloadGeofences()
     }
 
     // MARK: - Spots Section
