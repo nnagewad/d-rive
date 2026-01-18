@@ -106,6 +106,7 @@ struct ListDetailView: View {
     @State private var isDownloading = false
     @State private var isRequestingPermissions = false
     @State private var showPermissionAlert = false
+    @State private var selectedSpot: SpotData?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -134,6 +135,11 @@ struct ListDetailView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Enable notifications and location access in Settings to receive alerts when you're near saved spots.")
+        }
+        .sheet(item: $selectedSpot) { spot in
+            SpotDetailSheet(spot: spot) {
+                selectedSpot = nil
+            }
         }
     }
 
@@ -253,7 +259,10 @@ struct ListDetailView: View {
                         }
                         SpotRow(
                             name: spot.name,
-                            category: spot.category
+                            category: spot.category,
+                            onInfoTapped: {
+                                selectedSpot = spot
+                            }
                         )
                     }
                 }

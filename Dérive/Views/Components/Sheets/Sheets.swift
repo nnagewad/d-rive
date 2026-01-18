@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Base Sheet
 
@@ -179,6 +180,102 @@ struct MapAppPickerSheet: View {
         .padding(.bottom, Spacing.medium)
         .frame(maxWidth: .infinity)
         .background(Color.backgroundGroupedPrimary)
+    }
+}
+
+// MARK: - Spot Detail Sheet
+
+/// Sheet showing details for a spot with Get Directions button
+/// Used for: Nearby Spots view, Curated Lists view
+struct SpotDetailSheet: View {
+    let spot: SpotData
+    let onClose: () -> Void
+
+    @ObservedObject private var settingsService = SettingsService.shared
+    @State private var showMapAppPicker = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            SheetHeader(title: spot.name, onClose: onClose)
+
+            ScrollView {
+                VStack(spacing: Spacing.medium) {
+                    infoCard
+
+                    PrimaryButton(title: "Get Directions") {
+                        handleGetDirections()
+                    }
+                    .padding(.horizontal, Spacing.medium)
+                }
+                .padding(.top, Spacing.small)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.backgroundGroupedPrimary)
+        .sheet(isPresented: $showMapAppPicker) {
+            MapAppPickerSheet(
+                onSelect: { mapApp in
+                    settingsService.defaultMapApp = mapApp
+                    showMapAppPicker = false
+                    openDirections(with: mapApp)
+                }
+            )
+            .presentationDetents([.height(220)])
+        }
+    }
+
+    private var infoCard: some View {
+        GroupedCard {
+            VStack(spacing: 0) {
+                if !spot.category.isEmpty {
+                    InfoRow(label: "Category", value: spot.category)
+                }
+
+                if let instagram = spot.instagramHandle {
+                    RowSeparator()
+                    LinkRow(label: "Instagram") {
+                        openInstagram(instagram)
+                    }
+                }
+
+                if let website = spot.websiteURL {
+                    RowSeparator()
+                    LinkRow(label: "Website") {
+                        openWebsite(website)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.medium)
+    }
+
+    private func handleGetDirections() {
+        if let mapApp = settingsService.defaultMapApp {
+            openDirections(with: mapApp)
+        } else {
+            showMapAppPicker = true
+        }
+    }
+
+    private func openDirections(with mapApp: MapApp) {
+        MapNavigationService.shared.openMapApp(
+            mapApp,
+            latitude: spot.latitude,
+            longitude: spot.longitude
+        )
+    }
+
+    private func openInstagram(_ handle: String) {
+        let cleanHandle = handle.replacingOccurrences(of: "@", with: "")
+        if let url = URL(string: "https://instagram.com/\(cleanHandle)") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func openWebsite(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 
