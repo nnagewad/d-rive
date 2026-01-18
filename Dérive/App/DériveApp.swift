@@ -23,7 +23,7 @@ struct DeriveApp: App {
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: true  // TEMPORARY: In-memory for testing
+            isStoredInMemoryOnly: false
         )
 
         do {
