@@ -2,35 +2,30 @@
 //  GeofenceLoaderService.swift
 //  Dérive
 //
-//  Purpose: Load and parse geofences from cached city data
+//  Purpose: Load geofences from SwiftData (spots in downloaded lists)
 //
 
 import Foundation
 import os.log
 
 enum GeofenceLoaderError: Error, LocalizedError {
-    case noCitySelected
-    case cityNotDownloaded(String)
-    case invalidJSON(Error)
-    case decodingFailed(Error)
-    case noGeofences
+    case noDownloadedLists
+    case noActiveSpots
+    case dataServiceNotConfigured
 
     var errorDescription: String? {
         switch self {
-        case .noCitySelected:
-            return "No city has been selected. Please select a city first."
-        case .cityNotDownloaded(let cityId):
-            return "City '\(cityId)' has not been downloaded yet."
-        case .invalidJSON(let error):
-            return "Invalid JSON format: \(error.localizedDescription)"
-        case .decodingFailed(let error):
-            return "Failed to decode geofences: \(error.localizedDescription)"
-        case .noGeofences:
-            return "No geofences found in the selected city"
+        case .noDownloadedLists:
+            return "No curated lists have been downloaded yet."
+        case .noActiveSpots:
+            return "No spots are active for geofencing."
+        case .dataServiceNotConfigured:
+            return "DataService has not been configured yet."
         }
     }
 }
 
+@MainActor
 final class GeofenceLoaderService {
 
     private let logger = Logger(subsystem: "com.derive.app", category: "GeofenceLoader")
@@ -41,33 +36,47 @@ final class GeofenceLoaderService {
 
     // MARK: - Public Methods
 
-    /// Loads geofences for the currently selected city
+    /// Loads geofences from SwiftData (spots in downloaded lists with notifications enabled)
     /// - Returns: Array of GeofenceConfiguration objects
-    /// - Throws: GeofenceLoaderError if no city selected or loading fails
+    /// - Throws: GeofenceLoaderError if no active spots
     func loadGeofences() throws -> [GeofenceConfiguration] {
-        logger.info("Loading geofences for selected city...")
+        logger.info("Loading geofences from SwiftData...")
 
-        // Use CityService to load geofences
-        let geofences = try CityService.shared.loadSelectedCityGeofences()
+        let configurations = DataService.shared.getGeofenceConfigurations()
 
-        logger.info("Loaded \(geofences.count) geofences")
-
-        // Validate we have at least one geofence
-        guard !geofences.isEmpty else {
-            logger.warning("No geofences found")
-            throw GeofenceLoaderError.noGeofences
+        guard !configurations.isEmpty else {
+            logger.warning("No active geofences found")
+            throw GeofenceLoaderError.noActiveSpots
         }
 
-        // Log info about monitoring
-        if geofences.count > 20 {
-            logger.info("Found \(geofences.count) geofences. GeofenceManager will monitor the nearest 20.")
+        logger.info("Loaded \(configurations.count) geofences from SwiftData")
+
+        if configurations.count > 20 {
+            logger.info("Found \(configurations.count) geofences. GeofenceManager will monitor the nearest 20.")
         }
 
-        return geofences
+        return configurations
     }
 
-    /// Check if geofences can be loaded (city is selected and downloaded)
+    /// Check if geofences can be loaded (has downloaded lists with notifications enabled)
     func canLoadGeofences() -> Bool {
-        return CityService.shared.hasSelectedCity()
+        return DataService.shared.getActiveGeofenceCount() > 0
+    }
+
+    /// Reload geofences and restart monitoring
+    func reloadAndRestartMonitoring() {
+        logger.info("Reloading geofences and restarting monitoring...")
+
+        // Stop existing monitoring
+        GeofenceManager.shared.stopMonitoring()
+
+        // Load fresh and start if we have geofences
+        do {
+            let geofences = try loadGeofences()
+            GeofenceManager.shared.startMonitoring(configurations: geofences)
+            logger.info("Restarted monitoring with \(geofences.count) geofences")
+        } catch {
+            logger.info("No geofences to monitor: \(error.localizedDescription)")
+        }
     }
 }

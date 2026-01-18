@@ -1,37 +1,43 @@
 import SwiftUI
+import SwiftData
 
 // MARK: - Curated Lists View
 
 /// Main screen showing all available curated lists grouped by city
 /// Tab 2 in the app navigation
 struct CuratedListsView: View {
-    @State private var cities: [CityWithLists]
+    @Query(sort: \CityData.name) private var cities: [CityData]
     @State private var showUpdatesSheet: Bool = false
-    @State private var selectedCity: CityWithLists?
-
-    init(cities: [CityWithLists] = []) {
-        _cities = State(initialValue: cities)
-    }
+    @State private var selectedList: CuratedListData?
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        VStack(spacing: 0) {
-            LargeTitleHeader(
-                title: "Curated Lists",
-                trailingButton: .init(title: "Updates") {
-                    showUpdatesSheet = true
-                }
-            )
+        NavigationStack(path: $navigationPath) {
+            VStack(spacing: 0) {
+                LargeTitleHeader(
+                    title: "Curated Lists",
+                    trailingButton: .init(title: "Updates") {
+                        showUpdatesSheet = true
+                    }
+                )
 
-            if cities.isEmpty {
-                emptyState
-            } else {
-                listContent
+                if cities.isEmpty {
+                    emptyState
+                } else {
+                    listContent
+                }
             }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
-        .sheet(isPresented: $showUpdatesSheet) {
-            UpdatesSheetView()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(Color.backgroundGroupedPrimary)
+            .sheet(isPresented: $showUpdatesSheet) {
+                UpdatesSheetView()
+            }
+            .navigationDestination(for: CuratedListData.self) { list in
+                ListDetailView(list: list, navigationPath: $navigationPath)
+            }
+            .navigationDestination(for: CuratorData.self) { curator in
+                CuratorDetailView(curator: curator, navigationPath: $navigationPath)
+            }
         }
     }
 
@@ -49,37 +55,237 @@ struct CuratedListsView: View {
     private var listContent: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                // Current city section (if available)
-                if let currentCity = cities.first {
-                    currentCitySection(currentCity)
-                }
-
-                // Other cities
-                if cities.count > 1 {
-                    otherCitiesSection
+                ForEach(cities) { city in
+                    citySection(city)
                 }
             }
             .padding(.top, Spacing.small)
         }
     }
 
-    // MARK: - Current City Section
+    // MARK: - City Section
 
-    private func currentCitySection(_ city: CityWithLists) -> some View {
+    private func citySection(_ city: CityData) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            CityHeader(city: city.city, country: city.country)
+            CityHeader(city: city.name, country: city.country)
+
+            if city.lists.isEmpty {
+                GroupedCard {
+                    InfoRow(label: "No lists available", value: "")
+                }
+                .padding(.horizontal, Spacing.medium)
+            } else {
+                GroupedCard {
+                    VStack(spacing: 0) {
+                        ForEach(Array(city.lists.enumerated()), id: \.element.id) { index, list in
+                            if index > 0 {
+                                RowSeparator()
+                            }
+                            DrillRow(
+                                title: list.name,
+                                subtitle: list.curator?.name ?? ""
+                            ) {
+                                navigationPath.append(list)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, Spacing.medium)
+            }
+        }
+        .padding(.bottom, Spacing.medium)
+    }
+}
+
+// MARK: - List Detail View
+
+struct ListDetailView: View {
+    @Bindable var list: CuratedListData
+    @Binding var navigationPath: NavigationPath
+    @State private var isDownloading = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            header
+
+            ScrollView {
+                VStack(spacing: Spacing.medium) {
+                    infoSection
+                    actionSection
+                    if list.isDownloaded {
+                        spotsSection
+                    }
+                }
+                .padding(.top, Spacing.small)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.backgroundGroupedPrimary)
+        .navigationBarHidden(true)
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        NavigationHeader(title: "", onBack: { navigationPath.removeLast() }) {
+            if list.isDownloaded {
+                IconButton(systemName: "checkmark.circle.fill", style: .filled) {}
+            }
+        }
+    }
+
+    // MARK: - Info Section
+
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            DetailTitle(title: list.name)
+
+            if !list.listDescription.isEmpty {
+                DescriptionCard(text: list.listDescription)
+                    .padding(.horizontal, Spacing.medium)
+            }
+
+            if let curator = list.curator {
+                GroupedCard {
+                    DrillRow(
+                        title: "Curator",
+                        value: curator.name
+                    ) {
+                        navigationPath.append(curator)
+                    }
+                }
+                .padding(.horizontal, Spacing.medium)
+            }
+        }
+    }
+
+    // MARK: - Action Section
+
+    @ViewBuilder
+    private var actionSection: some View {
+        if list.isDownloaded {
+            GroupedCard {
+                ToggleRow(label: "Notify When Nearby", isOn: $list.notifyWhenNearby)
+            }
+            .padding(.horizontal, Spacing.medium)
+            .onChange(of: list.notifyWhenNearby) { _, _ in
+                reloadGeofences()
+            }
+        } else {
+            PrimaryButton(
+                title: isDownloading ? "" : "Download",
+                isLoading: isDownloading
+            ) {
+                downloadList()
+            }
+            .padding(.horizontal, Spacing.medium)
+        }
+    }
+
+    // MARK: - Spots Section
+
+    private var spotsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: "Spots", style: .prominent)
 
             GroupedCard {
                 VStack(spacing: 0) {
-                    ForEach(Array(city.lists.enumerated()), id: \.element.id) { index, list in
+                    ForEach(Array(list.spots.enumerated()), id: \.element.id) { index, spot in
+                        if index > 0 {
+                            RowSeparator()
+                        }
+                        SpotRow(
+                            name: spot.name,
+                            category: spot.category
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal, Spacing.medium)
+        }
+    }
+
+    // MARK: - Actions
+
+    private func downloadList() {
+        isDownloading = true
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            await MainActor.run {
+                list.isDownloaded = true
+                list.lastUpdated = .now
+                isDownloading = false
+                reloadGeofences()
+            }
+        }
+    }
+}
+
+// MARK: - Notification Toggle Observer
+
+extension ListDetailView {
+    /// Observes notification toggle changes and reloads geofences
+    private func observeNotificationToggle() {
+        // SwiftData automatically persists changes via @Bindable
+        // We need to reload geofences when this changes
+    }
+}
+
+// MARK: - Curator Detail View
+
+struct CuratorDetailView: View {
+    let curator: CuratorData
+    @Binding var navigationPath: NavigationPath
+
+    var body: some View {
+        VStack(spacing: 0) {
+            NavigationHeader(title: "", onBack: { navigationPath.removeLast() })
+
+            ScrollView {
+                VStack(spacing: Spacing.medium) {
+                    DetailTitle(title: curator.name)
+
+                    if !curator.bio.isEmpty {
+                        DescriptionCard(text: curator.bio)
+                            .padding(.horizontal, Spacing.medium)
+                    }
+
+                    if let instagram = curator.instagramHandle {
+                        GroupedCard {
+                            LinkRow(label: "Instagram") {
+                                openInstagram(instagram)
+                            }
+                        }
+                        .padding(.horizontal, Spacing.medium)
+                    }
+
+                    if !curator.lists.isEmpty {
+                        listsSection
+                    }
+                }
+                .padding(.top, Spacing.small)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.backgroundGroupedPrimary)
+        .navigationBarHidden(true)
+    }
+
+    private var listsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: "Lists", style: .prominent)
+
+            GroupedCard {
+                VStack(spacing: 0) {
+                    ForEach(Array(curator.lists.enumerated()), id: \.element.id) { index, list in
                         if index > 0 {
                             RowSeparator()
                         }
                         DrillRow(
                             title: list.name,
-                            subtitle: list.curatorName
+                            subtitle: list.city?.name ?? ""
                         ) {
-                            // Navigate to individual list
+                            navigationPath.append(list)
                         }
                     }
                 }
@@ -88,122 +294,11 @@ struct CuratedListsView: View {
         }
     }
 
-    // MARK: - Other Cities Section
-
-    private var otherCitiesSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(cities.dropFirst().enumerated()), id: \.element.id) { countryIndex, country in
-                SectionHeader(title: country.country)
-
-                GroupedCard {
-                    VStack(spacing: 0) {
-                        ForEach(Array(uniqueCities(in: country).enumerated()), id: \.element) { cityIndex, cityName in
-                            if cityIndex > 0 {
-                                RowSeparator()
-                            }
-                            DrillRow(title: cityName) {
-                                // Navigate to city detail
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal, Spacing.medium)
-            }
+    private func openInstagram(_ handle: String) {
+        let cleanHandle = handle.replacingOccurrences(of: "@", with: "")
+        if let url = URL(string: "https://instagram.com/\(cleanHandle)") {
+            UIApplication.shared.open(url)
         }
-        .padding(.top, Spacing.medium)
-    }
-
-    private func uniqueCities(in cityWithLists: CityWithLists) -> [String] {
-        [cityWithLists.city]
-    }
-}
-
-// MARK: - City Detail View
-
-/// Shows all curated lists for a specific city
-struct CityDetailView: View {
-    let city: String
-    let country: String
-    let lists: [CuratedList]
-    var onBack: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            NavigationHeader(title: "", onBack: onBack)
-
-            DetailTitle(title: "\(city), \(country)")
-
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    GroupedCard {
-                        VStack(spacing: 0) {
-                            ForEach(Array(lists.enumerated()), id: \.element.id) { index, list in
-                                if index > 0 {
-                                    RowSeparator()
-                                }
-                                DrillRow(
-                                    title: list.name,
-                                    subtitle: list.curatorName
-                                ) {
-                                    // Navigate to individual list
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, Spacing.medium)
-                }
-                .padding(.top, Spacing.small)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
-    }
-}
-
-// MARK: - Models
-
-struct CityWithLists: Identifiable {
-    let id: UUID
-    let city: String
-    let country: String
-    let lists: [CuratedList]
-
-    init(id: UUID = UUID(), city: String, country: String, lists: [CuratedList]) {
-        self.id = id
-        self.city = city
-        self.country = country
-        self.lists = lists
-    }
-}
-
-struct CuratedList: Identifiable {
-    let id: UUID
-    let name: String
-    let curatorName: String
-    let description: String
-    var isDownloaded: Bool
-    var hasUpdate: Bool
-    var notifyWhenNearby: Bool
-    var spots: [Spot]
-
-    init(
-        id: UUID = UUID(),
-        name: String,
-        curatorName: String,
-        description: String = "",
-        isDownloaded: Bool = false,
-        hasUpdate: Bool = false,
-        notifyWhenNearby: Bool = false,
-        spots: [Spot] = []
-    ) {
-        self.id = id
-        self.name = name
-        self.curatorName = curatorName
-        self.description = description
-        self.isDownloaded = isDownloaded
-        self.hasUpdate = hasUpdate
-        self.notifyWhenNearby = notifyWhenNearby
-        self.spots = spots
     }
 }
 
@@ -211,30 +306,10 @@ struct CuratedList: Identifiable {
 
 #Preview("Empty") {
     CuratedListsView()
+        .modelContainer(PreviewContainer.container)
 }
 
 #Preview("With Lists") {
-    CuratedListsView(cities: [
-        CityWithLists(
-            city: "Paris",
-            country: "France",
-            lists: [
-                CuratedList(name: "Coffee Spots", curatorName: "Marie"),
-                CuratedList(name: "Hidden Bars", curatorName: "Jean"),
-                CuratedList(name: "Best Croissants", curatorName: "Pierre"),
-            ]
-        )
-    ])
-}
-
-#Preview("City Detail") {
-    CityDetailView(
-        city: "Paris",
-        country: "France",
-        lists: [
-            CuratedList(name: "Coffee Spots", curatorName: "Marie"),
-            CuratedList(name: "Hidden Bars", curatorName: "Jean"),
-        ],
-        onBack: {}
-    )
+    CuratedListsView()
+        .modelContainer(PreviewContainer.containerWithData)
 }

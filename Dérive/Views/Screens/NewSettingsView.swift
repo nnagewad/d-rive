@@ -1,43 +1,39 @@
 import SwiftUI
+import SwiftData
 
-// MARK: - New Settings View
+// MARK: - Settings View
 
 /// Settings screen with app preferences
 /// Tab 3 in the app navigation
 struct NewSettingsView: View {
-    @State private var activeGeofences: Int
-    @State private var showDefaultMapAppPicker: Bool = false
+    @Query(
+        filter: #Predicate<SpotData> { spot in
+            spot.list?.isDownloaded == true && spot.list?.notifyWhenNearby == true
+        }
+    ) private var activeSpots: [SpotData]
 
-    var defaultMapApp: String
-    var onDefaultMapAppTapped: (() -> Void)?
-    var onOpenIOSSettings: (() -> Void)?
-
-    init(
-        activeGeofences: Int = 0,
-        defaultMapApp: String = "Apple Maps",
-        onDefaultMapAppTapped: (() -> Void)? = nil,
-        onOpenIOSSettings: (() -> Void)? = nil
-    ) {
-        _activeGeofences = State(initialValue: activeGeofences)
-        self.defaultMapApp = defaultMapApp
-        self.onDefaultMapAppTapped = onDefaultMapAppTapped
-        self.onOpenIOSSettings = onOpenIOSSettings
-    }
+    @ObservedObject private var settingsService = SettingsService.shared
+    @State private var showMapAppPicker = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            LargeTitleHeader(title: "Settings")
+        NavigationStack {
+            VStack(spacing: 0) {
+                LargeTitleHeader(title: "Settings")
 
-            ScrollView {
-                VStack(spacing: Spacing.medium) {
-                    mainSettingsSection
-                    iosSettingsSection
+                ScrollView {
+                    VStack(spacing: Spacing.medium) {
+                        mainSettingsSection
+                        iosSettingsSection
+                    }
+                    .padding(.top, Spacing.small)
                 }
-                .padding(.top, Spacing.small)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(Color.backgroundGroupedPrimary)
+            .navigationDestination(isPresented: $showMapAppPicker) {
+                MapAppPickerView(onBack: { showMapAppPicker = false })
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
     }
 
     // MARK: - Main Settings Section
@@ -48,19 +44,19 @@ struct NewSettingsView: View {
                 VStack(spacing: 0) {
                     DrillRow(
                         title: "Default Map App",
-                        value: defaultMapApp
+                        value: mapAppDisplayName
                     ) {
-                        onDefaultMapAppTapped?()
+                        showMapAppPicker = true
                     }
 
                     RowSeparator()
 
-                    InfoRow(label: "Active geofences", value: "\(activeGeofences)")
+                    InfoRow(label: "Active geofences", value: "\(min(activeSpots.count, 20))")
                 }
             }
             .padding(.horizontal, Spacing.medium)
 
-            SectionFooter(text: "Dérive can monitor up to 20 spots.")
+            SectionFooter(text: "Dérive monitors up to 20 nearest spots from your downloaded lists.")
         }
     }
 
@@ -69,25 +65,91 @@ struct NewSettingsView: View {
     private var iosSettingsSection: some View {
         GroupedCard {
             LinkRow(label: "iOS App Settings") {
-                onOpenIOSSettings?()
+                openIOSSettings()
             }
         }
         .padding(.horizontal, Spacing.medium)
+    }
+
+    // MARK: - Helpers
+
+    private var mapAppDisplayName: String {
+        settingsService.defaultMapApp?.displayName ?? "Ask Next Time"
+    }
+
+    private func openIOSSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+}
+
+// MARK: - Map App Picker View
+
+struct MapAppPickerView: View {
+    @ObservedObject private var settingsService = SettingsService.shared
+    var onBack: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            NavigationHeader(title: "Default Map App", onBack: onBack)
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    optionsSection
+                }
+                .padding(.top, Spacing.small)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.backgroundGroupedPrimary)
+        .navigationBarHidden(true)
+    }
+
+    private var optionsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            GroupedCard {
+                VStack(spacing: 0) {
+                    SelectableRow(
+                        title: "Ask Next Time",
+                        isSelected: settingsService.defaultMapApp == nil
+                    ) {
+                        settingsService.defaultMapApp = nil
+                    }
+
+                    RowSeparator()
+
+                    SelectableRow(
+                        title: "Apple Maps",
+                        isSelected: settingsService.defaultMapApp == .appleMaps
+                    ) {
+                        settingsService.defaultMapApp = .appleMaps
+                    }
+
+                    RowSeparator()
+
+                    SelectableRow(
+                        title: "Google Maps",
+                        isSelected: settingsService.defaultMapApp == .googleMaps
+                    ) {
+                        settingsService.defaultMapApp = .googleMaps
+                    }
+                }
+            }
+            .padding(.horizontal, Spacing.medium)
+
+            SectionFooter(text: "When set, tapping the notification opens your preferred map app with directions.")
+        }
     }
 }
 
 // MARK: - Previews
 
 #Preview("Settings") {
-    NewSettingsView(
-        activeGeofences: 5,
-        defaultMapApp: "Apple Maps"
-    )
+    NewSettingsView()
+        .modelContainer(PreviewContainer.containerWithData)
 }
 
-#Preview("No Geofences") {
-    NewSettingsView(
-        activeGeofences: 0,
-        defaultMapApp: "Google Maps"
-    )
+#Preview("Map App Picker") {
+    MapAppPickerView(onBack: {})
 }

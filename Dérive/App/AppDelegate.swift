@@ -21,16 +21,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         UNUserNotificationCenter.current().delegate = notificationDelegate
 
-        // Request notification authorization and start geofence monitoring
+        // Request notification authorization
         Task { @MainActor in
-            await requestNotificationAuthorizationAndStartMonitoring()
+            await requestNotificationAuthorization()
         }
 
         return true
     }
 
     @MainActor
-    private func requestNotificationAuthorizationAndStartMonitoring() async {
+    private func requestNotificationAuthorization() async {
         let center = UNUserNotificationCenter.current()
 
         do {
@@ -38,7 +38,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
             if granted {
                 logger.info("Notification authorization granted")
-                startGeofenceMonitoring()
             } else {
                 logger.warning("Notification authorization denied")
             }
@@ -47,30 +46,29 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         }
     }
 
+    /// Start geofence monitoring after DataService is configured
+    /// Called from DériveApp after data is ready
     @MainActor
-    private func startGeofenceMonitoring() {
-        // Only start monitoring if a city is selected and downloaded
+    func startGeofenceMonitoringIfNeeded() {
         guard GeofenceLoaderService.shared.canLoadGeofences() else {
-            logger.info("No city selected yet, skipping geofence monitoring")
+            logger.info("No active geofences yet, skipping monitoring")
             return
         }
 
         do {
             let geofences = try GeofenceLoaderService.shared.loadGeofences()
             GeofenceManager.shared.startMonitoring(configurations: geofences)
-            logger.info("Started geofence monitoring for \(geofences.count) locations")
+            logger.info("Started geofence monitoring for \(geofences.count) spots")
         } catch {
             logger.error("Failed to load geofences: \(error.localizedDescription)")
         }
     }
+}
 
-    /// Called when a city is selected to start monitoring
-    @MainActor
-    func restartGeofenceMonitoring() {
-        // Stop any existing monitoring first
-        GeofenceManager.shared.stopMonitoring()
+// MARK: - Global function to reload geofences
 
-        // Start fresh with new city
-        startGeofenceMonitoring()
-    }
+/// Call this when lists are downloaded or notification settings change
+@MainActor
+func reloadGeofences() {
+    GeofenceLoaderService.shared.reloadAndRestartMonitoring()
 }

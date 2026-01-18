@@ -1,25 +1,25 @@
 import SwiftUI
+import SwiftData
 
 // MARK: - Nearby Spots View
 
 /// Main screen showing nearby spots from downloaded curated lists
 /// Tab 1 in the app navigation
 struct NearbySpotsView: View {
-    @State private var spots: [Spot]
-    @State private var isLoading: Bool
+    @Query(
+        filter: #Predicate<SpotData> { spot in
+            spot.list?.isDownloaded == true
+        },
+        sort: \SpotData.name
+    ) private var spots: [SpotData]
 
-    init(spots: [Spot] = [], isLoading: Bool = false) {
-        _spots = State(initialValue: spots)
-        _isLoading = State(initialValue: isLoading)
-    }
+    @State private var selectedSpot: SpotData?
 
     var body: some View {
         VStack(spacing: 0) {
             LargeTitleHeader(title: "Nearby Spots")
 
-            if isLoading {
-                LoadingState(message: "Loading spots...")
-            } else if spots.isEmpty {
+            if spots.isEmpty {
                 emptyState
             } else {
                 spotsList
@@ -27,6 +27,11 @@ struct NearbySpotsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.backgroundGroupedPrimary)
+        .sheet(item: $selectedSpot) { spot in
+            SpotDetailSheet(spot: spot) {
+                selectedSpot = nil
+            }
+        }
     }
 
     // MARK: - Empty State
@@ -34,7 +39,7 @@ struct NearbySpotsView: View {
     private var emptyState: some View {
         EmptyState(
             title: "No Nearby Spots",
-            subtitle: "Add a Curated List"
+            subtitle: "Download a curated list to see spots"
         )
     }
 
@@ -45,50 +50,99 @@ struct NearbySpotsView: View {
             LazyVStack(spacing: 0) {
                 ListSectionTitle(title: "Closest first")
 
-                ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
-                    if index > 0 {
-                        RowSeparator()
-                    }
-                    SpotRow(
-                        name: spot.name,
-                        category: spot.category,
-                        onInfoTapped: {
-                            // Show spot detail sheet
+                GroupedCard {
+                    VStack(spacing: 0) {
+                        ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
+                            if index > 0 {
+                                RowSeparator()
+                            }
+                            SpotRow(
+                                name: spot.name,
+                                category: spot.category,
+                                onInfoTapped: {
+                                    selectedSpot = spot
+                                }
+                            )
                         }
-                    )
+                    }
                 }
+                .padding(.horizontal, Spacing.medium)
             }
+            .padding(.top, Spacing.small)
         }
     }
 }
 
-// MARK: - Spot Model
+// MARK: - Spot Detail Sheet
 
-struct Spot: Identifiable {
-    let id: UUID
-    let name: String
-    let category: String
-    var instagram: String?
-    var website: String?
-    var latitude: Double
-    var longitude: Double
+private struct SpotDetailSheet: View {
+    let spot: SpotData
+    let onClose: () -> Void
 
-    init(
-        id: UUID = UUID(),
-        name: String,
-        category: String,
-        instagram: String? = nil,
-        website: String? = nil,
-        latitude: Double = 0,
-        longitude: Double = 0
-    ) {
-        self.id = id
-        self.name = name
-        self.category = category
-        self.instagram = instagram
-        self.website = website
-        self.latitude = latitude
-        self.longitude = longitude
+    var body: some View {
+        VStack(spacing: 0) {
+            SheetHeader(title: spot.name, onClose: onClose)
+
+            ScrollView {
+                VStack(spacing: Spacing.medium) {
+                    infoCard
+
+                    PrimaryButton(title: "Get Directions") {
+                        openDirections()
+                    }
+                    .padding(.horizontal, Spacing.medium)
+                }
+                .padding(.top, Spacing.small)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.backgroundGroupedPrimary)
+    }
+
+    private var infoCard: some View {
+        GroupedCard {
+            VStack(spacing: 0) {
+                if !spot.category.isEmpty {
+                    InfoRow(label: "Category", value: spot.category)
+                }
+
+                if let instagram = spot.instagramHandle {
+                    RowSeparator()
+                    LinkRow(label: "Instagram") {
+                        openInstagram(instagram)
+                    }
+                }
+
+                if let website = spot.websiteURL {
+                    RowSeparator()
+                    LinkRow(label: "Website") {
+                        openWebsite(website)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.medium)
+    }
+
+    private func openDirections() {
+        MapNavigationService.shared.openMapApp(
+            SettingsService.shared.defaultMapApp ?? .appleMaps,
+            latitude: spot.latitude,
+            longitude: spot.longitude
+        )
+    }
+
+    private func openInstagram(_ handle: String) {
+        let cleanHandle = handle.replacingOccurrences(of: "@", with: "")
+        if let url = URL(string: "https://instagram.com/\(cleanHandle)") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func openWebsite(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 
@@ -96,14 +150,54 @@ struct Spot: Identifiable {
 
 #Preview("Empty State") {
     NearbySpotsView()
+        .modelContainer(PreviewContainer.shared.container)
 }
 
 #Preview("With Spots") {
-    NearbySpotsView(spots: [
-        Spot(name: "Café Lomi", category: "Coffee"),
-        Spot(name: "Le Comptoir Général", category: "Bar"),
-        Spot(name: "Shakespeare and Company", category: "Bookstore"),
-        Spot(name: "Pink Mamma", category: "Restaurant"),
-        Spot(name: "Le Marais Vintage", category: "Shopping")
-    ])
+    NearbySpotsView()
+        .modelContainer(PreviewContainer.shared.containerWithData)
+}
+
+// MARK: - Preview Container
+
+@MainActor
+enum PreviewContainer {
+    static let shared = PreviewContainer.self
+
+    static var container: ModelContainer {
+        let schema = Schema([CityData.self, CuratorData.self, CuratedListData.self, SpotData.self])
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        return try! ModelContainer(for: schema, configurations: [config])
+    }
+
+    static var containerWithData: ModelContainer {
+        let container = self.container
+        let context = container.mainContext
+
+        let city = CityData(name: "Toronto", country: "Canada")
+        let curator = CuratorData(name: "Local Expert", bio: "Toronto native")
+
+        let list = CuratedListData(
+            name: "Coffee Spots",
+            listDescription: "Best coffee in Toronto",
+            isDownloaded: true,
+            notifyWhenNearby: true
+        )
+        list.city = city
+        list.curator = curator
+
+        let spots = [
+            SpotData(name: "Sam James Coffee Bar", category: "Coffee", latitude: 43.6544, longitude: -79.4055),
+            SpotData(name: "Pilot Coffee Roasters", category: "Coffee", latitude: 43.6465, longitude: -79.3963),
+            SpotData(name: "Boxcar Social", category: "Coffee", latitude: 43.6677, longitude: -79.3901)
+        ]
+        spots.forEach { $0.list = list }
+
+        context.insert(city)
+        context.insert(curator)
+        context.insert(list)
+        spots.forEach { context.insert($0) }
+
+        return container
+    }
 }
