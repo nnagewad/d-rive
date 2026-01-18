@@ -10,16 +10,29 @@ struct NearbySpotsView: View {
     @Query(
         filter: #Predicate<SpotData> { spot in
             spot.list?.isDownloaded == true
-        },
-        sort: \SpotData.name
+        }
     ) private var spots: [SpotData]
 
     @ObservedObject private var permissionService = PermissionService.shared
+    @ObservedObject private var locationManager = LocationManager.shared
     @State private var selectedSpot: SpotData?
 
     private var hasLocationPermission: Bool {
         let status = permissionService.locationStatus
         return status == .authorizedAlways || status == .authorizedWhenInUse
+    }
+
+    /// Spots sorted by distance from current location
+    private var sortedSpots: [SpotData] {
+        guard locationManager.currentLocation != nil else {
+            return spots.sorted { $0.name < $1.name }
+        }
+
+        return spots.sorted { spot1, spot2 in
+            let distance1 = locationManager.distance(to: spot1.latitude, longitude: spot1.longitude) ?? .infinity
+            let distance2 = locationManager.distance(to: spot2.latitude, longitude: spot2.longitude) ?? .infinity
+            return distance1 < distance2
+        }
     }
 
     var body: some View {
@@ -28,7 +41,7 @@ struct NearbySpotsView: View {
 
             if !hasLocationPermission {
                 locationDisabledState
-            } else if spots.isEmpty {
+            } else if sortedSpots.isEmpty {
                 emptyState
             } else {
                 spotsList
@@ -45,6 +58,10 @@ struct NearbySpotsView: View {
             Task {
                 await permissionService.refreshPermissionStatus()
             }
+            locationManager.start()
+        }
+        .onDisappear {
+            locationManager.stop()
         }
     }
 
@@ -75,7 +92,7 @@ struct NearbySpotsView: View {
 
                 GroupedCard {
                     VStack(spacing: 0) {
-                        ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
+                        ForEach(Array(sortedSpots.enumerated()), id: \.element.id) { index, spot in
                             if index > 0 {
                                 RowSeparator()
                             }
