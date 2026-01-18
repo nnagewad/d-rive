@@ -344,7 +344,7 @@ struct CuratorDetailView: View {
 
     private var listsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            SectionHeader(title: "Lists", style: .prominent)
+            SectionHeader(title: "\(curator.name)'s lists", style: .prominent)
 
             GroupedCard {
                 VStack(spacing: 0) {
