@@ -39,10 +39,10 @@ struct NearbySpotsView: View {
         VStack(spacing: 0) {
             LargeTitleHeader(title: "Nearby Spots")
 
-            if !hasLocationPermission {
-                locationDisabledState
-            } else if sortedSpots.isEmpty {
+            if sortedSpots.isEmpty {
                 emptyState
+            } else if !hasLocationPermission {
+                locationDisabledState
             } else {
                 spotsList
             }
