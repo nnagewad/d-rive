@@ -213,10 +213,30 @@ final class DataService {
         )
         barbican.list = localLondon
 
+        // Testing again list
+        let testingAgain = CuratedListData(
+            name: "Testing again",
+            listDescription: "Testing another list",
+            isDownloaded: false,
+            notifyWhenNearby: false
+        )
+        testingAgain.city = london
+        testingAgain.curator = nikin
+
+        let holybella = SpotData(
+            name: "Holybella",
+            category: "Restaurant",
+            latitude: 51.61844648383398,
+            longitude: -0.17644401361052559,
+            instagramHandle: "holybella_london"
+        )
+        holybella.list = testingAgain
+
         // Insert entities
         context.insert(london)
         context.insert(nikin)
         context.insert(localLondon)
+        context.insert(testingAgain)
 
         do {
             try context.save()
