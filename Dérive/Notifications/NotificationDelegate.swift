@@ -59,24 +59,18 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let city = userInfo["geofenceCity"] as? String ?? ""
         let country = userInfo["geofenceCountry"] as? String ?? ""
 
-        // Handle notification tap (user tapped the notification body)
+        // Handle notification tap - show location sheet
         if actionIdentifier == UNNotificationDefaultActionIdentifier {
             Task { @MainActor in
-                // Check if user has a default map app set
-                if let defaultMapApp = SettingsService.shared.defaultMapApp {
-                    logger.info("🗺️ Notification tapped - opening \(defaultMapApp.displayName) for: \(name)")
-                    MapNavigationService.shared.openMapApp(defaultMapApp, latitude: lat, longitude: lon)
-                } else {
-                    logger.info("🗺️ Notification tapped - navigating to map selection for: \(name)")
-                    NavigationCoordinator.shared.navigateToMapSelection(
-                        latitude: lat,
-                        longitude: lon,
-                        name: name,
-                        group: group,
-                        city: city,
-                        country: country
-                    )
-                }
+                logger.info("🗺️ Notification tapped - showing location sheet for: \(name)")
+                NavigationCoordinator.shared.navigateToMapSelection(
+                    latitude: lat,
+                    longitude: lon,
+                    name: name,
+                    group: group,
+                    city: city,
+                    country: country
+                )
             }
         } else {
             logger.warning("⚠️ Unknown action identifier: \(actionIdentifier)")

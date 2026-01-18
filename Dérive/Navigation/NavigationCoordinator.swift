@@ -45,9 +45,9 @@ final class NavigationCoordinator: ObservableObject {
     }
 
     func navigateToMapSelection(latitude: Double, longitude: Double, name: String, group: String, city: String, country: String) {
-        logger.info("🗺️ Navigating to map selection for: \(name)")
+        logger.info("🗺️ Showing location sheet for: \(name)")
 
-        let destination = MapDestination(
+        currentDestination = MapDestination(
             latitude: latitude,
             longitude: longitude,
             name: name,
@@ -55,10 +55,11 @@ final class NavigationCoordinator: ObservableObject {
             city: city,
             country: country
         )
-        currentDestination = destination
-        navigationPath.append(destination)
+    }
 
-        logger.info("✅ Navigation triggered - path count: \(self.navigationPath.count)")
+    func dismissLocationSheet() {
+        logger.info("🗺️ Dismissing location sheet")
+        currentDestination = nil
     }
 
     func clearNavigation() {
