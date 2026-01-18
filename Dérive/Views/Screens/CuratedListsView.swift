@@ -96,7 +96,7 @@ struct CuratedListsView: View {
 
     private var singleCityContent: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(cities) { city in
                     citySection(city)
                 }
@@ -107,33 +107,26 @@ struct CuratedListsView: View {
 
     private func citySection(_ city: CityData) -> some View {
         VStack(alignment: .leading, spacing: 0) {
+            RowSeparator(leadingPadding: 0)
             CityHeader(city: city.name, country: city.country)
 
             if city.lists.isEmpty {
-                GroupedCard {
-                    InfoRow(label: "No lists available", value: "")
-                }
-                .padding(.horizontal, Spacing.medium)
+                EmptyState(
+                    title: "No Lists",
+                    subtitle: "No curated lists available for this city"
+                )
             } else {
-                GroupedCard {
-                    VStack(spacing: 0) {
-                        ForEach(Array(city.lists.enumerated()), id: \.element.id) { index, list in
-                            if index > 0 {
-                                RowSeparator()
-                            }
-                            DrillRow(
-                                title: list.name,
-                                subtitle: list.curator?.name ?? ""
-                            ) {
-                                navigationPath.append(list)
-                            }
-                        }
+                ForEach(city.lists) { list in
+                    RowSeparator(leadingPadding: 0)
+                    DrillRow(
+                        title: list.name,
+                        subtitle: list.curator?.name ?? ""
+                    ) {
+                        navigationPath.append(list)
                     }
                 }
-                .padding(.horizontal, Spacing.medium)
             }
         }
-        .padding(.bottom, Spacing.medium)
     }
 }
 

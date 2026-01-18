@@ -90,23 +90,15 @@ struct NearbySpotsView: View {
             LazyVStack(spacing: 0) {
                 ListSectionTitle(title: "Closest first")
 
-                GroupedCard {
-                    VStack(spacing: 0) {
-                        ForEach(Array(sortedSpots.enumerated()), id: \.element.id) { index, spot in
-                            if index > 0 {
-                                RowSeparator()
-                            }
-                            SpotRow(
-                                name: spot.name,
-                                category: spot.category,
-                                onInfoTapped: {
-                                    selectedSpot = spot
-                                }
-                            )
+                ForEach(sortedSpots) { spot in
+                    SpotRow(
+                        name: spot.name,
+                        category: spot.category,
+                        onInfoTapped: {
+                            selectedSpot = spot
                         }
-                    }
+                    )
                 }
-                .padding(.horizontal, Spacing.medium)
             }
             .padding(.top, Spacing.small)
         }
