@@ -117,7 +117,7 @@ final class SpotData {
         spotDescription: String = "",
         latitude: Double,
         longitude: Double,
-        radius: Double = 100.0,
+        radius: Double = 400.0,
         instagramHandle: String? = nil,
         websiteURL: String? = nil,
         address: String? = nil
