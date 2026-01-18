@@ -4,13 +4,14 @@ import SwiftUI
 
 /// Centered empty state message
 /// Used for: "No Nearby Spots", "No updates available"
+/// Design: 22px text, semibold title, medium subtitle, secondary color
 struct EmptyState: View {
     let title: String
     var subtitle: String? = nil
     var systemImage: String? = nil
 
     var body: some View {
-        VStack(spacing: Spacing.xSmall) {
+        VStack(spacing: 0) {
             if let systemImage {
                 Image(systemName: systemImage)
                     .font(.system(size: 48, weight: .light))
@@ -19,19 +20,18 @@ struct EmptyState: View {
             }
 
             Text(title)
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.system(size: 22, weight: .semibold))
                 .foregroundColor(Color.labelSecondary)
                 .multilineTextAlignment(.center)
 
             if let subtitle {
                 Text(subtitle)
-                    .font(.bodyRegular)
+                    .font(.system(size: 22, weight: .medium))
                     .foregroundColor(Color.labelSecondary)
                     .multilineTextAlignment(.center)
             }
         }
-        .padding(.horizontal, Spacing.xxLarge)
+        .padding(.horizontal, Spacing.medium)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

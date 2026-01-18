@@ -143,26 +143,27 @@ struct CountryHeader: View {
 
 // MARK: - List Section Title
 
-/// Section title with separator line
+/// Section title with separator line above
 /// Used for: "Closest first" in Nearby Spots
+/// Design: 39px total height, opaque separator, semibold 17px text
 struct ListSectionTitle: View {
     let title: String
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             Rectangle()
                 .fill(Color.separatorOpaque)
                 .frame(height: 0.5)
 
-            HStack {
-                Text(title)
-                    .font(.headlineRegular)
-                    .foregroundColor(Color.labelSecondary)
-                Spacer()
-            }
-            .padding(.horizontal, Spacing.medium)
-            .padding(.vertical, Spacing.small)
+            Text(title)
+                .font(.bodyEmphasized)
+                .foregroundColor(Color.labelSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Spacing.medium)
+                .padding(.top, Spacing.xSmall)
+                .padding(.bottom, 9)
         }
+        .frame(height: 39)
     }
 }
 

@@ -157,8 +157,9 @@ struct SelectableRow: View {
 
 // MARK: - Spot Row
 
-/// Row for displaying a spot with title, category, and info button
+/// Row for displaying a spot with title, category, and info/drill accessory
 /// Used for: Nearby Spots list, Curated spots list
+/// Design: 68px height, separator at top, 16px horizontal padding
 struct SpotRow: View {
     let name: String
     let category: String
@@ -166,38 +167,49 @@ struct SpotRow: View {
     var onRowTapped: (() -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: 0) {
-            Button(action: { onRowTapped?() }) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(name)
-                        .font(.bodyRegular)
-                        .foregroundColor(Color.labelPrimary)
+        VStack(spacing: 0) {
+            // Separator at top of row
+            Rectangle()
+                .fill(Color.separatorVibrant)
+                .frame(height: 0.5)
 
-                    Text(category)
-                        .font(.subheadlineRegular)
-                        .foregroundColor(Color.labelSecondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+            HStack(spacing: 0) {
+                Button(action: { onRowTapped?() }) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(name)
+                            .font(.bodyRegular)
+                            .foregroundColor(Color.labelPrimary)
+                            .frame(height: 22)
 
-            if let onInfoTapped {
-                Button(action: onInfoTapped) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: IconSize.info))
-                        .foregroundColor(Color.accentBlue)
+                        Text(category)
+                            .font(.subheadlineRegular)
+                            .foregroundColor(Color.labelSecondary)
+                            .frame(height: 20)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .padding(.leading, Spacing.medium)
-            } else {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color.labelTertiary)
+
+                if let onInfoTapped {
+                    Button(action: onInfoTapped) {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: IconSize.info))
+                            .foregroundColor(Color.accentBlue)
+                            .frame(width: 22, height: 22)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color.labelTertiary)
+                        .frame(width: 8)
+                }
             }
+            .padding(.horizontal, Spacing.medium)
+            .frame(height: RowHeight.withSubtitle - 0.5)
         }
-        .padding(.horizontal, Spacing.medium)
-        .frame(minHeight: RowHeight.withSubtitle)
+        .frame(height: RowHeight.withSubtitle)
     }
 }
 

@@ -4,6 +4,7 @@ import SwiftUI
 
 /// Screen header with large title and optional trailing button
 /// Used for: Main screens (Nearby Spots, Curated Lists, Settings)
+/// Design: SF Pro Bold 34pt, vibrant primary color, liquid glass button
 struct LargeTitleHeader: View {
     let title: String
     var trailingButton: TrailingButton? = nil
@@ -14,11 +15,11 @@ struct LargeTitleHeader: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: Spacing.small) {
             HStack {
                 Spacer()
                 if let button = trailingButton {
-                    PillButton(title: button.title, style: .bordered) {
+                    PillButton(title: button.title, style: .glass) {
                         button.action()
                     }
                 }
@@ -28,6 +29,7 @@ struct LargeTitleHeader: View {
             Text(title)
                 .font(.largeTitleEmphasized)
                 .foregroundColor(Color.labelVibrantPrimary)
+                .tracking(0.4)
         }
         .padding(.horizontal, Spacing.medium)
     }

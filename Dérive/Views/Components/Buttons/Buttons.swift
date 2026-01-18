@@ -64,16 +64,18 @@ struct SecondaryButton: View {
 
 // MARK: - Pill Button
 
-/// Small pill-shaped button
-/// Used for: "Update" button in headers
+/// Small pill-shaped button with multiple styles
+/// Used for: "Updates" button in headers, action buttons
+/// Design: Supports filled, bordered, and liquid glass (iOS 26) styles
 struct PillButton: View {
     let title: String
     var style: PillButtonStyle = .filled
     var action: () -> Void
 
     enum PillButtonStyle {
-        case filled
-        case bordered
+        case filled     // Blue background, white text
+        case bordered   // Blue border and text
+        case glass      // Liquid glass effect (iOS 26)
     }
 
     var body: some View {
@@ -81,18 +83,47 @@ struct PillButton: View {
             action()
         } label: {
             Text(title)
-                .font(.subheadlineEmphasized)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .foregroundColor(style == .filled ? .white : Color.accentBlue)
-                .background(style == .filled ? Color.accentBlue : Color.clear)
+                .font(style == .glass ? .system(size: 17, weight: .medium) : .subheadlineEmphasized)
+                .padding(.horizontal, style == .glass ? 20 : 14)
+                .padding(.vertical, style == .glass ? 6 : 7)
+                .foregroundColor(foregroundColor)
+                .background(backgroundView)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(Color.accentBlue, lineWidth: style == .bordered ? 1 : 0)
+                        .stroke(strokeColor, lineWidth: style == .bordered ? 1 : 0)
                 )
         }
         .buttonStyle(.plain)
+    }
+
+    private var foregroundColor: Color {
+        switch style {
+        case .filled: return .white
+        case .bordered: return Color.accentBlue
+        case .glass: return Color.labelVibrantControlsPrimary
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundView: some View {
+        switch style {
+        case .filled:
+            Color.accentBlue
+        case .bordered:
+            Color.clear
+        case .glass:
+            // Liquid glass effect - semi-transparent with subtle tint
+            Color(white: 0.97, opacity: 0.9)
+                .background(.ultraThinMaterial)
+        }
+    }
+
+    private var strokeColor: Color {
+        switch style {
+        case .bordered: return Color.accentBlue
+        default: return .clear
+        }
     }
 }
 
