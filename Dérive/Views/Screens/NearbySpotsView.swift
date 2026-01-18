@@ -79,7 +79,7 @@ struct NearbySpotsView: View {
     private var emptyState: some View {
         EmptyState(
             title: "No Nearby Spots",
-            subtitle: "Download a curated list to see spots"
+            subtitle: "Add a Curated List"
         )
     }
 
