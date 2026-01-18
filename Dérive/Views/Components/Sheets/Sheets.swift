@@ -127,6 +127,61 @@ struct UpdatesSheetContent: View {
     }
 }
 
+// MARK: - Map App Picker Sheet
+
+/// Sheet for choosing default map app (shown on first Get Directions tap)
+/// Native iOS style bottom sheet
+struct MapAppPickerSheet: View {
+    var onSelect: (MapApp) -> Void
+
+    var body: some View {
+        VStack(spacing: Spacing.medium) {
+            // Header
+            VStack(spacing: Spacing.xxSmall) {
+                Text("Choose a Map App")
+                    .font(.footnoteRegular)
+                    .foregroundColor(Color.labelSecondary)
+
+                Text("Select your default for directions.")
+                    .font(.footnoteRegular)
+                    .foregroundColor(Color.labelSecondary)
+            }
+            .padding(.top, Spacing.medium)
+
+            // Options
+            VStack(spacing: 0) {
+                Button {
+                    onSelect(.appleMaps)
+                } label: {
+                    Text("Apple Maps")
+                        .font(.title3)
+                        .foregroundColor(Color.accentBlue)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                }
+
+                Divider()
+
+                Button {
+                    onSelect(.googleMaps)
+                } label: {
+                    Text("Google Maps")
+                        .font(.title3)
+                        .foregroundColor(Color.accentBlue)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                }
+            }
+            .background(Color.backgroundGroupedSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small))
+            .padding(.horizontal, Spacing.medium)
+        }
+        .padding(.bottom, Spacing.medium)
+        .frame(maxWidth: .infinity)
+        .background(Color.backgroundGroupedPrimary)
+    }
+}
+
 // MARK: - Rounded Corner Helper
 
 /// Helper shape for rounding specific corners
@@ -210,4 +265,13 @@ struct RoundedCorner: Shape {
         )
     }
     .frame(height: 600)
+}
+
+#Preview("Map App Picker Sheet") {
+    MapAppPickerSheet(
+        onSelect: { mapApp in
+            print("Selected: \(mapApp)")
+        }
+    )
+    .presentationDetents([.height(220)])
 }

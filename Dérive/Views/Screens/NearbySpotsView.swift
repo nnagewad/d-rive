@@ -79,6 +79,9 @@ private struct SpotDetailSheet: View {
     let spot: SpotData
     let onClose: () -> Void
 
+    @ObservedObject private var settingsService = SettingsService.shared
+    @State private var showMapAppPicker = false
+
     var body: some View {
         VStack(spacing: 0) {
             SheetHeader(title: spot.name, onClose: onClose)
@@ -88,7 +91,7 @@ private struct SpotDetailSheet: View {
                     infoCard
 
                     PrimaryButton(title: "Get Directions") {
-                        openDirections()
+                        handleGetDirections()
                     }
                     .padding(.horizontal, Spacing.medium)
                 }
@@ -97,6 +100,16 @@ private struct SpotDetailSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.backgroundGroupedPrimary)
+        .sheet(isPresented: $showMapAppPicker) {
+            MapAppPickerSheet(
+                onSelect: { mapApp in
+                    settingsService.defaultMapApp = mapApp
+                    showMapAppPicker = false
+                    openDirections(with: mapApp)
+                }
+            )
+            .presentationDetents([.height(220)])
+        }
     }
 
     private var infoCard: some View {
@@ -124,9 +137,17 @@ private struct SpotDetailSheet: View {
         .padding(.horizontal, Spacing.medium)
     }
 
-    private func openDirections() {
+    private func handleGetDirections() {
+        if let mapApp = settingsService.defaultMapApp {
+            openDirections(with: mapApp)
+        } else {
+            showMapAppPicker = true
+        }
+    }
+
+    private func openDirections(with mapApp: MapApp) {
         MapNavigationService.shared.openMapApp(
-            SettingsService.shared.defaultMapApp ?? .appleMaps,
+            mapApp,
             latitude: spot.latitude,
             longitude: spot.longitude
         )
