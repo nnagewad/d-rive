@@ -118,6 +118,29 @@ struct CityHeader: View {
     }
 }
 
+// MARK: - Country Header
+
+/// Section header for country groupings with separator
+/// Used for: Grouping cities by country in multi-city view
+struct CountryHeader: View {
+    let country: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Rectangle()
+                .fill(Color.separatorOpaque)
+                .frame(height: 0.5)
+
+            Text(country)
+                .font(.bodyEmphasized)
+                .foregroundColor(Color.labelSecondary)
+                .padding(.horizontal, Spacing.medium)
+                .padding(.top, Spacing.small)
+                .padding(.bottom, Spacing.xSmall)
+        }
+    }
+}
+
 // MARK: - List Section Title
 
 /// Section title with separator line

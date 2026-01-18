@@ -12,6 +12,16 @@ struct CuratedListsView: View {
     @State private var selectedList: CuratedListData?
     @State private var navigationPath = NavigationPath()
 
+    private var hasMultipleCities: Bool {
+        cities.count > 1
+    }
+
+    private var citiesGroupedByCountry: [(country: String, cities: [CityData])] {
+        let grouped = Dictionary(grouping: cities, by: { $0.country })
+        return grouped.map { (country: $0.key, cities: $0.value.sorted { $0.name < $1.name }) }
+            .sorted { $0.country < $1.country }
+    }
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
             VStack(spacing: 0) {
@@ -24,14 +34,19 @@ struct CuratedListsView: View {
 
                 if cities.isEmpty {
                     emptyState
+                } else if hasMultipleCities {
+                    citiesListContent
                 } else {
-                    listContent
+                    singleCityContent
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color.backgroundGroupedPrimary)
             .sheet(isPresented: $showUpdatesSheet) {
                 UpdatesSheetView()
+            }
+            .navigationDestination(for: CityData.self) { city in
+                CityDetailView(city: city, navigationPath: $navigationPath)
             }
             .navigationDestination(for: CuratedListData.self) { list in
                 ListDetailView(list: list, navigationPath: $navigationPath)
@@ -51,9 +66,35 @@ struct CuratedListsView: View {
         )
     }
 
-    // MARK: - List Content
+    // MARK: - Cities List Content (Multiple Cities)
 
-    private var listContent: some View {
+    private var citiesListContent: some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(citiesGroupedByCountry, id: \.country) { group in
+                    countrySection(country: group.country, cities: group.cities)
+                }
+            }
+            .padding(.top, Spacing.small)
+        }
+    }
+
+    private func countrySection(country: String, cities: [CityData]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            CountryHeader(country: country)
+
+            ForEach(cities) { city in
+                RowSeparator()
+                DrillRow(title: city.name) {
+                    navigationPath.append(city)
+                }
+            }
+        }
+    }
+
+    // MARK: - Single City Content
+
+    private var singleCityContent: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(cities) { city in
@@ -63,8 +104,6 @@ struct CuratedListsView: View {
             .padding(.top, Spacing.small)
         }
     }
-
-    // MARK: - City Section
 
     private func citySection(_ city: CityData) -> some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -95,6 +134,49 @@ struct CuratedListsView: View {
             }
         }
         .padding(.bottom, Spacing.medium)
+    }
+}
+
+// MARK: - City Detail View
+
+/// Detail view showing curated lists for a specific city
+/// Displayed when drilling in from multi-city list
+struct CityDetailView: View {
+    let city: CityData
+    @Binding var navigationPath: NavigationPath
+
+    var body: some View {
+        VStack(spacing: 0) {
+            NavigationHeader(title: "", onBack: { navigationPath.removeLast() })
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    DetailTitle(title: "\(city.name), \(city.country)")
+                        .padding(.bottom, Spacing.medium)
+
+                    if city.lists.isEmpty {
+                        EmptyState(
+                            title: "No Lists",
+                            subtitle: "No curated lists available for this city"
+                        )
+                    } else {
+                        ForEach(city.lists) { list in
+                            RowSeparator(leadingPadding: 0)
+                            DrillRow(
+                                title: list.name,
+                                subtitle: list.curator?.name ?? ""
+                            ) {
+                                navigationPath.append(list)
+                            }
+                        }
+                    }
+                }
+                .padding(.top, Spacing.small)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.backgroundGroupedPrimary)
+        .navigationBarHidden(true)
     }
 }
 
@@ -304,6 +386,12 @@ struct CuratorDetailView: View {
     let curator: CuratorData
     @Binding var navigationPath: NavigationPath
 
+    private var listsGroupedByCity: [(city: CityData?, lists: [CuratedListData])] {
+        let grouped = Dictionary(grouping: curator.lists, by: { $0.city?.id })
+        return grouped.map { (city: $0.value.first?.city, lists: $0.value.sorted { $0.name < $1.name }) }
+            .sorted { ($0.city?.name ?? "") < ($1.city?.name ?? "") }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             NavigationHeader(title: "", onBack: { navigationPath.removeLast() })
@@ -312,19 +400,7 @@ struct CuratorDetailView: View {
                 VStack(spacing: Spacing.medium) {
                     DetailTitle(title: curator.name)
 
-                    if !curator.bio.isEmpty {
-                        DescriptionCard(text: curator.bio)
-                            .padding(.horizontal, Spacing.medium)
-                    }
-
-                    if let instagram = curator.instagramHandle {
-                        GroupedCard {
-                            LinkRow(label: "Instagram") {
-                                openInstagram(instagram)
-                            }
-                        }
-                        .padding(.horizontal, Spacing.medium)
-                    }
+                    infoCard
 
                     if !curator.lists.isEmpty {
                         listsSection
@@ -338,26 +414,58 @@ struct CuratorDetailView: View {
         .navigationBarHidden(true)
     }
 
-    private var listsSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            SectionHeader(title: "\(curator.name)'s lists", style: .prominent)
+    // MARK: - Info Card (Bio + Instagram)
 
+    @ViewBuilder
+    private var infoCard: some View {
+        let hasBio = !curator.bio.isEmpty
+        let hasInstagram = curator.instagramHandle != nil
+
+        if hasBio || hasInstagram {
             GroupedCard {
                 VStack(spacing: 0) {
-                    ForEach(Array(curator.lists.enumerated()), id: \.element.id) { index, list in
-                        if index > 0 {
-                            RowSeparator()
-                        }
-                        DrillRow(
-                            title: list.name,
-                            subtitle: list.city?.name ?? ""
-                        ) {
-                            navigationPath.append(list)
+                    if hasBio {
+                        Text(curator.bio)
+                            .font(.bodyRegular)
+                            .foregroundColor(Color.labelPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, Spacing.medium)
+                            .padding(.vertical, 12)
+                    }
+
+                    if hasBio && hasInstagram {
+                        RowSeparator(leadingPadding: 0)
+                    }
+
+                    if let instagram = curator.instagramHandle {
+                        LinkRow(label: "Instagram") {
+                            openInstagram(instagram)
                         }
                     }
                 }
             }
             .padding(.horizontal, Spacing.medium)
+        }
+    }
+
+    // MARK: - Lists Section
+
+    private var listsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: "\(curator.name) curated lists", style: .prominent)
+
+            ForEach(listsGroupedByCity, id: \.city?.id) { group in
+                if let city = group.city {
+                    CityHeader(city: city.name, country: city.country)
+                }
+
+                ForEach(group.lists) { list in
+                    RowSeparator(leadingPadding: 0)
+                    DrillRow(title: list.name) {
+                        navigationPath.append(list)
+                    }
+                }
+            }
         }
     }
 

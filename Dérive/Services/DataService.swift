@@ -169,7 +169,7 @@ final class DataService {
 
     private func seedSampleData(in context: ModelContext) {
         // Create city
-        let london = CityData(name: "London", country: "UK")
+        let london = CityData(name: "London", country: "United Kingdom")
 
         // Create curator
         let nikin = CuratorData(
@@ -232,11 +232,34 @@ final class DataService {
         )
         holybella.list = testingAgain
 
+        // Toronto
+        let toronto = CityData(name: "Toronto", country: "Canada")
+
+        let torontoTest = CuratedListData(
+            name: "Toronto test",
+            listDescription: "Testing Toronto",
+            isDownloaded: false,
+            notifyWhenNearby: false
+        )
+        torontoTest.city = toronto
+        torontoTest.curator = nikin
+
+        let bellwoodsBrewery = SpotData(
+            name: "Bellwoods Brewery",
+            category: "Microbrewery",
+            latitude: 43.64710818482737,
+            longitude: -79.4200139868096,
+            instagramHandle: "bellwoodsbeer"
+        )
+        bellwoodsBrewery.list = torontoTest
+
         // Insert entities
         context.insert(london)
+        context.insert(toronto)
         context.insert(nikin)
         context.insert(localLondon)
         context.insert(testingAgain)
+        context.insert(torontoTest)
 
         do {
             try context.save()
