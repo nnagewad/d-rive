@@ -71,7 +71,7 @@ final class CuratedListData {
         isDownloaded: Bool = false,
         version: Int = 1,
         lastUpdated: Date = .now,
-        notifyWhenNearby: Bool = true
+        notifyWhenNearby: Bool = false
     ) {
         self.id = id
         self.name = name

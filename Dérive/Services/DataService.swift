@@ -183,7 +183,7 @@ final class DataService {
             name: "Local London",
             listDescription: "Testing out London spots",
             isDownloaded: true,
-            notifyWhenNearby: true
+            notifyWhenNearby: false
         )
         localLondon.city = london
         localLondon.curator = nikin

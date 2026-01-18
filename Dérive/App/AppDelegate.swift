@@ -21,29 +21,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         UNUserNotificationCenter.current().delegate = notificationDelegate
 
-        // Request notification authorization
-        Task { @MainActor in
-            await requestNotificationAuthorization()
-        }
-
         return true
-    }
-
-    @MainActor
-    private func requestNotificationAuthorization() async {
-        let center = UNUserNotificationCenter.current()
-
-        do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-
-            if granted {
-                logger.info("Notification authorization granted")
-            } else {
-                logger.warning("Notification authorization denied")
-            }
-        } catch {
-            logger.error("Failed to request notification authorization: \(error.localizedDescription)")
-        }
     }
 
     /// Start geofence monitoring after DataService is configured

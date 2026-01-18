@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 // MARK: - Curated Lists View
 
@@ -103,6 +104,8 @@ struct ListDetailView: View {
     @Bindable var list: CuratedListData
     @Binding var navigationPath: NavigationPath
     @State private var isDownloading = false
+    @State private var isRequestingPermissions = false
+    @State private var showPermissionAlert = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -122,6 +125,16 @@ struct ListDetailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.backgroundGroupedPrimary)
         .navigationBarHidden(true)
+        .alert("Permissions Required", isPresented: $showPermissionAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Enable notifications and location access in Settings to receive alerts when you're near saved spots.")
+        }
     }
 
     // MARK: - Header
@@ -168,8 +181,8 @@ struct ListDetailView: View {
                 ToggleRow(label: "Notify When Nearby", isOn: $list.notifyWhenNearby)
             }
             .padding(.horizontal, Spacing.medium)
-            .onChange(of: list.notifyWhenNearby) { _, _ in
-                reloadGeofences()
+            .onChange(of: list.notifyWhenNearby) { oldValue, newValue in
+                handleNotifyToggleChange(from: oldValue, to: newValue)
             }
         } else {
             PrimaryButton(
@@ -179,6 +192,50 @@ struct ListDetailView: View {
                 downloadList()
             }
             .padding(.horizontal, Spacing.medium)
+        }
+    }
+
+    private func handleNotifyToggleChange(from oldValue: Bool, to newValue: Bool) {
+        // Only check permissions when turning ON
+        guard newValue == true else {
+            reloadGeofences()
+            return
+        }
+
+        // Check if we've already requested permissions before
+        if PermissionService.shared.hasRequestedPermissions {
+            // Already requested - check if permissions are actually granted
+            Task {
+                await PermissionService.shared.refreshPermissionStatus()
+
+                await MainActor.run {
+                    if !PermissionService.shared.hasRequiredPermissions {
+                        // Permissions not granted - show alert and turn toggle off
+                        list.notifyWhenNearby = false
+                        showPermissionAlert = true
+                    } else {
+                        reloadGeofences()
+                    }
+                }
+            }
+            return
+        }
+
+        // First time enabling - request permissions
+        isRequestingPermissions = true
+        Task {
+            let granted = await PermissionService.shared.requestPermissions()
+
+            await MainActor.run {
+                isRequestingPermissions = false
+
+                if !granted {
+                    // Permissions denied - turn the toggle back off
+                    list.notifyWhenNearby = false
+                }
+
+                reloadGeofences()
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CoreLocation
 
 // MARK: - Nearby Spots View
 
@@ -13,13 +14,21 @@ struct NearbySpotsView: View {
         sort: \SpotData.name
     ) private var spots: [SpotData]
 
+    @ObservedObject private var permissionService = PermissionService.shared
     @State private var selectedSpot: SpotData?
+
+    private var hasLocationPermission: Bool {
+        let status = permissionService.locationStatus
+        return status == .authorizedAlways || status == .authorizedWhenInUse
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             LargeTitleHeader(title: "Nearby Spots")
 
-            if spots.isEmpty {
+            if !hasLocationPermission {
+                locationDisabledState
+            } else if spots.isEmpty {
                 emptyState
             } else {
                 spotsList
@@ -32,6 +41,20 @@ struct NearbySpotsView: View {
                 selectedSpot = nil
             }
         }
+        .onAppear {
+            Task {
+                await permissionService.refreshPermissionStatus()
+            }
+        }
+    }
+
+    // MARK: - Location Disabled State
+
+    private var locationDisabledState: some View {
+        EmptyState(
+            title: "Location Access Required",
+            subtitle: "Enable location in Settings to see nearby spots"
+        )
     }
 
     // MARK: - Empty State
@@ -202,7 +225,7 @@ enum PreviewContainer {
             name: "Coffee Spots",
             listDescription: "Best coffee in Toronto",
             isDownloaded: true,
-            notifyWhenNearby: true
+            notifyWhenNearby: false
         )
         list.city = city
         list.curator = curator
