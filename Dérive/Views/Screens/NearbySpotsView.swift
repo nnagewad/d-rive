@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import CoreLocation
+import UIKit
 
 // MARK: - Nearby Spots View
 
@@ -68,10 +69,18 @@ struct NearbySpotsView: View {
     // MARK: - Location Disabled State
 
     private var locationDisabledState: some View {
-        EmptyState(
-            title: "Location Access Required",
-            subtitle: "Enable location in Settings to see nearby spots"
-        )
+        VStack(spacing: Spacing.medium) {
+            EmptyState(
+                title: "Location Access Required",
+                subtitle: "Enable location in Settings to see nearby spots"
+            )
+
+            LinkButton(title: "Open iOS Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        }
     }
 
     // MARK: - Empty State
