@@ -1,12 +1,29 @@
 //
 //  DataModels.swift
+//  Purpose: SwiftData models for the app's core data
 //  Dérive
 //
-//  Purpose: SwiftData models for the app's core data
+//  Created by Claude Code and Nikin Nagewadia on 2026-01-19.
 //
 
 import Foundation
 import SwiftData
+
+// MARK: - Country
+
+@Model
+final class CountryData {
+    @Attribute(.unique) var id: String
+    var name: String
+
+    @Relationship(deleteRule: .cascade, inverse: \CityData.countryData)
+    var cities: [CityData] = []
+
+    init(id: String = UUID().uuidString, name: String) {
+        self.id = id
+        self.name = name
+    }
+}
 
 // MARK: - City
 
@@ -14,15 +31,37 @@ import SwiftData
 final class CityData {
     @Attribute(.unique) var id: String
     var name: String
-    var country: String
+
+    var countryData: CountryData?
 
     @Relationship(deleteRule: .cascade, inverse: \CuratedListData.city)
     var lists: [CuratedListData] = []
 
-    init(id: String = UUID().uuidString, name: String, country: String) {
+    /// Backwards compatible: returns country name string
+    var country: String {
+        countryData?.name ?? ""
+    }
+
+    init(id: String = UUID().uuidString, name: String, countryData: CountryData? = nil) {
         self.id = id
         self.name = name
-        self.country = country
+        self.countryData = countryData
+    }
+}
+
+// MARK: - Spot Category
+
+@Model
+final class SpotCategoryData {
+    @Attribute(.unique) var id: String
+    var name: String
+
+    @Relationship(deleteRule: .nullify, inverse: \SpotData.categoryData)
+    var spots: [SpotData] = []
+
+    init(id: String = UUID().uuidString, name: String) {
+        self.id = id
+        self.name = name
     }
 }
 
@@ -33,15 +72,23 @@ final class CuratorData {
     @Attribute(.unique) var id: String
     var name: String
     var bio: String
+    var imageUrl: String?
     var instagramHandle: String?
 
     @Relationship(deleteRule: .nullify, inverse: \CuratedListData.curator)
     var lists: [CuratedListData] = []
 
-    init(id: String = UUID().uuidString, name: String, bio: String, instagramHandle: String? = nil) {
+    init(
+        id: String = UUID().uuidString,
+        name: String,
+        bio: String,
+        imageUrl: String? = nil,
+        instagramHandle: String? = nil
+    ) {
         self.id = id
         self.name = name
         self.bio = bio
+        self.imageUrl = imageUrl
         self.instagramHandle = instagramHandle
     }
 }
@@ -53,8 +100,10 @@ final class CuratedListData {
     @Attribute(.unique) var id: String
     var name: String
     var listDescription: String
+    var imageUrl: String?
     var isDownloaded: Bool
     var version: Int
+    var downloadedVersion: Int?
     var lastUpdated: Date
     var notifyWhenNearby: Bool
 
@@ -64,20 +113,32 @@ final class CuratedListData {
     @Relationship(deleteRule: .cascade, inverse: \SpotData.list)
     var spots: [SpotData] = []
 
+    /// Returns true if the list has been downloaded but a newer version is available
+    var hasUpdate: Bool {
+        guard isDownloaded, let downloadedVersion = downloadedVersion else {
+            return false
+        }
+        return version > downloadedVersion
+    }
+
     init(
         id: String = UUID().uuidString,
         name: String,
         listDescription: String = "",
+        imageUrl: String? = nil,
         isDownloaded: Bool = false,
         version: Int = 1,
+        downloadedVersion: Int? = nil,
         lastUpdated: Date = .now,
         notifyWhenNearby: Bool = false
     ) {
         self.id = id
         self.name = name
         self.listDescription = listDescription
+        self.imageUrl = imageUrl
         self.isDownloaded = isDownloaded
         self.version = version
+        self.downloadedVersion = downloadedVersion
         self.lastUpdated = lastUpdated
         self.notifyWhenNearby = notifyWhenNearby
     }
@@ -89,20 +150,23 @@ final class CuratedListData {
 final class SpotData {
     @Attribute(.unique) var id: String
     var name: String
-    var category: String
     var spotDescription: String
 
     // Geofence coordinates
     var latitude: Double
     var longitude: Double
-    var radius: Double
 
     // Optional metadata
     var instagramHandle: String?
     var websiteURL: String?
-    var address: String?
 
+    var categoryData: SpotCategoryData?
     var list: CuratedListData?
+
+    /// Backwards compatible: returns category name string
+    var category: String {
+        categoryData?.name ?? ""
+    }
 
     /// Computed: Should this spot trigger geofence notifications?
     var isGeofenceActive: Bool {
@@ -113,25 +177,21 @@ final class SpotData {
     init(
         id: String = UUID().uuidString,
         name: String,
-        category: String = "",
         spotDescription: String = "",
         latitude: Double,
         longitude: Double,
-        radius: Double = 400.0,
+        categoryData: SpotCategoryData? = nil,
         instagramHandle: String? = nil,
-        websiteURL: String? = nil,
-        address: String? = nil
+        websiteURL: String? = nil
     ) {
         self.id = id
         self.name = name
-        self.category = category
         self.spotDescription = spotDescription
         self.latitude = latitude
         self.longitude = longitude
-        self.radius = radius
+        self.categoryData = categoryData
         self.instagramHandle = instagramHandle
         self.websiteURL = websiteURL
-        self.address = address
     }
 }
 
@@ -149,7 +209,7 @@ extension SpotData {
             source: list?.name ?? "",
             latitude: latitude,
             longitude: longitude,
-            radius: radius
+            radius: 400.0
         )
     }
 }
