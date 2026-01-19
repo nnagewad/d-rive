@@ -12,10 +12,6 @@ struct CuratedListsView: View {
     @State private var selectedList: CuratedListData?
     @State private var navigationPath = NavigationPath()
 
-    private var hasMultipleCities: Bool {
-        cities.count > 1
-    }
-
     private var citiesGroupedByCountry: [(country: String, cities: [CityData])] {
         let grouped = Dictionary(grouping: cities, by: { $0.country })
         return grouped.map { (country: $0.key, cities: $0.value.sorted { $0.name < $1.name }) }
@@ -34,10 +30,8 @@ struct CuratedListsView: View {
 
                 if cities.isEmpty {
                     emptyState
-                } else if hasMultipleCities {
-                    citiesListContent
                 } else {
-                    singleCityContent
+                    citiesListContent
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -92,42 +86,6 @@ struct CuratedListsView: View {
         }
     }
 
-    // MARK: - Single City Content
-
-    private var singleCityContent: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(cities) { city in
-                    citySection(city)
-                }
-            }
-            .padding(.top, Spacing.small)
-        }
-    }
-
-    private func citySection(_ city: CityData) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            RowSeparator(leadingPadding: 0)
-            CityHeader(city: city.name, country: city.country)
-
-            if city.lists.isEmpty {
-                EmptyState(
-                    title: "No Lists",
-                    subtitle: "No curated lists available for this city"
-                )
-            } else {
-                ForEach(city.lists) { list in
-                    RowSeparator(leadingPadding: 0)
-                    DrillRow(
-                        title: list.name,
-                        subtitle: list.curator?.name ?? ""
-                    ) {
-                        navigationPath.append(list)
-                    }
-                }
-            }
-        }
-    }
 }
 
 // MARK: - City Detail View
