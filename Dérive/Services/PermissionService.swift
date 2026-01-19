@@ -17,7 +17,8 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
     static let shared = PermissionService()
 
     private let logger = Logger(subsystem: "com.derive.app", category: "PermissionService")
-    private let hasRequestedPermissionsKey = "hasRequestedNotificationPermissions"
+    private let hasRequestedNotificationPermissionsKey = "hasRequestedNotificationPermissions"
+    private let hasRequestedLocationPermissionsKey = "hasRequestedLocationPermissions"
 
     private lazy var locationManager: CLLocationManager = {
         let manager = CLLocationManager()
@@ -30,9 +31,14 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
 
     private var locationContinuation: CheckedContinuation<Bool, Never>?
 
-    var hasRequestedPermissions: Bool {
-        get { UserDefaults.standard.bool(forKey: hasRequestedPermissionsKey) }
-        set { UserDefaults.standard.set(newValue, forKey: hasRequestedPermissionsKey) }
+    var hasRequestedNotificationPermissions: Bool {
+        get { UserDefaults.standard.bool(forKey: hasRequestedNotificationPermissionsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: hasRequestedNotificationPermissionsKey) }
+    }
+
+    var hasRequestedLocationPermissions: Bool {
+        get { UserDefaults.standard.bool(forKey: hasRequestedLocationPermissionsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: hasRequestedLocationPermissionsKey) }
     }
 
     private override init() {
@@ -58,29 +64,15 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
 
     // MARK: - Request Permissions
 
-    /// Request both notification and location permissions
-    /// Returns true if both permissions are granted
-    func requestPermissions() async -> Bool {
-        hasRequestedPermissions = true
-
-        // Request notifications first
-        let notificationsGranted = await requestNotificationPermission()
-
-        // Then request location
-        let locationGranted = await requestLocationPermission()
-
-        await refreshPermissionStatus()
-
-        logger.info("Permissions requested - Notifications: \(notificationsGranted), Location: \(locationGranted)")
-
-        return notificationsGranted && locationGranted
-    }
-
-    private func requestNotificationPermission() async -> Bool {
+    /// Request notification permission only
+    /// Returns true if notification permission is granted
+    func requestNotificationPermission() async -> Bool {
+        hasRequestedNotificationPermissions = true
         let center = UNUserNotificationCenter.current()
 
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            await refreshPermissionStatus()
             logger.info("Notification permission: \(granted ? "granted" : "denied")")
             return granted
         } catch {
@@ -89,7 +81,10 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
         }
     }
 
-    private func requestLocationPermission() async -> Bool {
+    /// Request location permission only
+    /// Returns true if location permission is granted
+    func requestLocationPermission() async -> Bool {
+        hasRequestedLocationPermissions = true
         let currentStatus = locationManager.authorizationStatus
 
         // Already authorized
@@ -99,10 +94,13 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
         }
 
         // Request authorization and wait for delegate callback
-        return await withCheckedContinuation { continuation in
+        let granted = await withCheckedContinuation { continuation in
             locationContinuation = continuation
             locationManager.requestAlwaysAuthorization()
         }
+
+        await refreshPermissionStatus()
+        return granted
     }
 
     // MARK: - CLLocationManagerDelegate

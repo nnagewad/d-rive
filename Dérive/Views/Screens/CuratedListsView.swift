@@ -202,7 +202,7 @@ struct ListDetailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.backgroundGroupedPrimary)
         .navigationBarHidden(true)
-        .alert("Permissions Required", isPresented: $showPermissionAlert) {
+        .alert("Notifications Required", isPresented: $showPermissionAlert) {
             Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -210,7 +210,7 @@ struct ListDetailView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Enable notifications and location access in Settings to receive alerts when you're near saved spots.")
+            Text("Enable notifications in Settings to receive alerts when you're near saved spots.")
         }
         .sheet(item: $selectedSpot) { spot in
             SpotDetailSheet(spot: spot) {
@@ -280,15 +280,17 @@ struct ListDetailView: View {
             return
         }
 
-        // Check if we've already requested permissions before
-        if PermissionService.shared.hasRequestedPermissions {
-            // Already requested - check if permissions are actually granted
+        // Check if we've already requested notification permissions before
+        if PermissionService.shared.hasRequestedNotificationPermissions {
+            // Already requested - check if notification permission is actually granted
             Task {
                 await PermissionService.shared.refreshPermissionStatus()
 
                 await MainActor.run {
-                    if !PermissionService.shared.hasRequiredPermissions {
-                        // Permissions not granted - show alert and turn toggle off
+                    let hasNotifications = PermissionService.shared.notificationStatus == .authorized ||
+                                          PermissionService.shared.notificationStatus == .provisional
+                    if !hasNotifications {
+                        // Notification permission not granted - show alert and turn toggle off
                         list.notifyWhenNearby = false
                         showPermissionAlert = true
                     }
@@ -298,16 +300,16 @@ struct ListDetailView: View {
             return
         }
 
-        // First time enabling - request permissions
+        // First time enabling - request notification permission only
         isRequestingPermissions = true
         Task {
-            let granted = await PermissionService.shared.requestPermissions()
+            let granted = await PermissionService.shared.requestNotificationPermission()
 
             await MainActor.run {
                 isRequestingPermissions = false
 
                 if !granted {
-                    // Permissions denied - turn the toggle back off
+                    // Notification permission denied - turn the toggle back off
                     list.notifyWhenNearby = false
                 }
 
@@ -352,6 +354,11 @@ struct ListDetailView: View {
     private func downloadList() {
         isDownloading = true
         Task {
+            // Request location permission on first download
+            if !PermissionService.shared.hasRequestedLocationPermissions {
+                _ = await PermissionService.shared.requestLocationPermission()
+            }
+
             try? await Task.sleep(for: .seconds(1))
             await MainActor.run {
                 list.isDownloaded = true
