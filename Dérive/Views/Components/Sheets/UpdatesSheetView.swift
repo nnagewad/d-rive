@@ -1,3 +1,11 @@
+//
+//  UpdatesSheetView.swift
+//  Purpose: Sheet showing available updates for downloaded curated lists
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
+//
+
 import SwiftUI
 
 // MARK: - Updates Sheet View

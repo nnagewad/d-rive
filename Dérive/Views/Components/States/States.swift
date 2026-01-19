@@ -1,3 +1,11 @@
+//
+//  States.swift
+//  Purpose: Reusable state views (empty, loading)
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
+//
+
 import SwiftUI
 
 // MARK: - Empty State

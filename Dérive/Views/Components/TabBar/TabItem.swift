@@ -1,9 +1,16 @@
+//
+//  TabItem.swift
+//  Purpose: Tab definitions for native iOS TabView
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
+//
+
 import SwiftUI
 
 // MARK: - Tab Item
 
 /// Tab definitions for native iOS TabView
-/// iOS 26: Used with native TabView for automatic liquid glass styling
 enum TabItem: Int, CaseIterable, Identifiable {
     case nearbySpots
     case curatedLists

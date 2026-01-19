@@ -1,3 +1,11 @@
+//
+//  SettingsView.swift
+//  Purpose: Settings screen with app preferences
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
+//
+
 import SwiftUI
 import SwiftData
 import UIKit
@@ -6,7 +14,7 @@ import UIKit
 
 /// Settings screen with app preferences
 /// Tab 3 in the app navigation
-struct NewSettingsView: View {
+struct SettingsView: View {
     @Query(
         filter: #Predicate<SpotData> { spot in
             spot.list?.isDownloaded == true && spot.list?.notifyWhenNearby == true
@@ -121,7 +129,7 @@ struct MapAppPickerView: View {
 // MARK: - Previews
 
 #Preview("Settings") {
-    NewSettingsView()
+    SettingsView()
         .modelContainer(PreviewContainer.containerWithData)
 }
 

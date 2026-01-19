@@ -1,8 +1,9 @@
 //
-//  City.swift
+//  APIModels.swift
+//  Purpose: Data models for remote API responses (city manifest, geofences)
 //  Dérive
 //
-//  Purpose: Data models for city manifest and individual cities
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
 //
 
 import Foundation

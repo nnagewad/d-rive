@@ -36,7 +36,7 @@ struct MainTabView: View {
                 }
                 .tag(TabItem.curatedLists)
 
-            NewSettingsView()
+            SettingsView()
                 .tabItem {
                     Label(TabItem.settings.title, systemImage: TabItem.settings.icon)
                 }
