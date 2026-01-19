@@ -148,19 +148,18 @@ struct ListDetailView: View {
 
     var body: some View {
         List {
-            // Description Section
-            if !list.listDescription.isEmpty {
+            // Description & Curator Section (grouped together)
+            if !list.listDescription.isEmpty || list.curator != nil {
                 Section {
-                    Text(list.listDescription)
-                        .foregroundStyle(Color.labelSecondary)
-                }
-            }
+                    if !list.listDescription.isEmpty {
+                        Text(list.listDescription)
+                            .foregroundStyle(Color.labelSecondary)
+                    }
 
-            // Curator Section
-            if let curator = list.curator {
-                Section {
-                    NavigationLink(value: curator) {
-                        LabeledContent("Curator", value: curator.name)
+                    if let curator = list.curator {
+                        NavigationLink(value: curator) {
+                            LabeledContent("Curator", value: curator.name)
+                        }
                     }
                 }
             }

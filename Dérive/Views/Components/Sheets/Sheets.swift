@@ -155,7 +155,7 @@ struct MapAppPickerSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Choose Map App")
+            .navigationTitle("Map Apps")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -205,7 +205,7 @@ struct SpotDetailSheet: View {
                     } label: {
                         HStack {
                             Spacer()
-                            Label("Get Directions", systemImage: "location.fill")
+                            Text("Get Directions")
                             Spacer()
                         }
                     }
@@ -221,10 +221,9 @@ struct SpotDetailSheet: View {
                     Button {
                         onClose()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .symbolRenderingMode(.hierarchical)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Color.labelSecondary)
-                            .font(.title2)
                     }
                 }
             }

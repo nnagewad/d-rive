@@ -18,58 +18,37 @@ struct NewSettingsView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                LargeTitleHeader(title: "Settings")
-
-                ScrollView {
-                    VStack(spacing: Spacing.medium) {
-                        mainSettingsSection
-                        iosSettingsSection
-                    }
-                    .padding(.top, Spacing.small)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color.backgroundGroupedPrimary)
-            .navigationDestination(isPresented: $showMapAppPicker) {
-                MapAppPickerView(onBack: { showMapAppPicker = false })
-            }
-        }
-    }
-
-    // MARK: - Main Settings Section
-
-    private var mainSettingsSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            GroupedCard {
-                VStack(spacing: 0) {
-                    DrillRow(
-                        title: "Default Map App",
-                        value: mapAppDisplayName
-                    ) {
+            List {
+                // Main Settings Section
+                Section {
+                    Button {
                         showMapAppPicker = true
+                    } label: {
+                        LabeledContent("Default Map App", value: mapAppDisplayName)
                     }
+                    .foregroundStyle(Color.labelPrimary)
 
-                    RowSeparator()
+                    LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
+                } footer: {
+                    Text("Dérive monitors up to 20 nearest spots from your downloaded lists.")
+                }
 
-                    InfoRow(label: "Active geofences", value: "\(min(activeSpots.count, 20))")
+                // iOS Settings Section
+                Section {
+                    Button {
+                        openIOSSettings()
+                    } label: {
+                        Text("iOS App Settings")
+                    }
                 }
             }
-            .padding(.horizontal, Spacing.medium)
-
-            SectionFooter(text: "Dérive monitors up to 20 nearest spots from your downloaded lists.")
-        }
-    }
-
-    // MARK: - iOS Settings Section
-
-    private var iosSettingsSection: some View {
-        GroupedCard {
-            LinkRow(label: "iOS App Settings") {
-                openIOSSettings()
+            .listStyle(.insetGrouped)
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.large)
+            .navigationDestination(isPresented: $showMapAppPicker) {
+                MapAppPickerView()
             }
         }
-        .padding(.horizontal, Spacing.medium)
     }
 
     // MARK: - Helpers
@@ -89,58 +68,58 @@ struct NewSettingsView: View {
 
 struct MapAppPickerView: View {
     @ObservedObject private var settingsService = SettingsService.shared
-    var onBack: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            NavigationHeader(title: "Default Map App", onBack: onBack)
-
-            ScrollView {
-                VStack(spacing: 0) {
-                    optionsSection
-                }
-                .padding(.top, Spacing.small)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
-        .navigationBarHidden(true)
-    }
-
-    private var optionsSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            GroupedCard {
-                VStack(spacing: 0) {
-                    SelectableRow(
-                        title: "Ask Next Time",
-                        isSelected: settingsService.defaultMapApp == nil
-                    ) {
-                        settingsService.defaultMapApp = nil
-                    }
-
-                    RowSeparator()
-
-                    SelectableRow(
-                        title: "Apple Maps",
-                        isSelected: settingsService.defaultMapApp == .appleMaps
-                    ) {
-                        settingsService.defaultMapApp = .appleMaps
-                    }
-
-                    RowSeparator()
-
-                    SelectableRow(
-                        title: "Google Maps",
-                        isSelected: settingsService.defaultMapApp == .googleMaps
-                    ) {
-                        settingsService.defaultMapApp = .googleMaps
+        List {
+            Section {
+                Button {
+                    settingsService.defaultMapApp = nil
+                } label: {
+                    HStack {
+                        Text("Ask Next Time")
+                            .foregroundStyle(Color.labelPrimary)
+                        Spacer()
+                        if settingsService.defaultMapApp == nil {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentBlue)
+                        }
                     }
                 }
-            }
-            .padding(.horizontal, Spacing.medium)
 
-            SectionFooter(text: "When set, tapping the notification opens your preferred map app with directions.")
+                Button {
+                    settingsService.defaultMapApp = .appleMaps
+                } label: {
+                    HStack {
+                        Text("Apple Maps")
+                            .foregroundStyle(Color.labelPrimary)
+                        Spacer()
+                        if settingsService.defaultMapApp == .appleMaps {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentBlue)
+                        }
+                    }
+                }
+
+                Button {
+                    settingsService.defaultMapApp = .googleMaps
+                } label: {
+                    HStack {
+                        Text("Google Maps")
+                            .foregroundStyle(Color.labelPrimary)
+                        Spacer()
+                        if settingsService.defaultMapApp == .googleMaps {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.accentBlue)
+                        }
+                    }
+                }
+            } footer: {
+                Text("When set, tapping the notification opens your preferred map app with directions.")
+            }
         }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Map Apps")
+        .navigationBarTitleDisplayMode(.large)
     }
 }
 
@@ -152,5 +131,7 @@ struct MapAppPickerView: View {
 }
 
 #Preview("Map App Picker") {
-    MapAppPickerView(onBack: {})
+    NavigationStack {
+        MapAppPickerView()
+    }
 }
