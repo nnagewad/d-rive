@@ -16,7 +16,9 @@ struct DeriveApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
+            CountryData.self,
             CityData.self,
+            SpotCategoryData.self,
             CuratorData.self,
             CuratedListData.self,
             SpotData.self
@@ -35,7 +37,6 @@ struct DeriveApp: App {
 
     init() {
         DataService.shared.configure(with: sharedModelContainer)
-        DataService.shared.seedSampleDataIfNeeded()
     }
 
     var body: some Scene {
@@ -44,6 +45,12 @@ struct DeriveApp: App {
                 .environmentObject(navigationCoordinator)
                 .modelContainer(sharedModelContainer)
                 .task {
+                    // Sync data from Supabase on launch
+                    do {
+                        try await DataService.shared.syncFromSupabase()
+                    } catch {
+                        print("Failed to sync from Supabase: \(error)")
+                    }
                     appDelegate.startGeofenceMonitoringIfNeeded()
                 }
         }
