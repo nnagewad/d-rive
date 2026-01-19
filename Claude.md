@@ -70,22 +70,3 @@ For every .Swift document be sure to start with a comment based on the following
 //
 //  Created by Claude Code and Nikin Nagewadia on [YYYY-MM-DD].
 //
-
----
-
-# Architecture Overhaul Plan - January 17, 2026
-
-**Database Migration** - Supabase + local SQLite
-
-## Create new Database
-
-**Current**: local SwiftData/SQLite for testing purposes
-**Target**: Supabase PostgreSQL + local SwiftData/SQLite
-
-**Schema**: Will determine once Components and UI have all been created.
-
-**Rough plan of files to modify**:
-- `Dérive/Services/CityService.swift` - Replace JSON with Supabase + SwiftData
-- `Dérive/Models/City.swift` - Update to SwiftData @Model
-- `Dérive/App/DériveApp.swift` - Add SwiftData modelContainer
-- New: `SupabaseService.swift`, `CityModel.swift`, `GeofenceModel.swift`
