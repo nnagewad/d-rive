@@ -17,7 +17,7 @@ import UIKit
 struct SettingsView: View {
     @Query(
         filter: #Predicate<SpotData> { spot in
-            spot.list?.isDownloaded == true && spot.list?.notifyWhenNearby == true
+            spot.list?.isDownloaded == true
         }
     ) private var activeSpots: [SpotData]
 

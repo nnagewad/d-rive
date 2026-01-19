@@ -10,7 +10,7 @@ import UIKit
 struct NearbySpotsView: View {
     @Query(
         filter: #Predicate<SpotData> { spot in
-            spot.list?.isDownloaded == true && spot.list?.notifyWhenNearby == true
+            spot.list?.isDownloaded == true
         }
     ) private var spots: [SpotData]
 
@@ -159,7 +159,7 @@ enum PreviewContainer {
     static let shared = PreviewContainer.self
 
     static var container: ModelContainer {
-        let schema = Schema([CityData.self, CuratorData.self, CuratedListData.self, SpotData.self])
+        let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         return try! ModelContainer(for: schema, configurations: [config])
     }
@@ -168,7 +168,8 @@ enum PreviewContainer {
         let container = self.container
         let context = container.mainContext
 
-        let city = CityData(name: "Toronto", country: "Canada")
+        let country = CountryData(name: "Canada")
+        let city = CityData(name: "Toronto", countryData: country)
         let curator = CuratorData(name: "Local Expert", bio: "Toronto native")
 
         let list = CuratedListData(
@@ -181,12 +182,13 @@ enum PreviewContainer {
         list.curator = curator
 
         let spots = [
-            SpotData(name: "Sam James Coffee Bar", category: "Coffee", latitude: 43.6544, longitude: -79.4055),
-            SpotData(name: "Pilot Coffee Roasters", category: "Coffee", latitude: 43.6465, longitude: -79.3963),
-            SpotData(name: "Boxcar Social", category: "Coffee", latitude: 43.6677, longitude: -79.3901)
+            SpotData(name: "Sam James Coffee Bar", latitude: 43.6544, longitude: -79.4055),
+            SpotData(name: "Pilot Coffee Roasters", latitude: 43.6465, longitude: -79.3963),
+            SpotData(name: "Boxcar Social", latitude: 43.6677, longitude: -79.3901)
         ]
         spots.forEach { $0.list = list }
 
+        context.insert(country)
         context.insert(city)
         context.insert(curator)
         context.insert(list)

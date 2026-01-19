@@ -60,7 +60,7 @@ final class GeofenceLoaderService {
 
     /// Check if geofences can be loaded (has downloaded lists with notifications enabled)
     func canLoadGeofences() -> Bool {
-        return DataService.shared.getActiveGeofenceCount() > 0
+        return !DataService.shared.getNotificationGeofenceSpots().isEmpty
     }
 
     /// Reload geofences and restart monitoring
