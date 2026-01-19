@@ -1,33 +1,14 @@
 //
 //  NavigationCoordinator.swift
+//  Purpose: Coordinates app navigation and handles deep linking from notifications
 //  Dérive
 //
-//  Created by Nikin Nagewadia on 2025-12-30.
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
 //
 
 import SwiftUI
 import Combine
 import os.log
-
-// MARK: - MapDestination
-
-struct MapDestination: Hashable, Identifiable {
-    let id = UUID()
-    let latitude: Double
-    let longitude: Double
-    let name: String
-    let group: String
-    let city: String
-    let country: String
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-
-    static func == (lhs: MapDestination, rhs: MapDestination) -> Bool {
-        lhs.id == rhs.id
-    }
-}
 
 // MARK: - NavigationCoordinator
 
@@ -38,40 +19,25 @@ final class NavigationCoordinator: ObservableObject {
     private let logger = Logger(subsystem: "com.derive.app", category: "NavigationCoordinator")
 
     @Published var navigationPath = NavigationPath()
-    @Published var currentDestination: MapDestination?
+    @Published var selectedSpotId: String?
 
     private init() {
         logger.info("🗺️ NavigationCoordinator initialized")
     }
 
-    func navigateToMapSelection(latitude: Double, longitude: Double, name: String, group: String, city: String, country: String) {
-        logger.info("🗺️ Showing location sheet for: \(name)")
-
-        currentDestination = MapDestination(
-            latitude: latitude,
-            longitude: longitude,
-            name: name,
-            group: group,
-            city: city,
-            country: country
-        )
+    func showSpotDetail(spotId: String) {
+        logger.info("🗺️ Showing spot detail for ID: \(spotId)")
+        selectedSpotId = spotId
     }
 
-    func dismissLocationSheet() {
-        logger.info("🗺️ Dismissing location sheet")
-        currentDestination = nil
+    func dismissSpotDetail() {
+        logger.info("🗺️ Dismissing spot detail")
+        selectedSpotId = nil
     }
 
     func clearNavigation() {
         logger.info("🗺️ Clearing navigation")
         navigationPath = NavigationPath()
-        currentDestination = nil
-    }
-
-    func navigateToCityList() {
-        logger.info("🗺️ Navigating to city list")
-        // CityListView is the root, so clear the navigation path to return there
-        navigationPath = NavigationPath()
-        currentDestination = nil
+        selectedSpotId = nil
     }
 }

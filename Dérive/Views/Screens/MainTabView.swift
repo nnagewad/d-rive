@@ -1,3 +1,11 @@
+//
+//  MainTabView.swift
+//  Purpose: Main app container with tab navigation
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
+//
+
 import SwiftUI
 import SwiftData
 
@@ -8,6 +16,7 @@ import SwiftData
 struct MainTabView: View {
     @EnvironmentObject private var navigationCoordinator: NavigationCoordinator
     @State private var selectedTab: TabItem
+    @State private var spotForSheet: SpotData?
 
     init(selectedTab: TabItem = .nearbySpots) {
         _selectedTab = State(initialValue: selectedTab)
@@ -33,89 +42,19 @@ struct MainTabView: View {
                 }
                 .tag(TabItem.settings)
         }
-        .sheet(item: $navigationCoordinator.currentDestination) { destination in
-            NearbyLocationSheet(destination: destination) {
-                navigationCoordinator.dismissLocationSheet()
+        .onChange(of: navigationCoordinator.selectedSpotId) { _, newValue in
+            if let spotId = newValue {
+                spotForSheet = DataService.shared.getSpot(byId: spotId)
+            } else {
+                spotForSheet = nil
             }
         }
-    }
-}
-
-// MARK: - Nearby Location Sheet
-
-/// Sheet displayed when user taps a geofence notification
-private struct NearbyLocationSheet: View {
-    let destination: MapDestination
-    let onClose: () -> Void
-
-    @ObservedObject private var settingsService = SettingsService.shared
-    @State private var showMapAppPicker = false
-
-    var body: some View {
-        VStack(spacing: 0) {
-            SheetHeader(title: destination.name, onClose: onClose)
-
-            ScrollView {
-                VStack(spacing: Spacing.medium) {
-                    infoCard
-
-                    PrimaryButton(title: "Get Directions") {
-                        handleGetDirections()
-                    }
-                    .padding(.horizontal, Spacing.medium)
-                }
-                .padding(.top, Spacing.small)
+        .sheet(item: $spotForSheet) { spot in
+            SpotDetailSheet(spot: spot) {
+                navigationCoordinator.dismissSpotDetail()
+                spotForSheet = nil
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
-        .sheet(isPresented: $showMapAppPicker) {
-            MapAppPickerSheet(
-                onSelect: { mapApp in
-                    settingsService.defaultMapApp = mapApp
-                    showMapAppPicker = false
-                    openDirections(with: mapApp)
-                }
-            )
-            .presentationDetents([.height(220)])
-        }
-    }
-
-    private var infoCard: some View {
-        GroupedCard {
-            VStack(spacing: 0) {
-                if !destination.group.isEmpty {
-                    InfoRow(label: "Category", value: destination.group)
-                }
-
-                if !destination.city.isEmpty {
-                    RowSeparator()
-                    InfoRow(label: "City", value: destination.city)
-                }
-
-                if !destination.country.isEmpty {
-                    RowSeparator()
-                    InfoRow(label: "Country", value: destination.country)
-                }
-            }
-        }
-        .padding(.horizontal, Spacing.medium)
-    }
-
-    private func handleGetDirections() {
-        if let mapApp = settingsService.defaultMapApp {
-            openDirections(with: mapApp)
-        } else {
-            showMapAppPicker = true
-        }
-    }
-
-    private func openDirections(with mapApp: MapApp) {
-        MapNavigationService.shared.openMapApp(
-            mapApp,
-            latitude: destination.latitude,
-            longitude: destination.longitude
-        )
     }
 }
 

@@ -165,13 +165,17 @@ struct ListDetailView: View {
             }
 
             // Action Section
-            Section {
-                if list.isDownloaded {
+            if list.isDownloaded {
+                Section {
                     Toggle("Notify When Nearby", isOn: $list.notifyWhenNearby)
                         .onChange(of: list.notifyWhenNearby) { oldValue, newValue in
                             handleNotifyToggleChange(from: oldValue, to: newValue)
                         }
-                } else {
+                } footer: {
+                    Text("A notification banner appears when you're close to any of the spots on the list.")
+                }
+            } else {
+                Section {
                     Button {
                         downloadList()
                     } label: {
@@ -185,6 +189,9 @@ struct ListDetailView: View {
                             Spacer()
                         }
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .listRowBackground(Color.clear)
                     .disabled(isDownloading)
                 }
             }
@@ -343,21 +350,24 @@ struct CuratorDetailView: View {
 
     var body: some View {
         List {
-            // Bio Section
-            if !curator.bio.isEmpty {
+            // Bio & Instagram Section
+            if !curator.bio.isEmpty || curator.instagramHandle != nil {
                 Section {
-                    Text(curator.bio)
-                        .foregroundStyle(Color.labelSecondary)
-                }
-            }
+                    if !curator.bio.isEmpty {
+                        Text(curator.bio)
+                            .foregroundStyle(Color.labelSecondary)
+                    }
 
-            // Instagram Section
-            if let instagram = curator.instagramHandle {
-                Section {
-                    Button {
-                        openInstagram(instagram)
-                    } label: {
-                        LabeledContent("Instagram", value: instagram)
+                    if let instagram = curator.instagramHandle {
+                        Button {
+                            openInstagram(instagram)
+                        } label: {
+                            HStack {
+                                Spacer()
+                                Text("Instagram")
+                                Spacer()
+                            }
+                        }
                     }
                 }
             }

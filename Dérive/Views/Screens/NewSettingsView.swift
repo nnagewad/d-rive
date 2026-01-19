@@ -14,19 +14,17 @@ struct NewSettingsView: View {
     ) private var activeSpots: [SpotData]
 
     @ObservedObject private var settingsService = SettingsService.shared
-    @State private var showMapAppPicker = false
 
     var body: some View {
         NavigationStack {
             List {
                 // Main Settings Section
                 Section {
-                    Button {
-                        showMapAppPicker = true
+                    NavigationLink {
+                        MapAppPickerView()
                     } label: {
                         LabeledContent("Default Map App", value: mapAppDisplayName)
                     }
-                    .foregroundStyle(Color.labelPrimary)
 
                     LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
                 } footer: {
@@ -45,9 +43,6 @@ struct NewSettingsView: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(isPresented: $showMapAppPicker) {
-                MapAppPickerView()
-            }
         }
     }
 
@@ -114,7 +109,7 @@ struct MapAppPickerView: View {
                     }
                 }
             } footer: {
-                Text("When set, tapping the notification opens your preferred map app with directions.")
+                Text("This will set your preferred map app when you select the Get Direction button")
             }
         }
         .listStyle(.insetGrouped)

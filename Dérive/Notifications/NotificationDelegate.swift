@@ -46,31 +46,20 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
         logger.info("📬 Notification action received: \(actionIdentifier)")
 
-        // Extract destination coordinates from userInfo (geofence notification)
-        guard let lat = userInfo["destinationLat"] as? Double,
-              let lon = userInfo["destinationLon"] as? Double else {
-            logger.error("❌ Missing destination coordinates in notification userInfo")
+        // Extract spot ID from userInfo (geofence notification)
+        guard let spotId = userInfo["geofenceId"] as? String else {
+            logger.error("❌ Missing geofenceId in notification userInfo")
             completionHandler()
             return
         }
 
         let name = userInfo["geofenceName"] as? String ?? "Unknown Location"
-        let group = userInfo["geofenceGroup"] as? String ?? ""
-        let city = userInfo["geofenceCity"] as? String ?? ""
-        let country = userInfo["geofenceCountry"] as? String ?? ""
 
-        // Handle notification tap - show location sheet
+        // Handle notification tap - show spot detail sheet
         if actionIdentifier == UNNotificationDefaultActionIdentifier {
             Task { @MainActor in
-                logger.info("🗺️ Notification tapped - showing location sheet for: \(name)")
-                NavigationCoordinator.shared.navigateToMapSelection(
-                    latitude: lat,
-                    longitude: lon,
-                    name: name,
-                    group: group,
-                    city: city,
-                    country: country
-                )
+                logger.info("🗺️ Notification tapped - showing spot detail for: \(name)")
+                NavigationCoordinator.shared.showSpotDetail(spotId: spotId)
             }
         } else {
             logger.warning("⚠️ Unknown action identifier: \(actionIdentifier)")

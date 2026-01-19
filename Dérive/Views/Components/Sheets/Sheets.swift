@@ -1,137 +1,17 @@
+//
+//  Sheets.swift
+//  Purpose: Reusable sheet components for modal presentations
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
+//
+
 import SwiftUI
 import UIKit
-
-// MARK: - Base Sheet
-
-/// Base sheet container with drag handle and rounded corners
-/// Used for: All modal sheets
-struct BaseSheet<Content: View>: View {
-    @ViewBuilder var content: () -> Content
-
-    var body: some View {
-        VStack(spacing: 0) {
-            content()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
-        .clipShape(
-            RoundedCorner(radius: CornerRadius.large, corners: [.topLeft, .topRight])
-        )
-    }
-}
-
-// MARK: - Sheet With Header
-
-/// Sheet with standard header (title + close button)
-/// Used for: Updates sheet, spot detail sheet
-struct SheetWithHeader<Content: View>: View {
-    let title: String
-    var onClose: () -> Void
-    @ViewBuilder var content: () -> Content
-
-    var body: some View {
-        BaseSheet {
-            VStack(spacing: 0) {
-                SheetHeader(title: title, onClose: onClose)
-                content()
-            }
-        }
-    }
-}
-
-// MARK: - Updates Sheet Content
-
-/// Content wrapper for updates sheet states
-/// Used for: Updates sheet (loading/empty/content states)
-struct UpdatesSheetContent: View {
-    let state: UpdatesState
-
-    enum UpdatesState {
-        case loading
-        case empty
-        case content(updates: [UpdateItem], history: [String])
-    }
-
-    struct UpdateItem: Identifiable {
-        let id = UUID()
-        let title: String
-        var isUpdating: Bool = false
-    }
-
-    var onUpdateAll: (() -> Void)?
-    var onUpdate: ((UpdateItem) -> Void)?
-
-    var body: some View {
-        switch state {
-        case .loading:
-            LoadingState(message: "Checking for updates")
-
-        case .empty:
-            EmptyState(title: "No updates available")
-
-        case .content(let updates, let history):
-            ScrollView {
-                VStack(spacing: 0) {
-                    if !updates.isEmpty {
-                        updatesSection(updates)
-                    }
-
-                    if !history.isEmpty {
-                        historySection(history)
-                    }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func updatesSection(_ updates: [UpdateItem]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            SectionHeader(title: "Updates available")
-
-            GroupedCard {
-                VStack(spacing: 0) {
-                    UpdateAllRow(count: updates.count) {
-                        onUpdateAll?()
-                    }
-
-                    ForEach(updates) { item in
-                        RowSeparator()
-                        UpdateRow(title: item.title, isUpdating: item.isUpdating) {
-                            onUpdate?(item)
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal, Spacing.medium)
-        }
-        .padding(.bottom, Spacing.medium)
-    }
-
-    @ViewBuilder
-    private func historySection(_ history: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            SectionHeader(title: "Recently updated")
-
-            GroupedCard {
-                VStack(spacing: 0) {
-                    ForEach(Array(history.enumerated()), id: \.offset) { index, title in
-                        if index > 0 {
-                            RowSeparator()
-                        }
-                        HistoryRow(title: title)
-                    }
-                }
-            }
-            .padding(.horizontal, Spacing.medium)
-        }
-    }
-}
 
 // MARK: - Map App Picker Sheet
 
 /// Sheet for choosing default map app (shown on first Get Directions tap)
-/// iOS 26: Uses native List styling
 struct MapAppPickerSheet: View {
     var onSelect: (MapApp) -> Void
 
@@ -142,20 +22,29 @@ struct MapAppPickerSheet: View {
                     Button {
                         onSelect(.appleMaps)
                     } label: {
-                        Label("Apple Maps", systemImage: "map.fill")
+                        HStack {
+                            Spacer()
+                            Text("Apple Maps")
+                            Spacer()
+                        }
                     }
 
                     Button {
                         onSelect(.googleMaps)
                     } label: {
-                        Label("Google Maps", systemImage: "globe")
+                        HStack {
+                            Spacer()
+                            Text("Google Maps")
+                            Spacer()
+                        }
                     }
                 } footer: {
                     Text("This will be your default map app for directions.")
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Map Apps")
+            .contentMargins(.top, 0)
+            .navigationTitle("Select a Map App")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -164,7 +53,6 @@ struct MapAppPickerSheet: View {
 // MARK: - Spot Detail Sheet
 
 /// Sheet showing details for a spot with Get Directions button
-/// iOS 26: Uses native NavigationStack and List for automatic glass styling
 struct SpotDetailSheet: View {
     let spot: SpotData
     let onClose: () -> Void
@@ -181,11 +69,19 @@ struct SpotDetailSheet: View {
                         LabeledContent("Category", value: spot.category)
                     }
 
+                    if let city = spot.list?.city {
+                        LabeledContent("Location", value: "\(city.name), \(city.country)")
+                    }
+
                     if let instagram = spot.instagramHandle {
                         Button {
                             openInstagram(instagram)
                         } label: {
-                            LabeledContent("Instagram", value: instagram)
+                            HStack {
+                                Spacer()
+                                Text("Instagram")
+                                Spacer()
+                            }
                         }
                     }
 
@@ -193,7 +89,11 @@ struct SpotDetailSheet: View {
                         Button {
                             openWebsite(website)
                         } label: {
-                            Text("Website")
+                            HStack {
+                                Spacer()
+                                Text("Website")
+                                Spacer()
+                            }
                         }
                     }
                 }
@@ -210,12 +110,13 @@ struct SpotDetailSheet: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
                     .listRowBackground(Color.clear)
                 }
             }
             .listStyle(.insetGrouped)
             .navigationTitle(spot.name)
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -270,96 +171,50 @@ struct SpotDetailSheet: View {
     }
 }
 
-// MARK: - Rounded Corner Helper
-
-/// Helper shape for rounding specific corners
-struct RoundedCorner: Shape {
-    var radius: CGFloat
-    var corners: UIRectCorner
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
-    }
-}
-
 // MARK: - Previews
 
-#Preview("Base Sheet") {
-    ZStack {
-        Color.black.opacity(0.3)
-            .ignoresSafeArea()
+#Preview("Map App Picker Sheet") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
 
-        BaseSheet {
-            VStack {
-                Text("Sheet Content")
-                    .padding()
-                Spacer()
+        var body: some View {
+            Button("Show Map App Picker") {
+                showSheet = true
+            }
+            .sheet(isPresented: $showSheet) {
+                MapAppPickerSheet(
+                    onSelect: { _ in showSheet = false }
+                )
+                .presentationDetents([.height(220)])
             }
         }
-        .frame(height: 400)
-        .frame(maxHeight: .infinity, alignment: .bottom)
     }
+    return PreviewWrapper()
 }
 
-#Preview("Sheet With Header") {
-    ZStack {
-        Color.black.opacity(0.3)
-            .ignoresSafeArea()
+#Preview("Spot Detail Sheet") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
 
-        SheetWithHeader(title: "Updates", onClose: {}) {
-            Text("Content goes here")
-                .padding()
-            Spacer()
+        var body: some View {
+            Button("Show Spot Detail") {
+                showSheet = true
+            }
+            .sheet(isPresented: $showSheet) {
+                SpotDetailSheet(
+                    spot: SpotData(
+                        name: "Café Lomi",
+                        category: "Coffee",
+                        latitude: 48.8566,
+                        longitude: 2.3522,
+                        radius: 100,
+                        instagramHandle: "@cafelomi",
+                        websiteURL: "https://cafelomi.com"
+                    ),
+                    onClose: { showSheet = false }
+                )
+            }
         }
-        .frame(height: 400)
-        .frame(maxHeight: .infinity, alignment: .bottom)
     }
-}
-
-#Preview("Updates Sheet - Loading") {
-    SheetWithHeader(title: "Updates", onClose: {}) {
-        UpdatesSheetContent(state: .loading)
-    }
-    .frame(height: 500)
-}
-
-#Preview("Updates Sheet - Empty") {
-    SheetWithHeader(title: "Updates", onClose: {}) {
-        UpdatesSheetContent(state: .empty)
-    }
-    .frame(height: 500)
-}
-
-#Preview("Updates Sheet - Content") {
-    SheetWithHeader(title: "Updates", onClose: {}) {
-        UpdatesSheetContent(
-            state: .content(
-                updates: [
-                    .init(title: "Paris Coffee Spots"),
-                    .init(title: "Berlin Street Art"),
-                    .init(title: "Tokyo Ramen Guide", isUpdating: true)
-                ],
-                history: [
-                    "London Pubs",
-                    "NYC Pizza",
-                    "Barcelona Tapas"
-                ]
-            )
-        )
-    }
-    .frame(height: 600)
-}
-
-#Preview("Map App Picker Sheet") {
-    MapAppPickerSheet(
-        onSelect: { mapApp in
-            print("Selected: \(mapApp)")
-        }
-    )
-    .presentationDetents([.height(220)])
+    return PreviewWrapper()
 }

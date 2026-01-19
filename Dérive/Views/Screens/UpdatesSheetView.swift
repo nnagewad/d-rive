@@ -20,8 +20,22 @@ struct UpdatesSheetView: View {
     }
 
     var body: some View {
-        SheetWithHeader(title: "Updates", onClose: { dismiss() }) {
+        NavigationStack {
             content
+                .background(Color.backgroundGroupedPrimary)
+                .navigationTitle("Updates")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Color.labelSecondary)
+                        }
+                    }
+                }
         }
     }
 
@@ -151,37 +165,85 @@ struct ListUpdate: Identifiable {
 
 // MARK: - Previews
 
-#Preview("Loading") {
-    UpdatesSheetView(state: .loading)
+#Preview("Updates Sheet - Loading") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
+
+        var body: some View {
+            Button("Show Updates Sheet") {
+                showSheet = true
+            }
+            .sheet(isPresented: $showSheet) {
+                UpdatesSheetView(state: .loading)
+            }
+        }
+    }
+    return PreviewWrapper()
 }
 
-#Preview("Empty") {
-    UpdatesSheetView(state: .empty)
+#Preview("Updates Sheet - Empty") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
+
+        var body: some View {
+            Button("Show Updates Sheet") {
+                showSheet = true
+            }
+            .sheet(isPresented: $showSheet) {
+                UpdatesSheetView(state: .empty)
+            }
+        }
+    }
+    return PreviewWrapper()
 }
 
-#Preview("With Updates") {
-    UpdatesSheetView(
-        state: .content,
-        updates: [
-            ListUpdate(listName: "Paris Coffee Spots"),
-            ListUpdate(listName: "Berlin Street Art"),
-            ListUpdate(listName: "Tokyo Ramen Guide"),
-        ],
-        history: [
-            "London Pubs",
-            "NYC Pizza",
-        ]
-    )
+#Preview("Updates Sheet - With Updates") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
+
+        var body: some View {
+            Button("Show Updates Sheet") {
+                showSheet = true
+            }
+            .sheet(isPresented: $showSheet) {
+                UpdatesSheetView(
+                    state: .content,
+                    updates: [
+                        ListUpdate(listName: "Paris Coffee Spots"),
+                        ListUpdate(listName: "Berlin Street Art"),
+                        ListUpdate(listName: "Tokyo Ramen Guide"),
+                    ],
+                    history: [
+                        "London Pubs",
+                        "NYC Pizza",
+                    ]
+                )
+            }
+        }
+    }
+    return PreviewWrapper()
 }
 
-#Preview("History Only") {
-    UpdatesSheetView(
-        state: .content,
-        updates: [],
-        history: [
-            "Paris Coffee Spots",
-            "Berlin Street Art",
-            "London Pubs",
-        ]
-    )
+#Preview("Updates Sheet - History Only") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
+
+        var body: some View {
+            Button("Show Updates Sheet") {
+                showSheet = true
+            }
+            .sheet(isPresented: $showSheet) {
+                UpdatesSheetView(
+                    state: .content,
+                    updates: [],
+                    history: [
+                        "Paris Coffee Spots",
+                        "Berlin Street Art",
+                        "London Pubs",
+                    ]
+                )
+            }
+        }
+    }
+    return PreviewWrapper()
 }

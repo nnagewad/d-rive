@@ -86,6 +86,14 @@ final class DataService {
         return list.spots.sorted { $0.name < $1.name }
     }
 
+    func getSpot(byId id: String) -> SpotData? {
+        guard let context = modelContext else { return nil }
+        let descriptor = FetchDescriptor<SpotData>(
+            predicate: #Predicate { $0.id == id }
+        )
+        return try? context.fetch(descriptor).first
+    }
+
     func getActiveGeofenceSpots() -> [SpotData] {
         guard let context = modelContext else { return [] }
         // Get all spots from downloaded lists where notifications are enabled
