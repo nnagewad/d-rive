@@ -137,10 +137,15 @@ struct CuratedListsView: View {
 struct CityDetailView: View {
     let city: CityData
     @Binding var navigationPath: NavigationPath
+    @State private var showUpdatesSheet = false
 
     var body: some View {
         VStack(spacing: 0) {
-            NavigationHeader(title: "", onBack: { navigationPath.removeLast() })
+            NavigationHeader(title: "", onBack: { navigationPath.removeLast() }) {
+                PillButton(title: "Updates", style: .glass) {
+                    showUpdatesSheet = true
+                }
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -170,6 +175,9 @@ struct CityDetailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.backgroundGroupedPrimary)
         .navigationBarHidden(true)
+        .sheet(isPresented: $showUpdatesSheet) {
+            UpdatesSheetView()
+        }
     }
 }
 
@@ -182,6 +190,7 @@ struct ListDetailView: View {
     @State private var isDownloading = false
     @State private var isRequestingPermissions = false
     @State private var showPermissionAlert = false
+    @State private var showUpdatesSheet = false
     @State private var selectedSpot: SpotData?
 
     var body: some View {
@@ -217,12 +226,19 @@ struct ListDetailView: View {
                 selectedSpot = nil
             }
         }
+        .sheet(isPresented: $showUpdatesSheet) {
+            UpdatesSheetView()
+        }
     }
 
     // MARK: - Header
 
     private var header: some View {
-        NavigationHeader(title: "", onBack: { navigationPath.removeLast() })
+        NavigationHeader(title: "", onBack: { navigationPath.removeLast() }) {
+            PillButton(title: "Updates", style: .glass) {
+                showUpdatesSheet = true
+            }
+        }
     }
 
     // MARK: - Info Section

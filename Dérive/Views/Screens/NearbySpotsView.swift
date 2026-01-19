@@ -17,6 +17,7 @@ struct NearbySpotsView: View {
     @ObservedObject private var permissionService = PermissionService.shared
     @ObservedObject private var locationManager = LocationManager.shared
     @State private var selectedSpot: SpotData?
+    @State private var showUpdatesSheet: Bool = false
 
     private var hasLocationPermission: Bool {
         let status = permissionService.locationStatus
@@ -38,7 +39,12 @@ struct NearbySpotsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            LargeTitleHeader(title: "Nearby Spots")
+            LargeTitleHeader(
+                title: "Nearby Spots",
+                trailingButton: .init(title: "Updates") {
+                    showUpdatesSheet = true
+                }
+            )
 
             if sortedSpots.isEmpty {
                 emptyState
@@ -54,6 +60,9 @@ struct NearbySpotsView: View {
             SpotDetailSheet(spot: spot) {
                 selectedSpot = nil
             }
+        }
+        .sheet(isPresented: $showUpdatesSheet) {
+            UpdatesSheetView()
         }
         .onAppear {
             Task {
