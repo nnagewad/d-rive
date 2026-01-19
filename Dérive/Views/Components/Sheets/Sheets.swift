@@ -204,10 +204,8 @@ struct SpotDetailSheet: View {
                 SpotDetailSheet(
                     spot: SpotData(
                         name: "Café Lomi",
-                        category: "Coffee",
                         latitude: 48.8566,
                         longitude: 2.3522,
-                        radius: 100,
                         instagramHandle: "@cafelomi",
                         websiteURL: "https://cafelomi.com"
                     ),

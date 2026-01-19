@@ -315,12 +315,17 @@ struct ListDetailView: View {
                 _ = await PermissionService.shared.requestLocationPermission()
             }
 
-            try? await Task.sleep(for: .seconds(1))
-            await MainActor.run {
-                list.isDownloaded = true
-                list.lastUpdated = .now
-                isDownloading = false
-                reloadGeofences()
+            do {
+                try await DataService.shared.downloadListFromSupabase(list)
+                await MainActor.run {
+                    isDownloading = false
+                    reloadGeofences()
+                }
+            } catch {
+                await MainActor.run {
+                    isDownloading = false
+                }
+                print("Failed to download list: \(error)")
             }
         }
     }
