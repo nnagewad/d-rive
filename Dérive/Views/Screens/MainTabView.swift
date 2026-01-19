@@ -3,7 +3,8 @@ import SwiftData
 
 // MARK: - Main Tab View
 
-/// Main app container with custom tab bar navigation
+/// Main app container using native iOS TabView
+/// iOS 26: Automatically gets liquid glass tab bar styling and dark mode support
 struct MainTabView: View {
     @EnvironmentObject private var navigationCoordinator: NavigationCoordinator
     @State private var selectedTab: TabItem
@@ -13,17 +14,24 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        TabBarContainer(selectedTab: $selectedTab) {
-            ZStack {
-                switch selectedTab {
-                case .nearbySpots:
-                    NearbySpotsView()
-                case .curatedLists:
-                    CuratedListsView()
-                case .settings:
-                    NewSettingsView()
+        TabView(selection: $selectedTab) {
+            NearbySpotsView()
+                .tabItem {
+                    Label(TabItem.nearbySpots.title, systemImage: TabItem.nearbySpots.icon)
                 }
-            }
+                .tag(TabItem.nearbySpots)
+
+            CuratedListsView()
+                .tabItem {
+                    Label(TabItem.curatedLists.title, systemImage: TabItem.curatedLists.icon)
+                }
+                .tag(TabItem.curatedLists)
+
+            NewSettingsView()
+                .tabItem {
+                    Label(TabItem.settings.title, systemImage: TabItem.settings.icon)
+                }
+                .tag(TabItem.settings)
         }
         .sheet(item: $navigationCoordinator.currentDestination) { destination in
             NearbyLocationSheet(destination: destination) {

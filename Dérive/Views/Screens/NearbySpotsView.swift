@@ -38,24 +38,28 @@ struct NearbySpotsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            LargeTitleHeader(
-                title: "Nearby Spots",
-                trailingButton: .init(title: "Updates") {
-                    showUpdatesSheet = true
+        NavigationStack {
+            Group {
+                if sortedSpots.isEmpty {
+                    emptyState
+                } else if !hasLocationPermission {
+                    locationDisabledState
+                } else {
+                    spotsList
                 }
-            )
-
-            if sortedSpots.isEmpty {
-                emptyState
-            } else if !hasLocationPermission {
-                locationDisabledState
-            } else {
-                spotsList
+            }
+            .navigationTitle("Nearby Spots")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Updates") {
+                        showUpdatesSheet = true
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
         .sheet(item: $selectedSpot) { spot in
             SpotDetailSheet(spot: spot) {
                 selectedSpot = nil
@@ -78,48 +82,61 @@ struct NearbySpotsView: View {
     // MARK: - Location Disabled State
 
     private var locationDisabledState: some View {
-        VStack(spacing: Spacing.medium) {
-            EmptyState(
-                title: "Location Access Required",
-                subtitle: "Enable location in Settings to see nearby spots"
-            )
-
-            LinkButton(title: "Open iOS Settings") {
+        ContentUnavailableView {
+            Label("Location Access Required", systemImage: "location.slash")
+        } description: {
+            Text("Enable location in Settings to see nearby spots")
+        } actions: {
+            Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
+            .buttonStyle(.bordered)
         }
     }
 
     // MARK: - Empty State
 
     private var emptyState: some View {
-        EmptyState(
-            title: "No Nearby Spots",
-            subtitle: "Add a Curated List"
-        )
+        ContentUnavailableView {
+            Label("No Nearby Spots", systemImage: "mappin.slash")
+        } description: {
+            Text("Add a Curated List to see nearby spots")
+        }
     }
 
     // MARK: - Spots List
 
     private var spotsList: some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                ListSectionTitle(title: "Closest first")
-
+        List {
+            Section {
                 ForEach(sortedSpots) { spot in
-                    SpotRow(
-                        name: spot.name,
-                        category: spot.category,
-                        onInfoTapped: {
-                            selectedSpot = spot
+                    Button {
+                        selectedSpot = spot
+                    } label: {
+                        LabeledContent {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(Color.accentBlue)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(spot.name)
+                                    .foregroundStyle(Color.labelPrimary)
+                                if !spot.category.isEmpty {
+                                    Text(spot.category)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.labelSecondary)
+                                }
+                            }
                         }
-                    )
+                    }
+                    .buttonStyle(.plain)
                 }
+            } header: {
+                Text("Closest first")
             }
-            .padding(.top, Spacing.small)
         }
+        .listStyle(.insetGrouped)
     }
 }
 

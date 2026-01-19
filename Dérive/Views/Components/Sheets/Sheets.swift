@@ -131,62 +131,40 @@ struct UpdatesSheetContent: View {
 // MARK: - Map App Picker Sheet
 
 /// Sheet for choosing default map app (shown on first Get Directions tap)
-/// Native iOS style bottom sheet
+/// iOS 26: Uses native List styling
 struct MapAppPickerSheet: View {
     var onSelect: (MapApp) -> Void
 
     var body: some View {
-        VStack(spacing: Spacing.medium) {
-            // Header
-            VStack(spacing: Spacing.xxSmall) {
-                Text("Choose a Map App")
-                    .font(.footnoteRegular)
-                    .foregroundColor(Color.labelSecondary)
+        NavigationStack {
+            List {
+                Section {
+                    Button {
+                        onSelect(.appleMaps)
+                    } label: {
+                        Label("Apple Maps", systemImage: "map.fill")
+                    }
 
-                Text("Select your default for directions.")
-                    .font(.footnoteRegular)
-                    .foregroundColor(Color.labelSecondary)
-            }
-            .padding(.top, Spacing.medium)
-
-            // Options
-            VStack(spacing: 0) {
-                Button {
-                    onSelect(.appleMaps)
-                } label: {
-                    Text("Apple Maps")
-                        .font(.title3)
-                        .foregroundColor(Color.accentBlue)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                }
-
-                Divider()
-
-                Button {
-                    onSelect(.googleMaps)
-                } label: {
-                    Text("Google Maps")
-                        .font(.title3)
-                        .foregroundColor(Color.accentBlue)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
+                    Button {
+                        onSelect(.googleMaps)
+                    } label: {
+                        Label("Google Maps", systemImage: "globe")
+                    }
+                } footer: {
+                    Text("This will be your default map app for directions.")
                 }
             }
-            .background(Color.backgroundGroupedSecondary)
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.small))
-            .padding(.horizontal, Spacing.medium)
+            .listStyle(.insetGrouped)
+            .navigationTitle("Choose Map App")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .padding(.bottom, Spacing.medium)
-        .frame(maxWidth: .infinity)
-        .background(Color.backgroundGroupedPrimary)
     }
 }
 
 // MARK: - Spot Detail Sheet
 
 /// Sheet showing details for a spot with Get Directions button
-/// Used for: Nearby Spots view, Curated Lists view
+/// iOS 26: Uses native NavigationStack and List for automatic glass styling
 struct SpotDetailSheet: View {
     let spot: SpotData
     let onClose: () -> Void
@@ -195,23 +173,62 @@ struct SpotDetailSheet: View {
     @State private var showMapAppPicker = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            SheetHeader(title: spot.name, onClose: onClose)
-
-            ScrollView {
-                VStack(spacing: Spacing.medium) {
-                    infoCard
-
-                    PrimaryButton(title: "Get Directions") {
-                        handleGetDirections()
+        NavigationStack {
+            List {
+                // Info Section
+                Section {
+                    if !spot.category.isEmpty {
+                        LabeledContent("Category", value: spot.category)
                     }
-                    .padding(.horizontal, Spacing.medium)
+
+                    if let instagram = spot.instagramHandle {
+                        Button {
+                            openInstagram(instagram)
+                        } label: {
+                            LabeledContent("Instagram", value: instagram)
+                        }
+                    }
+
+                    if let website = spot.websiteURL {
+                        Button {
+                            openWebsite(website)
+                        } label: {
+                            Text("Website")
+                        }
+                    }
                 }
-                .padding(.top, Spacing.small)
+
+                // Directions Section
+                Section {
+                    Button {
+                        handleGetDirections()
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Label("Get Directions", systemImage: "location.fill")
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .listRowBackground(Color.clear)
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle(spot.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        onClose()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(Color.labelSecondary)
+                            .font(.title2)
+                    }
+                }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.backgroundGroupedPrimary)
         .sheet(isPresented: $showMapAppPicker) {
             MapAppPickerSheet(
                 onSelect: { mapApp in
@@ -222,31 +239,6 @@ struct SpotDetailSheet: View {
             )
             .presentationDetents([.height(220)])
         }
-    }
-
-    private var infoCard: some View {
-        GroupedCard {
-            VStack(spacing: 0) {
-                if !spot.category.isEmpty {
-                    InfoRow(label: "Category", value: spot.category)
-                }
-
-                if let instagram = spot.instagramHandle {
-                    RowSeparator()
-                    LinkRow(label: "Instagram") {
-                        openInstagram(instagram)
-                    }
-                }
-
-                if let website = spot.websiteURL {
-                    RowSeparator()
-                    LinkRow(label: "Website") {
-                        openWebsite(website)
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, Spacing.medium)
     }
 
     private func handleGetDirections() {

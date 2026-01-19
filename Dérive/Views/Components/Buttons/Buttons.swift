@@ -2,8 +2,8 @@ import SwiftUI
 
 // MARK: - Primary Button
 
-/// Full-width primary action button
-/// Used for: "Download", "Get Directions"
+/// Full-width primary action button using native iOS styling
+/// iOS 26: Uses borderedProminent style with automatic dark mode support
 struct PrimaryButton: View {
     let title: String
     var isLoading: Bool = false
@@ -16,57 +16,42 @@ struct PrimaryButton: View {
             HStack {
                 if isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.white)
                 } else {
                     Text(title)
-                        .font(.bodyEmphasized)
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .foregroundColor(.white)
-            .background(Color.accentBlue)
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.roundedRectangle(radius: CornerRadius.medium))
+        .controlSize(.large)
         .disabled(isLoading)
     }
 }
 
 // MARK: - Secondary Button
 
-/// Bordered secondary action button
-/// Used for: Less prominent actions
+/// Bordered secondary action button using native iOS styling
+/// iOS 26: Uses bordered style with automatic dark mode support
 struct SecondaryButton: View {
     let title: String
     var action: () -> Void
 
     var body: some View {
-        Button {
+        Button(title) {
             action()
-        } label: {
-            Text(title)
-                .font(.bodyEmphasized)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .foregroundColor(Color.accentBlue)
-                .background(Color.backgroundGroupedSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(Color.accentBlue, lineWidth: 1)
-                )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle(radius: CornerRadius.medium))
+        .controlSize(.large)
+        .frame(maxWidth: .infinity)
     }
 }
 
 // MARK: - Pill Button
 
-/// Small pill-shaped button with multiple styles
-/// Used for: "Updates" button in headers, action buttons
-/// Design: Supports filled, bordered, and liquid glass (iOS 26) styles
+/// Small pill-shaped button using native iOS styling
+/// iOS 26: Uses bordered/borderedProminent styles with capsule shape
 struct PillButton: View {
     let title: String
     var style: PillButtonStyle = .filled
@@ -75,62 +60,32 @@ struct PillButton: View {
     enum PillButtonStyle {
         case filled     // Blue background, white text
         case bordered   // Blue border and text
-        case glass      // Liquid glass effect (iOS 26)
+        case glass      // Native bordered style (iOS 26 glass)
     }
 
     var body: some View {
-        Button {
-            action()
-        } label: {
-            Text(title)
-                .font(style == .glass ? .system(size: 17, weight: .medium) : .subheadlineEmphasized)
-                .padding(.horizontal, style == .glass ? 20 : 14)
-                .padding(.vertical, style == .glass ? 6 : 7)
-                .foregroundColor(foregroundColor)
-                .background(backgroundView)
-                .clipShape(Capsule())
-                .overlay(
-                    Capsule()
-                        .stroke(strokeColor, lineWidth: style == .bordered ? 1 : 0)
-                )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var foregroundColor: Color {
-        switch style {
-        case .filled: return .white
-        case .bordered: return Color.accentBlue
-        case .glass: return Color.labelVibrantControlsPrimary
-        }
-    }
-
-    @ViewBuilder
-    private var backgroundView: some View {
         switch style {
         case .filled:
-            Color.accentBlue
-        case .bordered:
-            Color.clear
-        case .glass:
-            // Liquid glass effect - semi-transparent with subtle tint
-            Color(white: 0.97, opacity: 0.9)
-                .background(.ultraThinMaterial)
-        }
-    }
+            Button(title) {
+                action()
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
 
-    private var strokeColor: Color {
-        switch style {
-        case .bordered: return Color.accentBlue
-        default: return .clear
+        case .bordered, .glass:
+            Button(title) {
+                action()
+            }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.capsule)
         }
     }
 }
 
 // MARK: - Icon Button
 
-/// Circular icon button
-/// Used for: Subscribe/add button, close button
+/// Circular icon button using native iOS styling
+/// iOS 26: Uses bordered styles with circle shape
 struct IconButton: View {
     let systemName: String
     var style: IconButtonStyle = .plain
@@ -143,51 +98,41 @@ struct IconButton: View {
     }
 
     var body: some View {
-        Button {
-            action()
-        } label: {
-            Image(systemName: systemName)
-                .font(.system(size: 17, weight: .medium))
-                .foregroundColor(foregroundColor)
-                .frame(width: 30, height: 30)
-                .background(backgroundColor)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .stroke(strokeColor, lineWidth: style == .bordered ? 1 : 0)
-                )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var foregroundColor: Color {
         switch style {
-        case .plain: return Color.accentBlue
-        case .filled: return .white
-        case .bordered: return Color.accentBlue
-        }
-    }
+        case .plain:
+            Button {
+                action()
+            } label: {
+                Image(systemName: systemName)
+            }
+            .buttonStyle(.borderless)
 
-    private var backgroundColor: Color {
-        switch style {
-        case .plain: return .clear
-        case .filled: return Color.accentBlue
-        case .bordered: return .clear
-        }
-    }
+        case .filled:
+            Button {
+                action()
+            } label: {
+                Image(systemName: systemName)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.circle)
 
-    private var strokeColor: Color {
-        switch style {
-        case .bordered: return Color.accentBlue
-        default: return .clear
+        case .bordered:
+            Button {
+                action()
+            } label: {
+                Image(systemName: systemName)
+            }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
         }
     }
 }
 
 // MARK: - Back Button
+// Note: With native NavigationStack, this is typically not needed
+// The system provides automatic back buttons
 
-/// Navigation back button
-/// Used for: Detail screen headers
+/// Navigation back button (legacy, prefer native navigation)
 struct BackButton: View {
     var action: () -> Void
 
@@ -197,18 +142,16 @@ struct BackButton: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(Color.labelPrimary)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .foregroundStyle(Color.accentBlue)
     }
 }
 
 // MARK: - Close Button
 
-/// Sheet close button (X)
-/// Used for: Sheet headers
+/// Sheet close button using native iOS styling
+/// iOS 26: Uses system close button appearance
 struct CloseButton: View {
     var action: () -> Void
 
@@ -216,12 +159,10 @@ struct CloseButton: View {
         Button {
             action()
         } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(Color.labelSecondary)
-                .frame(width: 30, height: 30)
-                .background(Color.fillVibrantTertiary)
-                .clipShape(Circle())
+            Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 28))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(Color.labelSecondary)
         }
         .buttonStyle(.plain)
     }
@@ -229,21 +170,16 @@ struct CloseButton: View {
 
 // MARK: - Link Button
 
-/// Text link button
-/// Used for: "Update All", "Open" actions
+/// Text link button using native iOS styling
 struct LinkButton: View {
     let title: String
     var action: () -> Void
 
     var body: some View {
-        Button {
+        Button(title) {
             action()
-        } label: {
-            Text(title)
-                .font(.bodyRegular)
-                .foregroundColor(Color.accentBlue)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
     }
 }
 
@@ -262,6 +198,7 @@ struct LinkButton: View {
     HStack(spacing: 16) {
         PillButton(title: "Update", style: .filled) {}
         PillButton(title: "Update", style: .bordered) {}
+        PillButton(title: "Update", style: .glass) {}
     }
     .padding()
 }
@@ -275,16 +212,10 @@ struct LinkButton: View {
     .padding()
 }
 
-#Preview("Navigation Buttons") {
-    HStack(spacing: 16) {
-        BackButton {}
-        Spacer()
+#Preview("Close & Link") {
+    VStack(spacing: 16) {
         CloseButton {}
+        LinkButton(title: "Update All") {}
     }
     .padding()
-}
-
-#Preview("Link Button") {
-    LinkButton(title: "Update All") {}
-        .padding()
 }

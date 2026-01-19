@@ -5,53 +5,71 @@ import SwiftUI
 // Following Apple Human Interface Guidelines
 
 // MARK: - Colors
+// iOS 26 Liquid Glass - Adaptive colors with automatic dark mode support
+
+import UIKit
 
 extension Color {
 
-    // MARK: Labels
+    // MARK: Labels - Adaptive
 
-    /// Primary label color - #000000
-    static let labelPrimary = Color(hex: "000000")
+    /// Primary label color - adapts to light/dark mode
+    static let labelPrimary = Color(uiColor: .label)
 
-    /// Secondary label color - #3C3C43 at 60% opacity
-    static let labelSecondary = Color(hex: "3C3C43").opacity(0.6)
+    /// Secondary label color - adapts to light/dark mode
+    static let labelSecondary = Color(uiColor: .secondaryLabel)
 
-    /// Tertiary label color - #3C3C43 at 30% opacity
-    static let labelTertiary = Color(hex: "3C3C43").opacity(0.3)
+    /// Tertiary label color - adapts to light/dark mode
+    static let labelTertiary = Color(uiColor: .tertiaryLabel)
 
-    // MARK: Labels - Vibrant
+    /// Quaternary label color - adapts to light/dark mode
+    static let labelQuaternary = Color(uiColor: .quaternaryLabel)
 
-    /// Vibrant primary label - #333333
-    static let labelVibrantPrimary = Color(hex: "333333")
+    // MARK: Labels - Vibrant (for glass surfaces)
 
-    /// Vibrant controls primary - #404040
-    static let labelVibrantControlsPrimary = Color(hex: "404040")
+    /// Vibrant primary label - for use on glass/blur backgrounds
+    static let labelVibrantPrimary = Color(uiColor: .label)
+
+    /// Vibrant controls primary - for interactive elements on glass
+    static let labelVibrantControlsPrimary = Color(uiColor: .secondaryLabel)
 
     // MARK: Accents
 
-    /// Blue accent color - #0088FF
-    static let accentBlue = Color(hex: "0088FF")
+    /// Blue accent color - system tint
+    static let accentBlue = Color.accentColor
 
-    // MARK: Backgrounds (Grouped)
+    // MARK: Backgrounds (Grouped) - Adaptive
 
-    /// Primary grouped background - #F2F2F7
-    static let backgroundGroupedPrimary = Color(hex: "F2F2F7")
+    /// Primary grouped background - adapts to light/dark mode
+    static let backgroundGroupedPrimary = Color(uiColor: .systemGroupedBackground)
 
-    /// Secondary grouped background - #FFFFFF
-    static let backgroundGroupedSecondary = Color.white
+    /// Secondary grouped background - adapts to light/dark mode
+    static let backgroundGroupedSecondary = Color(uiColor: .secondarySystemGroupedBackground)
 
-    // MARK: Fills
+    /// Tertiary grouped background - adapts to light/dark mode
+    static let backgroundGroupedTertiary = Color(uiColor: .tertiarySystemGroupedBackground)
 
-    /// Vibrant tertiary fill - #EDEDED
-    static let fillVibrantTertiary = Color(hex: "EDEDED")
+    // MARK: Fills - Adaptive
 
-    // MARK: Separators
+    /// Primary fill - adapts to light/dark mode
+    static let fillPrimary = Color(uiColor: .systemFill)
 
-    /// Vibrant separator - #E6E6E6
-    static let separatorVibrant = Color(hex: "E6E6E6")
+    /// Secondary fill - adapts to light/dark mode
+    static let fillSecondary = Color(uiColor: .secondarySystemFill)
 
-    /// Opaque separator - #C6C6C8
-    static let separatorOpaque = Color(hex: "C6C6C8")
+    /// Tertiary fill - adapts to light/dark mode
+    static let fillTertiary = Color(uiColor: .tertiarySystemFill)
+
+    /// Vibrant tertiary fill - for glass surfaces
+    static let fillVibrantTertiary = Color(uiColor: .tertiarySystemFill)
+
+    // MARK: Separators - Adaptive
+
+    /// Vibrant separator - adapts to light/dark mode
+    static let separatorVibrant = Color(uiColor: .separator)
+
+    /// Opaque separator - adapts to light/dark mode
+    static let separatorOpaque = Color(uiColor: .opaqueSeparator)
 
     // MARK: Hex Initializer
 
