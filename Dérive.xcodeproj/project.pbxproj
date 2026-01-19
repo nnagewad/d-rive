@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F01312922F1ED7DA004A06D9 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F01312912F1ED7DA004A06D9 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		F0450E792EF1F171006BA7A0 /* Dérive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dérive.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F01312922F1ED7DA004A06D9 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "Dérive";
 			packageProductDependencies = (
+				F01312912F1ED7DA004A06D9 /* Supabase */,
 			);
 			productName = "Dérive";
 			productReference = F0450E792EF1F171006BA7A0 /* Dérive.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = F0450E702EF1F171006BA7A0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F01312902F1ED7DA004A06D9 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F0450E7A2EF1F171006BA7A0 /* Products */;
 			projectDirPath = "";
@@ -352,6 +361,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F01312902F1ED7DA004A06D9 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F01312912F1ED7DA004A06D9 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F01312902F1ED7DA004A06D9 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F0450E712EF1F171006BA7A0 /* Project object */;
 }
