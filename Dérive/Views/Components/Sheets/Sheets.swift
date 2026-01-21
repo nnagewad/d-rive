@@ -22,22 +22,18 @@ struct MapAppPickerSheet: View {
                     Button {
                         onSelect(.appleMaps)
                     } label: {
-                        HStack {
-                            Spacer()
-                            Text("Apple Maps")
-                            Spacer()
-                        }
+                        Text("Apple Maps")
+                            .frame(maxWidth: .infinity)
                     }
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
 
                     Button {
                         onSelect(.googleMaps)
                     } label: {
-                        HStack {
-                            Spacer()
-                            Text("Google Maps")
-                            Spacer()
-                        }
+                        Text("Google Maps")
+                            .frame(maxWidth: .infinity)
                     }
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                 } footer: {
                     Text("This will be your default map app for directions.")
                 }
@@ -77,24 +73,20 @@ struct SpotDetailSheet: View {
                         Button {
                             openInstagram(instagram)
                         } label: {
-                            HStack {
-                                Spacer()
-                                Text("Instagram")
-                                Spacer()
-                            }
+                            Text("Instagram")
+                                .frame(maxWidth: .infinity)
                         }
+                        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                     }
 
                     if let website = spot.websiteURL {
                         Button {
                             openWebsite(website)
                         } label: {
-                            HStack {
-                                Spacer()
-                                Text("Website")
-                                Spacer()
-                            }
+                            Text("Website")
+                                .frame(maxWidth: .infinity)
                         }
+                        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                     }
                 }
 

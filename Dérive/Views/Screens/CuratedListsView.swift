@@ -210,17 +210,6 @@ struct ListDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(list.name)
         .navigationBarTitleDisplayMode(.large)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if isActivated {
-                Text("Notifications active")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(Color(UIColor.secondaryLabel))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 8)
-            }
-        }
         .task {
             await loadSpots()
         }
@@ -358,12 +347,10 @@ struct CuratorDetailView: View {
                         Button {
                             openInstagram(instagram)
                         } label: {
-                            HStack {
-                                Spacer()
-                                Text("Instagram")
-                                Spacer()
-                            }
+                            Text("Instagram")
+                                .frame(maxWidth: .infinity)
                         }
+                        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                     }
                 }
             }
