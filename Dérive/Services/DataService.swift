@@ -215,6 +215,59 @@ final class DataService {
         logger.info("Downloaded list: \(list.name) with \(supabaseSpots.count) spots")
     }
 
+    /// Fetches spots for a list without activating geofencing
+    /// Used to display spots before user activates the list
+    func fetchSpotsForList(_ list: CuratedListData) async throws {
+        guard let context = modelContext else {
+            logger.error("No model context available for fetching spots")
+            return
+        }
+
+        // Skip if spots already loaded
+        guard list.spots.isEmpty else {
+            logger.debug("Spots already loaded for list: \(list.name)")
+            return
+        }
+
+        logger.info("Fetching spots for preview: \(list.name)...")
+
+        let listUUID = UUID(uuidString: list.id)!
+        let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
+
+        for supabaseSpot in supabaseSpots {
+            let spot = SpotData(
+                id: supabaseSpot.id.uuidString,
+                name: supabaseSpot.spotName,
+                spotDescription: supabaseSpot.spotDescription,
+                latitude: supabaseSpot.latitude,
+                longitude: supabaseSpot.longitude,
+                instagramHandle: supabaseSpot.instagramHandle,
+                websiteURL: supabaseSpot.websiteUrl
+            )
+
+            if let categoryId = supabaseSpot.categoryId?.uuidString {
+                spot.categoryData = getSpotCategory(byId: categoryId)
+            }
+
+            spot.list = list
+            context.insert(spot)
+        }
+
+        try context.save()
+        logger.info("Fetched \(supabaseSpots.count) spots for preview: \(list.name)")
+    }
+
+    /// Activates a list: sets both isDownloaded and notifyWhenNearby flags
+    /// Spots should already be fetched via fetchSpotsForList()
+    func activateList(_ list: CuratedListData) {
+        list.isDownloaded = true
+        list.notifyWhenNearby = true
+        list.downloadedVersion = list.version
+        list.lastUpdated = .now
+        save()
+        logger.info("Activated list: \(list.name)")
+    }
+
     func removeDownloadedList(_ list: CuratedListData) {
         guard let context = modelContext else { return }
 

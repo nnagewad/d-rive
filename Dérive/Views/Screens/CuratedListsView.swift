@@ -140,11 +140,16 @@ struct ListDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var list: CuratedListData
     @Binding var navigationPath: NavigationPath
-    @State private var isDownloading = false
-    @State private var isRequestingPermissions = false
+    @State private var isLoadingSpots = false
+    @State private var spotsLoadError: Error?
+    @State private var isActivating = false
     @State private var showPermissionAlert = false
     @State private var showUpdatesSheet = false
     @State private var selectedSpot: SpotData?
+
+    private var isActivated: Bool {
+        list.isDownloaded && list.notifyWhenNearby
+    }
 
     var body: some View {
         List {
@@ -165,11 +170,11 @@ struct ListDetailView: View {
             }
 
             // Action Section
-            if list.isDownloaded {
+            if isActivated {
                 Section {
                     Toggle("Notify When Nearby", isOn: $list.notifyWhenNearby)
-                        .onChange(of: list.notifyWhenNearby) { oldValue, newValue in
-                            handleNotifyToggleChange(from: oldValue, to: newValue)
+                        .onChange(of: list.notifyWhenNearby) { _, newValue in
+                            handleDeactivation(newValue)
                         }
                 } footer: {
                     Text("A notification banner appears when you're close to any of the spots on the list.")
@@ -177,14 +182,14 @@ struct ListDetailView: View {
             } else {
                 Section {
                     Button {
-                        downloadList()
+                        activateList()
                     } label: {
                         HStack {
                             Spacer()
-                            if isDownloading {
+                            if isActivating {
                                 ProgressView()
                             } else {
-                                Text("Download")
+                                Text("Activate")
                             }
                             Spacer()
                         }
@@ -192,13 +197,25 @@ struct ListDetailView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .listRowBackground(Color.clear)
-                    .disabled(isDownloading)
+                    .disabled(isActivating || isLoadingSpots)
                 }
             }
 
             // Spots Section
-            if list.isDownloaded && !list.spots.isEmpty {
-                Section("Spots") {
+            Section("Spots") {
+                if isLoadingSpots {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                } else if let error = spotsLoadError {
+                    Text("Failed to load spots: \(error.localizedDescription)")
+                        .foregroundStyle(Color.labelSecondary)
+                } else if list.spots.isEmpty {
+                    Text("No spots available")
+                        .foregroundStyle(Color.labelSecondary)
+                } else {
                     ForEach(list.spots) { spot in
                         Button {
                             selectedSpot = spot
@@ -226,6 +243,9 @@ struct ListDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(list.name)
         .navigationBarTitleDisplayMode(.large)
+        .task {
+            await loadSpots()
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Updates") {
@@ -255,89 +275,73 @@ struct ListDetailView: View {
         }
     }
 
-    private func handleNotifyToggleChange(from oldValue: Bool, to newValue: Bool) {
-        // Only check permissions when turning ON
-        guard newValue == true else {
-            saveAndReload()
-            return
+    // MARK: - Spots Loading
+
+    private func loadSpots() async {
+        guard list.spots.isEmpty else { return }
+
+        isLoadingSpots = true
+        spotsLoadError = nil
+
+        do {
+            try await DataService.shared.fetchSpotsForList(list)
+        } catch {
+            spotsLoadError = error
+            print("Failed to load spots: \(error)")
         }
 
-        // Check if we've already requested notification permissions before
-        if PermissionService.shared.hasRequestedNotificationPermissions {
-            // Already requested - check if notification permission is actually granted
-            Task {
-                await PermissionService.shared.refreshPermissionStatus()
-
-                await MainActor.run {
-                    let hasNotifications = PermissionService.shared.notificationStatus == .authorized ||
-                                          PermissionService.shared.notificationStatus == .provisional
-                    if !hasNotifications {
-                        // Notification permission not granted - show alert and turn toggle off
-                        list.notifyWhenNearby = false
-                        showPermissionAlert = true
-                    }
-                    saveAndReload()
-                }
-            }
-            return
-        }
-
-        // First time enabling - request notification permission only
-        isRequestingPermissions = true
-        Task {
-            let granted = await PermissionService.shared.requestNotificationPermission()
-
-            await MainActor.run {
-                isRequestingPermissions = false
-
-                if !granted {
-                    // Notification permission denied - turn the toggle back off
-                    list.notifyWhenNearby = false
-                }
-
-                saveAndReload()
-            }
-        }
+        isLoadingSpots = false
     }
 
-    private func saveAndReload() {
-        try? modelContext.save()
-        reloadGeofences()
-    }
+    // MARK: - Activation
 
-    // MARK: - Actions
-
-    private func downloadList() {
-        isDownloading = true
+    private func activateList() {
+        isActivating = true
         Task {
-            // Request location permission on first download
+            // Request location permission if not already requested
             if !PermissionService.shared.hasRequestedLocationPermissions {
                 _ = await PermissionService.shared.requestLocationPermission()
             }
 
-            do {
-                try await DataService.shared.downloadListFromSupabase(list)
-                await MainActor.run {
-                    isDownloading = false
-                    reloadGeofences()
+            // Request notification permission if not already requested
+            if !PermissionService.shared.hasRequestedNotificationPermissions {
+                let granted = await PermissionService.shared.requestNotificationPermission()
+                if !granted {
+                    await MainActor.run {
+                        isActivating = false
+                        showPermissionAlert = true
+                    }
+                    return
                 }
-            } catch {
-                await MainActor.run {
-                    isDownloading = false
+            } else {
+                // Already requested - verify notifications are enabled
+                await PermissionService.shared.refreshPermissionStatus()
+                let hasNotifications = PermissionService.shared.notificationStatus == .authorized ||
+                                      PermissionService.shared.notificationStatus == .provisional
+                if !hasNotifications {
+                    await MainActor.run {
+                        isActivating = false
+                        showPermissionAlert = true
+                    }
+                    return
                 }
-                print("Failed to download list: \(error)")
+            }
+
+            // Activate the list (spots should already be loaded)
+            await MainActor.run {
+                DataService.shared.activateList(list)
+                isActivating = false
+                reloadGeofences()
             }
         }
     }
-}
 
-// MARK: - Notification Toggle Observer
-
-extension ListDetailView {
-    /// Observes notification toggle changes and reloads geofences
-    private func observeNotificationToggle() {
-        // SwiftData automatically persists changes via @Bindable
-        // We need to reload geofences when this changes
+    private func handleDeactivation(_ isEnabled: Bool) {
+        if !isEnabled {
+            list.notifyWhenNearby = false
+            try? modelContext.save()
+            reloadGeofences()
+        }
     }
 }
 
