@@ -144,7 +144,6 @@ struct ListDetailView: View {
     @State private var spotsLoadError: Error?
     @State private var isActivating = false
     @State private var showPermissionAlert = false
-    @State private var showUpdatesSheet = false
     @State private var selectedSpot: SpotData?
 
     private var isActivated: Bool {
@@ -166,38 +165,6 @@ struct ListDetailView: View {
                             LabeledContent("Curator", value: curator.name)
                         }
                     }
-                }
-            }
-
-            // Action Section
-            if isActivated {
-                Section {
-                    Toggle("Notify When Nearby", isOn: $list.notifyWhenNearby)
-                        .onChange(of: list.notifyWhenNearby) { _, newValue in
-                            handleDeactivation(newValue)
-                        }
-                } footer: {
-                    Text("A notification banner appears when you're close to any of the spots on the list.")
-                }
-            } else {
-                Section {
-                    Button {
-                        activateList()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            if isActivating {
-                                ProgressView()
-                            } else {
-                                Text("Activate")
-                            }
-                            Spacer()
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .listRowBackground(Color.clear)
-                    .disabled(isActivating || isLoadingSpots)
                 }
             }
 
@@ -243,16 +210,41 @@ struct ListDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(list.name)
         .navigationBarTitleDisplayMode(.large)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if isActivated {
+                Text("Notifications active")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color(UIColor.secondaryLabel))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+            }
+        }
         .task {
             await loadSpots()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Updates") {
-                    showUpdatesSheet = true
+                if isActivating {
+                    ProgressView()
+                } else if isActivated {
+                    Button {
+                        deactivateList()
+                    } label: {
+                        Image(systemName: "bell.slash")
+                    }
+                    .buttonBorderShape(.circle)
+                } else {
+                    Button {
+                        activateList()
+                    } label: {
+                        Image(systemName: "bell")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.circle)
+                    .disabled(isLoadingSpots)
                 }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.capsule)
             }
         }
         .alert("Notifications Required", isPresented: $showPermissionAlert) {
@@ -269,9 +261,6 @@ struct ListDetailView: View {
             SpotDetailSheet(spot: spot) {
                 selectedSpot = nil
             }
-        }
-        .sheet(isPresented: $showUpdatesSheet) {
-            UpdatesSheetView()
         }
     }
 
@@ -336,12 +325,10 @@ struct ListDetailView: View {
         }
     }
 
-    private func handleDeactivation(_ isEnabled: Bool) {
-        if !isEnabled {
-            list.notifyWhenNearby = false
-            try? modelContext.save()
-            reloadGeofences()
-        }
+    private func deactivateList() {
+        list.notifyWhenNearby = false
+        DataService.shared.save()
+        reloadGeofences()
     }
 }
 
