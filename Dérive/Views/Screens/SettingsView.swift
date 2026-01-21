@@ -33,6 +33,7 @@ struct SettingsView: View {
                     } label: {
                         LabeledContent("Default Map App", value: mapAppDisplayName)
                     }
+                    .listRowBackground(Color.backgroundGroupedSecondary)
 
                     LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
                 } footer: {

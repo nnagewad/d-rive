@@ -73,6 +73,7 @@ struct CuratedListsView: View {
                         NavigationLink(value: city) {
                             Text(city.name)
                         }
+                        .listRowBackground(Color.backgroundGroupedSecondary)
                     }
                 }
             }
@@ -112,6 +113,7 @@ struct CityDetailView: View {
                                 }
                             }
                         }
+                        .listRowBackground(Color.backgroundGroupedSecondary)
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -164,6 +166,7 @@ struct ListDetailView: View {
                         NavigationLink(value: curator) {
                             LabeledContent("Curator", value: curator.name)
                         }
+                        .listRowBackground(Color.backgroundGroupedSecondary)
                     }
                 }
             }
@@ -363,6 +366,7 @@ struct CuratorDetailView: View {
                             NavigationLink(value: list) {
                                 Text(list.name)
                             }
+                            .listRowBackground(Color.backgroundGroupedSecondary)
                         }
                     }
                 }

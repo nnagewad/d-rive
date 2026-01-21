@@ -65,10 +65,6 @@ struct SpotDetailSheet: View {
                         LabeledContent("Category", value: spot.category)
                     }
 
-                    if let city = spot.list?.city {
-                        LabeledContent("Location", value: "\(city.name), \(city.country)")
-                    }
-
                     if let instagram = spot.instagramHandle {
                         Button {
                             openInstagram(instagram)
