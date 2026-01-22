@@ -13,6 +13,8 @@ struct DeriveApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var navigationCoordinator = NavigationCoordinator.shared
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var hasCompletedInitialSync = false
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -52,6 +54,19 @@ struct DeriveApp: App {
                         print("Failed to sync from Supabase: \(error)")
                     }
                     appDelegate.startGeofenceMonitoringIfNeeded()
+                    hasCompletedInitialSync = true
+                }
+                .onChange(of: scenePhase) { oldPhase, newPhase in
+                    // Sync when returning to foreground (but not on initial launch)
+                    if newPhase == .active && oldPhase == .background && hasCompletedInitialSync {
+                        Task {
+                            do {
+                                try await DataService.shared.syncFromSupabase()
+                            } catch {
+                                print("Failed to sync from Supabase on foreground: \(error)")
+                            }
+                        }
+                    }
                 }
         }
     }
