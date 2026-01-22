@@ -17,7 +17,6 @@ struct NearbySpotsView: View {
     @ObservedObject private var permissionService = PermissionService.shared
     @ObservedObject private var locationManager = LocationManager.shared
     @State private var selectedSpot: SpotData?
-    @State private var showUpdatesSheet: Bool = false
 
     private var hasLocationPermission: Bool {
         let status = permissionService.locationStatus
@@ -50,23 +49,11 @@ struct NearbySpotsView: View {
             }
             .navigationTitle("Nearby Spots")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Updates") {
-                        showUpdatesSheet = true
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                }
-            }
         }
         .sheet(item: $selectedSpot) { spot in
             SpotDetailSheet(spot: spot) {
                 selectedSpot = nil
             }
-        }
-        .sheet(isPresented: $showUpdatesSheet) {
-            UpdatesSheetView()
         }
         .onAppear {
             Task {

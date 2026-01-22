@@ -8,7 +8,6 @@ import UIKit
 /// Tab 2 in the app navigation
 struct CuratedListsView: View {
     @Query(sort: \CityData.name) private var cities: [CityData]
-    @State private var showUpdatesSheet: Bool = false
     @State private var selectedList: CuratedListData?
     @State private var navigationPath = NavigationPath()
 
@@ -29,18 +28,6 @@ struct CuratedListsView: View {
             }
             .navigationTitle("Curated Lists")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Updates") {
-                        showUpdatesSheet = true
-                    }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                }
-            }
-            .sheet(isPresented: $showUpdatesSheet) {
-                UpdatesSheetView()
-            }
             .navigationDestination(for: CityData.self) { city in
                 CityDetailView(city: city, navigationPath: $navigationPath)
             }
@@ -90,7 +77,6 @@ struct CuratedListsView: View {
 struct CityDetailView: View {
     let city: CityData
     @Binding var navigationPath: NavigationPath
-    @State private var showUpdatesSheet = false
 
     var body: some View {
         Group {
@@ -121,18 +107,6 @@ struct CityDetailView: View {
         }
         .navigationTitle("\(city.name), \(city.country)")
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Updates") {
-                    showUpdatesSheet = true
-                }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.capsule)
-            }
-        }
-        .sheet(isPresented: $showUpdatesSheet) {
-            UpdatesSheetView()
-        }
     }
 }
 

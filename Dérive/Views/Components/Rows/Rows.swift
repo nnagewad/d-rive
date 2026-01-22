@@ -213,95 +213,6 @@ struct SpotRow: View {
     }
 }
 
-// MARK: - Update Row
-
-/// Row with an Update button
-/// Used for: Updates sheet list items
-struct UpdateRow: View {
-    let title: String
-    var isUpdating: Bool = false
-    var action: () -> Void
-
-    var body: some View {
-        HStack {
-            Text(title)
-                .font(.bodyRegular)
-                .foregroundColor(Color.labelPrimary)
-
-            Spacer()
-
-            Button(action: action) {
-                if isUpdating {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.8)
-                } else {
-                    Text("Update")
-                        .font(.subheadlineRegular)
-                        .foregroundColor(Color.accentBlue)
-                }
-            }
-            .disabled(isUpdating)
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.capsule)
-        }
-        .padding(.horizontal, Spacing.medium)
-        .frame(minHeight: RowHeight.standard)
-    }
-}
-
-// MARK: - Update All Row
-
-/// Special row for "Update All" action with badge
-/// Used for: Updates sheet header
-struct UpdateAllRow: View {
-    let count: Int
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Text("Update All")
-                    .font(.bodyRegular)
-                    .foregroundColor(Color.accentBlue)
-
-                Spacer()
-
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.subheadlineEmphasized)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.red)
-                        .clipShape(Capsule())
-                }
-            }
-            .padding(.horizontal, Spacing.medium)
-            .frame(minHeight: RowHeight.standard)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - History Row
-
-/// Simple row for recently updated items (no action)
-/// Used for: Updates sheet "Recently updated" section
-struct HistoryRow: View {
-    let title: String
-
-    var body: some View {
-        Text(title)
-            .font(.bodyRegular)
-            .foregroundColor(Color.labelPrimary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Spacing.medium)
-            .frame(minHeight: RowHeight.standard)
-    }
-}
-
 // MARK: - Row Separator
 
 /// Standard row separator
@@ -363,20 +274,6 @@ struct RowSeparator: View {
         Section {
             SpotRow(name: "Café Lomi", category: "Coffee", onInfoTapped: {})
             SpotRow(name: "Le Comptoir Général", category: "Bar", onRowTapped: {})
-        }
-    }
-}
-
-#Preview("Update Rows") {
-    List {
-        Section {
-            UpdateAllRow(count: 5) {}
-            UpdateRow(title: "Paris Coffee Spots") {}
-            UpdateRow(title: "Updating...", isUpdating: true) {}
-        }
-        Section {
-            HistoryRow(title: "Berlin Street Art")
-            HistoryRow(title: "Tokyo Ramen Guide")
         }
     }
 }
