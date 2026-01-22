@@ -448,6 +448,32 @@ final class DataService {
         try context.save()
 
         logger.info("Supabase metadata sync completed: \(countries.count) countries, \(cities.count) cities, \(categories.count) categories, \(curators.count) curators, \(lists.count) lists")
+
+        // Check for downloaded lists that have updates and refresh their spots
+        try await syncDownloadedListsWithUpdates()
+    }
+
+    /// Checks downloaded lists for version updates and re-fetches spots if needed
+    private func syncDownloadedListsWithUpdates() async throws {
+        let downloadedLists = getDownloadedLists()
+        let listsWithUpdates = downloadedLists.filter { $0.hasUpdate }
+
+        guard !listsWithUpdates.isEmpty else {
+            logger.debug("No downloaded lists need updates")
+            return
+        }
+
+        logger.info("Found \(listsWithUpdates.count) downloaded list(s) with updates, syncing spots...")
+
+        for list in listsWithUpdates {
+            logger.info("Updating spots for list: \(list.name) (v\(list.downloadedVersion ?? 0) → v\(list.version))")
+            try await downloadListFromSupabase(list)
+        }
+
+        // Reload geofences after updating spots
+        GeofenceLoaderService.shared.reloadAndRestartMonitoring()
+
+        logger.info("Completed updating \(listsWithUpdates.count) list(s)")
     }
 
     // MARK: - Debug
