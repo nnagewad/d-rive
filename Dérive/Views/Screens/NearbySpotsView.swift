@@ -99,25 +99,9 @@ struct NearbySpotsView: View {
         List {
             Section {
                 ForEach(sortedSpots) { spot in
-                    Button {
+                    SpotRow(name: spot.name, category: spot.category) {
                         selectedSpot = spot
-                    } label: {
-                        LabeledContent {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(Color.accentBlue)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(spot.name)
-                                    .foregroundStyle(Color.labelPrimary)
-                                if !spot.category.isEmpty {
-                                    Text(spot.category)
-                                        .font(.subheadline)
-                                        .foregroundStyle(Color.labelSecondary)
-                                }
-                            }
-                        }
                     }
-                    .buttonStyle(.plain)
                 }
             } header: {
                 Text("Closest first")

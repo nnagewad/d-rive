@@ -69,7 +69,7 @@ struct SpotDetailSheet: View {
                         Button {
                             openInstagram(instagram)
                         } label: {
-                            Text("Instagram")
+                            Text("View Instagram")
                                 .frame(maxWidth: .infinity)
                         }
                         .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
@@ -79,7 +79,7 @@ struct SpotDetailSheet: View {
                         Button {
                             openWebsite(website)
                         } label: {
-                            Text("Website")
+                            Text("View Website")
                                 .frame(maxWidth: .infinity)
                         }
                         .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }

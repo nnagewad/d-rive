@@ -157,59 +157,28 @@ struct SelectableRow: View {
 
 // MARK: - Spot Row
 
-/// Row for displaying a spot with title, category, and info/drill accessory
+/// Row for displaying a spot with name and category
 /// Used for: Nearby Spots list, Curated spots list
-/// Design: 68px height, separator at top, 16px horizontal padding
 struct SpotRow: View {
     let name: String
     let category: String
-    var onInfoTapped: (() -> Void)? = nil
-    var onRowTapped: (() -> Void)? = nil
+    var action: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Separator at top of row
-            Rectangle()
-                .fill(Color.separatorVibrant)
-                .frame(height: 0.5)
-
-            HStack(spacing: 0) {
-                Button(action: { onRowTapped?() }) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(name)
-                            .font(.bodyRegular)
-                            .foregroundColor(Color.labelPrimary)
-                            .frame(height: 22)
-
-                        Text(category)
-                            .font(.subheadlineRegular)
-                            .foregroundColor(Color.labelSecondary)
-                            .frame(height: 20)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                if let onInfoTapped {
-                    Button(action: onInfoTapped) {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: IconSize.info))
-                            .foregroundColor(Color.accentBlue)
-                            .frame(width: 22, height: 22)
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color.labelTertiary)
-                        .frame(width: 8)
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .foregroundStyle(Color.accentBlue)
+                if !category.isEmpty {
+                    Text(category)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.labelSecondary)
                 }
             }
-            .padding(.horizontal, Spacing.medium)
-            .frame(height: RowHeight.withSubtitle - 0.5)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
-        .frame(height: RowHeight.withSubtitle)
+        .buttonStyle(.plain)
     }
 }
 
@@ -272,8 +241,9 @@ struct RowSeparator: View {
 #Preview("Spot Rows") {
     List {
         Section {
-            SpotRow(name: "Café Lomi", category: "Coffee", onInfoTapped: {})
-            SpotRow(name: "Le Comptoir Général", category: "Bar", onRowTapped: {})
+            SpotRow(name: "Café Lomi", category: "Coffee") {}
+            SpotRow(name: "Le Comptoir Général", category: "Bar") {}
+            SpotRow(name: "No Category Spot", category: "") {}
         }
     }
 }
