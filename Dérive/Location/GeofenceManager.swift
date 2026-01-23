@@ -231,6 +231,43 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         notify(config)
     }
 
+    func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+        // If activeGeofences is empty (app was terminated), reload configurations
+        if activeGeofences.isEmpty {
+            reloadGeofenceConfigurations()
+        }
+
+        guard let config = activeGeofences[region.identifier] else {
+            logger.debug("No configuration found for region state: \(region.identifier)")
+            return
+        }
+
+        switch state {
+        case .inside:
+            // User is already inside this region when we started monitoring
+            // This handles the case where regions are re-registered while user is inside
+            let wasInside = insideGeofences.contains(region.identifier)
+            insideGeofences.insert(region.identifier)
+
+            if !wasInside {
+                logger.info("🌍 REGION STATE INSIDE (was outside): \(config.name)")
+                notify(config)
+            } else {
+                logger.debug("🌍 REGION STATE INSIDE (already tracked): \(config.name)")
+            }
+
+        case .outside:
+            insideGeofences.remove(region.identifier)
+            logger.debug("🌍 REGION STATE OUTSIDE: \(config.name)")
+
+        case .unknown:
+            logger.debug("🌍 REGION STATE UNKNOWN: \(config.name)")
+
+        @unknown default:
+            break
+        }
+    }
+
     /// Reloads geofence configurations from disk (used when app is woken from terminated state)
     private func reloadGeofenceConfigurations() {
         do {
@@ -332,6 +369,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             manager.startMonitoring(for: region)
             activeGeofences[config.id] = config
             logger.info("Started monitoring: \(config.name) (\(Int(distance))m away)")
+
+            // Request current state to handle case where user is already inside
+            manager.requestState(for: region)
         }
 
         // Update tracked state
@@ -354,6 +394,9 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
             activeGeofences[config.id] = config
             monitoredGeofenceIds.insert(config.id)
             logger.debug("Fallback registered: \(config.name)")
+
+            // Request current state to handle case where user is already inside
+            manager.requestState(for: region)
         }
     }
 
