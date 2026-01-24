@@ -65,6 +65,8 @@ struct DeriveApp: App {
                             } catch {
                                 print("Failed to sync from Supabase on foreground: \(error)")
                             }
+                            // Reload geofences after sync to ensure they're up to date
+                            reloadGeofences()
                         }
                     }
                 }

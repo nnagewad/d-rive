@@ -42,6 +42,12 @@ struct MainTabView: View {
                 }
                 .tag(TabItem.settings)
         }
+        .onAppear {
+            // Handle case where notification was tapped before view appeared (e.g., app was terminated)
+            if let spotId = navigationCoordinator.selectedSpotId, spotForSheet == nil {
+                spotForSheet = DataService.shared.getSpot(byId: spotId)
+            }
+        }
         .onChange(of: navigationCoordinator.selectedSpotId) { _, newValue in
             if let spotId = newValue {
                 spotForSheet = DataService.shared.getSpot(byId: spotId)

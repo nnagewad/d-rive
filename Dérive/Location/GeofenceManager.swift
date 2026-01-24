@@ -9,6 +9,7 @@
 import CoreLocation
 import Combine
 import UserNotifications
+import UIKit
 import os.log
 
 // MARK: - Distance Calculation Helper
@@ -413,6 +414,14 @@ final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelega
         lastNotificationTime[configuration.id] = Date()
 
         logger.info("🔔 Attempting to send notification for: \(configuration.name)")
+
+        // If app is active, show sheet directly instead of notification
+        let appState = UIApplication.shared.applicationState
+        if appState == .active {
+            logger.info("📱 App is active - showing sheet directly for: \(configuration.name)")
+            NavigationCoordinator.shared.showSpotDetail(spotId: configuration.id)
+            return
+        }
 
         let content = UNMutableNotificationContent()
         content.title = "Dérive"
