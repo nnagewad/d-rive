@@ -45,7 +45,7 @@ struct GeofenceInfo: Identifiable {
 }
 
 @MainActor
-final class GeofenceManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
 
     static let shared = GeofenceManager()
 

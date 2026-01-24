@@ -10,7 +10,7 @@ import CoreLocation
 import Combine
 
 @MainActor
-final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class LocationManager: NSObject, ObservableObject, @preconcurrency CLLocationManagerDelegate {
 
     static let shared = LocationManager()
 

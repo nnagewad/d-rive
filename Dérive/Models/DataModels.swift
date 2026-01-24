@@ -220,3 +220,25 @@ extension CuratedListData {
         spots.map { $0.toGeofenceConfiguration() }
     }
 }
+
+// MARK: - Hashable Conformance for Navigation
+
+extension CuratedListData: Hashable {
+    static func == (lhs: CuratedListData, rhs: CuratedListData) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
+extension SpotData: Hashable {
+    static func == (lhs: SpotData, rhs: SpotData) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}

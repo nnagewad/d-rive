@@ -7,10 +7,11 @@
 //
 
 import Foundation
-import Supabase
+@preconcurrency import Supabase
 import os.log
 
 // MARK: - Supabase Response Models
+// Using @preconcurrency to allow Codable conformance to work with Supabase SDK
 
 struct SupabaseCountry: Codable, Identifiable, Sendable {
     let id: UUID
