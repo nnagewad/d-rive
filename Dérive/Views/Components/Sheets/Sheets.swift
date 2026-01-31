@@ -89,6 +89,7 @@ struct SpotDetailSheet: View {
                 settingsService.defaultMapApp = .googleMaps
                 openDirections(with: .googleMaps)
             }
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will be your default map app for directions.")
         }
