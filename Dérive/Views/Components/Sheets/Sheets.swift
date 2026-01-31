@@ -9,43 +9,6 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Map App Picker Sheet
-
-/// Sheet for choosing default map app (shown on first Get Directions tap)
-struct MapAppPickerSheet: View {
-    var onSelect: (MapApp) -> Void
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Button {
-                        onSelect(.appleMaps)
-                    } label: {
-                        Text("Apple Maps")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-
-                    Button {
-                        onSelect(.googleMaps)
-                    } label: {
-                        Text("Google Maps")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-                } footer: {
-                    Text("This will be your default map app for directions.")
-                }
-            }
-            .listStyle(.insetGrouped)
-            .contentMargins(.top, 0)
-            .navigationTitle("Select a Map App")
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-
 // MARK: - Spot Detail Sheet
 
 /// Sheet showing details for a spot with Get Directions button
@@ -117,15 +80,17 @@ struct SpotDetailSheet: View {
                 }
             }
         }
-        .sheet(isPresented: $showMapAppPicker) {
-            MapAppPickerSheet(
-                onSelect: { mapApp in
-                    settingsService.defaultMapApp = mapApp
-                    showMapAppPicker = false
-                    openDirections(with: mapApp)
-                }
-            )
-            .presentationDetents([.height(220)])
+        .alert("Select a Map App", isPresented: $showMapAppPicker) {
+            Button("Apple Maps") {
+                settingsService.defaultMapApp = .appleMaps
+                openDirections(with: .appleMaps)
+            }
+            Button("Google Maps") {
+                settingsService.defaultMapApp = .googleMaps
+                openDirections(with: .googleMaps)
+            }
+        } message: {
+            Text("This will be your default map app for directions.")
         }
     }
 
@@ -160,25 +125,6 @@ struct SpotDetailSheet: View {
 }
 
 // MARK: - Previews
-
-#Preview("Map App Picker Sheet") {
-    struct PreviewWrapper: View {
-        @State private var showSheet = true
-
-        var body: some View {
-            Button("Show Map App Picker") {
-                showSheet = true
-            }
-            .sheet(isPresented: $showSheet) {
-                MapAppPickerSheet(
-                    onSelect: { _ in showSheet = false }
-                )
-                .presentationDetents([.height(220)])
-            }
-        }
-    }
-    return PreviewWrapper()
-}
 
 #Preview("Spot Detail Sheet") {
     struct PreviewWrapper: View {
