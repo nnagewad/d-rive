@@ -90,11 +90,18 @@ struct CityDetailView: View {
                 List {
                     ForEach(city.lists) { list in
                         NavigationLink(value: list) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(list.name)
-                                if let curator = list.curator {
-                                    Text(curator.name)
-                                        .font(.subheadline)
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(list.name)
+                                    if let curator = list.curator {
+                                        Text(curator.name)
+                                            .font(.subheadline)
+                                            .foregroundStyle(Color.labelSecondary)
+                                    }
+                                }
+                                Spacer()
+                                if list.notifyWhenNearby {
+                                    Image(systemName: "bell.fill")
                                         .foregroundStyle(Color.labelSecondary)
                                 }
                             }
@@ -322,7 +329,14 @@ struct CuratorDetailView: View {
                     Section(group.city != nil ? "\(group.city!.name), \(group.city!.country)" : "Lists") {
                         ForEach(group.lists) { list in
                             NavigationLink(value: list) {
-                                Text(list.name)
+                                HStack {
+                                    Text(list.name)
+                                    Spacer()
+                                    if list.notifyWhenNearby {
+                                        Image(systemName: "bell.fill")
+                                            .foregroundStyle(Color.labelSecondary)
+                                    }
+                                }
                             }
                             .listRowBackground(Color.backgroundGroupedSecondary)
                         }
