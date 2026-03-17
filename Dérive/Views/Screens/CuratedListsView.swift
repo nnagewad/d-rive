@@ -1,6 +1,15 @@
+//
+//  CuratedListsView.swift
+//  Purpose: Curated lists screen — browse lists by city, activate/deactivate geofence notifications
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
+//
+
 import SwiftUI
 import SwiftData
 import UIKit
+import os.log
 
 // MARK: - Curated Lists View
 
@@ -120,6 +129,7 @@ struct CityDetailView: View {
 // MARK: - List Detail View
 
 struct ListDetailView: View {
+    private let logger = Logger(subsystem: "com.derive.app", category: "ListDetailView")
     @Environment(\.modelContext) private var modelContext
     @Bindable var list: CuratedListData
     @Binding var navigationPath: NavigationPath
@@ -233,7 +243,7 @@ struct ListDetailView: View {
             try await DataService.shared.fetchSpotsForList(list)
         } catch {
             spotsLoadError = error
-            print("Failed to load spots: \(error)")
+            logger.error("Failed to load spots: \(error.localizedDescription)")
         }
 
         isLoadingSpots = false
