@@ -1,3 +1,11 @@
+//
+//  Headers.swift
+//  Purpose: Reusable header components (large title, navigation, detail, sheet, curator)
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
+//
+
 import SwiftUI
 
 // MARK: - Large Title Header

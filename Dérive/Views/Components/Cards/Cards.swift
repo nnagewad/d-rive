@@ -1,3 +1,11 @@
+//
+//  Cards.swift
+//  Purpose: Reusable card and section container components
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
+//
+
 import SwiftUI
 
 // MARK: - Grouped Card

@@ -1,3 +1,11 @@
+//
+//  Rows.swift
+//  Purpose: Reusable row components (drill, info, link, toggle, selectable, spot)
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
+//
+
 import SwiftUI
 
 // MARK: - Drill Row
