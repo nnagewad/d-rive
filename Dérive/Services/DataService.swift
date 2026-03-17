@@ -336,14 +336,20 @@ final class DataService {
             countriesTask, citiesTask, categoriesTask, curatorsTask, listsTask
         )
 
+        // Build ID sets for deletion checks
+        let remoteCountryIds = Set(countries.map { $0.id.uuidString })
+        let remoteCategoryIds = Set(categories.map { $0.id.uuidString })
+        let remoteCuratorIds = Set(curators.map { $0.id.uuidString })
+        let remoteCityIds = Set(cities.map { $0.id.uuidString })
+        let remoteListIds = Set(lists.map { $0.id.uuidString })
+
         // Sync countries
         for supabaseCountry in countries {
             let id = supabaseCountry.id.uuidString
             if let existing = getCountry(byId: id) {
                 existing.name = supabaseCountry.countryName
             } else {
-                let country = CountryData(id: id, name: supabaseCountry.countryName)
-                context.insert(country)
+                context.insert(CountryData(id: id, name: supabaseCountry.countryName))
             }
         }
 
@@ -353,8 +359,7 @@ final class DataService {
             if let existing = getSpotCategory(byId: id) {
                 existing.name = supabaseCategory.categoryName
             } else {
-                let category = SpotCategoryData(id: id, name: supabaseCategory.categoryName)
-                context.insert(category)
+                context.insert(SpotCategoryData(id: id, name: supabaseCategory.categoryName))
             }
         }
 
@@ -367,14 +372,13 @@ final class DataService {
                 existing.imageUrl = supabaseCurator.imageUrl
                 existing.instagramHandle = supabaseCurator.instagramHandle
             } else {
-                let curator = CuratorData(
+                context.insert(CuratorData(
                     id: id,
                     name: supabaseCurator.curatorName,
                     bio: supabaseCurator.curatorBio,
                     imageUrl: supabaseCurator.imageUrl,
                     instagramHandle: supabaseCurator.instagramHandle
-                )
-                context.insert(curator)
+                ))
             }
         }
 
@@ -388,14 +392,10 @@ final class DataService {
 
             if let existing = getCity(byId: id) {
                 existing.name = supabaseCity.cityName
-                if let countryId = countryId {
-                    existing.countryData = getCountry(byId: countryId)
-                }
+                if let countryId { existing.countryData = getCountry(byId: countryId) }
             } else {
                 let city = CityData(id: id, name: supabaseCity.cityName)
-                if let countryId = countryId {
-                    city.countryData = getCountry(byId: countryId)
-                }
+                if let countryId { city.countryData = getCountry(byId: countryId) }
                 context.insert(city)
             }
         }
@@ -414,15 +414,9 @@ final class DataService {
                 existing.listDescription = supabaseList.listDescription
                 existing.imageUrl = supabaseList.imageUrl
                 existing.version = supabaseList.version
-                if let lastUpdated = supabaseList.lastUpdated {
-                    existing.lastUpdated = lastUpdated
-                }
-                if let cityId = cityId {
-                    existing.city = getCity(byId: cityId)
-                }
-                if let curatorId = curatorId {
-                    existing.curator = getCurator(byId: curatorId)
-                }
+                if let lastUpdated = supabaseList.lastUpdated { existing.lastUpdated = lastUpdated }
+                if let cityId { existing.city = getCity(byId: cityId) }
+                if let curatorId { existing.curator = getCurator(byId: curatorId) }
             } else {
                 let list = CuratedListData(
                     id: id,
@@ -434,14 +428,29 @@ final class DataService {
                     lastUpdated: supabaseList.lastUpdated ?? .now,
                     notifyWhenNearby: false
                 )
-                if let cityId = cityId {
-                    list.city = getCity(byId: cityId)
-                }
-                if let curatorId = curatorId {
-                    list.curator = getCurator(byId: curatorId)
-                }
+                if let cityId { list.city = getCity(byId: cityId) }
+                if let curatorId { list.curator = getCurator(byId: curatorId) }
                 context.insert(list)
             }
+        }
+
+        // Delete records removed from Supabase (most dependent first)
+        for list in getAllLists() where !remoteListIds.contains(list.id) {
+            list.spots.forEach { context.delete($0) }
+            context.delete(list)
+            logger.info("Deleted removed list: \(list.name)")
+        }
+        for city in getAllCities() where !remoteCityIds.contains(city.id) {
+            context.delete(city)
+        }
+        for curator in getAllCurators() where !remoteCuratorIds.contains(curator.id) {
+            context.delete(curator)
+        }
+        for category in getAllSpotCategories() where !remoteCategoryIds.contains(category.id) {
+            context.delete(category)
+        }
+        for country in getAllCountries() where !remoteCountryIds.contains(country.id) {
+            context.delete(country)
         }
 
         // Final save
