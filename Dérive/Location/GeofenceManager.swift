@@ -424,7 +424,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Dérive"
+        content.title = "Spots"
         content.body = "You're close to \(configuration.name)!"
         content.sound = .default
 

@@ -268,9 +268,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "De-rive-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Dérive";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Dérive uses your location to detect when you enter or leave important places, even when the app is not open.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Dérive uses your location to determine your current position.";
+				INFOPLIST_KEY_CFBundleDisplayName = "Spots";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Spots uses your location to determine your current position.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine where you are.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -307,9 +307,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "De-rive-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Dérive";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Dérive uses your location to detect when you enter or leave important places, even when the app is not open.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Dérive uses your location to determine your current position.";
+				INFOPLIST_KEY_CFBundleDisplayName = "Spots";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Spots uses your location to determine your current position.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine where you are.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

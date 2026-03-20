@@ -37,7 +37,7 @@ struct SettingsView: View {
 
                     LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
                 } footer: {
-                    Text("Dérive monitors up to 20 nearest spots from your downloaded lists.")
+                    Text("Spots monitors up to 20 nearest spots from your downloaded lists.")
                 }
 
                 // iOS Settings Section
