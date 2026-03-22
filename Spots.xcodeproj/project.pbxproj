@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		F01312922F1ED7DA004A06D9 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F01312912F1ED7DA004A06D9 /* Supabase */; };
+		F0D8C2C52F7085C5009052F5 /* Spots.icon in Resources */ = {isa = PBXBuildFile; fileRef = F0D8C2C42F7085C5009052F5 /* Spots.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		F0450E792EF1F171006BA7A0 /* Spots.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spots.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0D8C2C42F7085C5009052F5 /* Spots.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Spots.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -39,6 +41,7 @@
 			children = (
 				F0450E7B2EF1F171006BA7A0 /* Spots */,
 				F0450E7A2EF1F171006BA7A0 /* Products */,
+				F0D8C2C42F7085C5009052F5 /* Spots.icon */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,6 +121,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0D8C2C52F7085C5009052F5 /* Spots.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,7 +264,7 @@
 		F0450E852EF1F172006BA7A0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Spots;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -300,7 +304,7 @@
 		F0450E862EF1F172006BA7A0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Spots;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
