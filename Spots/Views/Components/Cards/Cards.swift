@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - Grouped Card
 
@@ -19,7 +20,7 @@ struct GroupedCard<Content: View>: View {
         VStack(spacing: 0) {
             content()
         }
-        .background(Color.backgroundGroupedSecondary)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
     }
 }
@@ -104,7 +105,7 @@ struct DescriptionCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, 12)
-            .background(Color.backgroundGroupedSecondary)
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
     }
 }
@@ -135,9 +136,7 @@ struct CountryHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Rectangle()
-                .fill(Color.separatorOpaque)
-                .frame(height: 0.5)
+            Divider()
 
             Text(country)
                 .font(.headline)
@@ -159,9 +158,7 @@ struct ListSectionTitle: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Rectangle()
-                .fill(Color.separatorOpaque)
-                .frame(height: 0.5)
+            Divider()
 
             Text(title)
                 .font(.headline)
@@ -191,9 +188,7 @@ struct ListSectionTitle: View {
             }
         }
     }
-    .padding()
-    .background(Color.backgroundGroupedPrimary)
-}
+    .padding()}
 
 #Preview("Section Container") {
     ScrollView {
@@ -217,17 +212,13 @@ struct ListSectionTitle: View {
             }
         }
         .padding()
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}
 
 #Preview("Description Card") {
     VStack(spacing: 16) {
         DescriptionCard(text: "A little bio about the curator. They love finding hidden gems in cities around the world.")
     }
-    .padding()
-    .background(Color.backgroundGroupedPrimary)
-}
+    .padding()}
 
 #Preview("Headers") {
     VStack(alignment: .leading, spacing: 16) {
@@ -235,6 +226,4 @@ struct ListSectionTitle: View {
         SectionHeader(title: "Curated spots", style: .prominent)
         CityHeader(city: "Paris", country: "France")
         ListSectionTitle(title: "Closest first")
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}

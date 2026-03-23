@@ -23,7 +23,7 @@ struct EmptyState: View {
             if let systemImage {
                 Image(systemName: systemImage)
                     .font(.system(size: 48, weight: .light))
-                    .foregroundStyle(Color.labelTertiary)
+                    .foregroundStyle(.tertiary)
                     .padding(.bottom, Spacing.small)
             }
 
@@ -76,19 +76,13 @@ struct LoadingState: View {
             subtitle: "Add a Curated List"
         )
         .frame(height: 200)
-        .background(Color.backgroundGroupedPrimary)
-
         EmptyState(
             title: "No updates available",
             systemImage: "checkmark.circle"
         )
-        .frame(height: 200)
-        .background(Color.backgroundGroupedPrimary)
-    }
+        .frame(height: 200)    }
 }
 
 #Preview("Loading State") {
     LoadingState(message: "Checking for updates")
-        .frame(height: 200)
-        .background(Color.backgroundGroupedPrimary)
-}
+        .frame(height: 200)}

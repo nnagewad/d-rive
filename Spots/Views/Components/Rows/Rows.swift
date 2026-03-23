@@ -44,7 +44,7 @@ struct DrillRow: View {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.labelTertiary)
+                    .foregroundStyle(.tertiary)
             }
             .padding(.horizontal, Spacing.medium)
             .frame(minHeight: subtitle != nil ? RowHeight.withSubtitle : RowHeight.standard)
@@ -187,20 +187,6 @@ struct SpotRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Row Separator
-
-/// Standard row separator
-struct RowSeparator: View {
-    var leadingPadding: CGFloat = Spacing.medium
-
-    var body: some View {
-        Rectangle()
-            .fill(Color.separatorVibrant)
-            .frame(height: 0.5)
-            .padding(.leading, leadingPadding)
     }
 }
 

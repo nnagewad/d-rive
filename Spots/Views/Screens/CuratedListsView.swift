@@ -68,9 +68,7 @@ struct CuratedListsView: View {
                     ForEach(group.cities) { city in
                         NavigationLink(value: city) {
                             Text(city.name)
-                        }
-                        .listRowBackground(Color.backgroundGroupedSecondary)
-                    }
+                        }                    }
                 }
             }
         }
@@ -114,9 +112,7 @@ struct CityDetailView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
-                        }
-                        .listRowBackground(Color.backgroundGroupedSecondary)
-                    }
+                        }                    }
                 }
                 .listStyle(.insetGrouped)
             }
@@ -156,9 +152,7 @@ struct ListDetailView: View {
                     if let curator = list.curator {
                         NavigationLink(value: curator) {
                             LabeledContent("Curator", value: curator.name)
-                        }
-                        .listRowBackground(Color.backgroundGroupedSecondary)
-                    }
+                        }                    }
                 }
             }
 
@@ -348,7 +342,6 @@ struct CuratorDetailView: View {
                                     }
                                 }
                             }
-                            .listRowBackground(Color.backgroundGroupedSecondary)
                         }
                     }
                 }

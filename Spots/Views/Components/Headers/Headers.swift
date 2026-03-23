@@ -103,7 +103,7 @@ struct SheetHeader: View {
         VStack(spacing: 0) {
             // Drag handle
             Capsule()
-                .fill(Color.labelTertiary)
+                .fill(.tertiary)
                 .frame(width: 36, height: 5)
                 .padding(.top, 8)
                 .padding(.bottom, 8)
@@ -150,9 +150,7 @@ struct CuratorListsHeader: View {
             title: "Curated Lists",
             trailingButton: .init(title: "Updates") {}
         )
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}
 
 #Preview("Navigation Header") {
     VStack(spacing: 24) {
@@ -165,29 +163,21 @@ struct CuratorListsHeader: View {
         NavigationHeader(title: "With Icon", onBack: {}) {
             IconButton(systemName: "circle", style: .filled) {}
         }
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}
 
 #Preview("Detail Title") {
     VStack(alignment: .leading, spacing: 16) {
         NavigationHeader(title: "", onBack: {})
         DetailTitle(title: "Paris Coffee Spots")
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}
 
 #Preview("Sheet Header") {
     VStack {
         SheetHeader(title: "Updates", onClose: {})
         Spacer()
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}
 
 #Preview("Curator Header") {
     VStack {
         CuratorListsHeader(curatorName: "John's")
-    }
-    .background(Color.backgroundGroupedPrimary)
-}
+    }}

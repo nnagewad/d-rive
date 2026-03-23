@@ -1,35 +1,12 @@
 //
 //  DesignTokens.swift
-//  Purpose: Design tokens for values with no direct SwiftUI equivalent
+//  Purpose: App-specific design tokens with no native SwiftUI equivalent
 //  Dérive
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-03-23.
 //
 
 import SwiftUI
-import UIKit
-
-// MARK: - Colors
-// Only tokens that have no direct SwiftUI equivalent.
-// Use .primary, .secondary, .accentColor for labels and tints.
-
-extension Color {
-
-    /// Tertiary label — adapts to light/dark mode
-    static let labelTertiary = Color(uiColor: .tertiaryLabel)
-
-    /// Primary grouped background
-    static let backgroundGroupedPrimary = Color(uiColor: .systemGroupedBackground)
-
-    /// Secondary grouped background
-    static let backgroundGroupedSecondary = Color(uiColor: .secondarySystemGroupedBackground)
-
-    /// Standard separator
-    static let separatorVibrant = Color(uiColor: .separator)
-
-    /// Opaque separator
-    static let separatorOpaque = Color(uiColor: .opaqueSeparator)
-}
 
 // MARK: - Spacing
 
