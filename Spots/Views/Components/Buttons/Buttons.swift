@@ -23,7 +23,7 @@ struct PrimaryButton: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.roundedRectangle(radius: CornerRadius.medium))
+        .buttonBorderShape(.roundedRectangle)
         .controlSize(.large)
         .disabled(isLoading)
     }
@@ -42,7 +42,7 @@ struct SecondaryButton: View {
             action()
         }
         .buttonStyle(.bordered)
-        .buttonBorderShape(.roundedRectangle(radius: CornerRadius.medium))
+        .buttonBorderShape(.roundedRectangle)
         .controlSize(.large)
         .frame(maxWidth: .infinity)
     }

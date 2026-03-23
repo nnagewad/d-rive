@@ -30,16 +30,8 @@ enum Spacing {
 // MARK: - Corner Radius
 
 enum CornerRadius {
-    /// 10pt — small elements
-    static let small: CGFloat = 10
-    /// 14pt — buttons
-    static let medium: CGFloat = 14
     /// 26pt — grouped cards
     static let large: CGFloat = 26
-    /// 44pt — screen corners
-    static let screen: CGFloat = 44
-    /// 100pt — pill shape
-    static let pill: CGFloat = 100
 }
 
 // MARK: - Row Heights
