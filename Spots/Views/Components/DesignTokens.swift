@@ -57,14 +57,3 @@ enum IconSize {
     /// 28pt — tab bar
     static let tabBar: CGFloat = 28
 }
-
-// MARK: - Effects
-
-enum Effects {
-    /// 10pt
-    static let scrollEdgeBlurRadius: CGFloat = 10
-    /// 20pt
-    static let backgroundBlurRadius: CGFloat = 20
-    /// 50pt
-    static let tabBarBlurRadius: CGFloat = 50
-}
