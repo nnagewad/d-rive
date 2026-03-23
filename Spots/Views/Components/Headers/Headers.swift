@@ -35,8 +35,8 @@ struct LargeTitleHeader: View {
             .frame(height: 44)
 
             Text(title)
-                .font(.largeTitleEmphasized)
-                .foregroundColor(Color.labelVibrantPrimary)
+                .font(.largeTitle.bold())
+                .foregroundStyle(.primary)
                 .tracking(0.4)
         }
         .padding(.horizontal, Spacing.medium)
@@ -84,8 +84,8 @@ struct DetailTitle: View {
 
     var body: some View {
         Text(title)
-            .font(.largeTitleEmphasized)
-            .foregroundColor(Color.labelPrimary)
+            .font(.largeTitle.bold())
+            .foregroundStyle(.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.medium)
     }
@@ -110,8 +110,8 @@ struct SheetHeader: View {
 
             HStack {
                 Text(title)
-                    .font(.headlineRegular)
-                    .foregroundColor(Color.labelPrimary)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
 
                 Spacer()
 
@@ -132,8 +132,8 @@ struct CuratorListsHeader: View {
 
     var body: some View {
         Text("\(curatorName) curated lists")
-            .font(.headlineRegular)
-            .foregroundColor(Color.labelPrimary)
+            .font(.headline)
+            .foregroundStyle(.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, Spacing.small)

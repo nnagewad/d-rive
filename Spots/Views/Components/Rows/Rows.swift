@@ -23,13 +23,13 @@ struct DrillRow: View {
             HStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.bodyRegular)
-                        .foregroundColor(Color.labelPrimary)
+                        .font(.body)
+                        .foregroundStyle(.primary)
 
                     if let subtitle {
                         Text(subtitle)
-                            .font(.subheadlineRegular)
-                            .foregroundColor(Color.labelSecondary)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -37,14 +37,14 @@ struct DrillRow: View {
 
                 if let value {
                     Text(value)
-                        .font(.bodyRegular)
-                        .foregroundColor(Color.labelSecondary)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
                         .padding(.trailing, Spacing.xSmall)
                 }
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color.labelTertiary)
+                    .foregroundStyle(Color.labelTertiary)
             }
             .padding(.horizontal, Spacing.medium)
             .frame(minHeight: subtitle != nil ? RowHeight.withSubtitle : RowHeight.standard)
@@ -65,14 +65,14 @@ struct InfoRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.bodyRegular)
-                .foregroundColor(Color.labelPrimary)
+                .font(.body)
+                .foregroundStyle(.primary)
 
             Spacer()
 
             Text(value)
-                .font(.bodyRegular)
-                .foregroundColor(Color.labelSecondary)
+                .font(.body)
+                .foregroundStyle(.secondary)
         }
         .padding(.horizontal, Spacing.medium)
         .frame(minHeight: RowHeight.standard)
@@ -91,15 +91,15 @@ struct LinkRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.bodyRegular)
-                .foregroundColor(Color.labelPrimary)
+                .font(.body)
+                .foregroundStyle(.primary)
 
             Spacer()
 
             Button(action: action) {
                 Text(actionLabel)
-                    .font(.bodyRegular)
-                    .foregroundColor(Color.accentBlue)
+                    .font(.body)
+                    .foregroundStyle(Color.accentColor)
             }
         }
         .padding(.horizontal, Spacing.medium)
@@ -118,8 +118,8 @@ struct ToggleRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.bodyRegular)
-                .foregroundColor(Color.labelPrimary)
+                .font(.body)
+                .foregroundStyle(.primary)
 
             Spacer()
 
@@ -144,15 +144,15 @@ struct SelectableRow: View {
         Button(action: action) {
             HStack {
                 Text(title)
-                    .font(.bodyRegular)
-                    .foregroundColor(Color.labelPrimary)
+                    .font(.body)
+                    .foregroundStyle(.primary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color.accentBlue)
+                        .foregroundStyle(Color.accentColor)
                 }
             }
             .padding(.horizontal, Spacing.medium)
@@ -176,11 +176,11 @@ struct SpotRow: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
-                    .foregroundStyle(Color.accentBlue)
+                    .foregroundStyle(Color.accentColor)
                 if !category.isEmpty {
                     Text(category)
                         .font(.subheadline)
-                        .foregroundStyle(Color.labelSecondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

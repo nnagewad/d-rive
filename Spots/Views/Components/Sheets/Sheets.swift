@@ -75,7 +75,7 @@ struct SpotDetailSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.labelSecondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }

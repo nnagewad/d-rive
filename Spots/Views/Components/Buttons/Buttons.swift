@@ -144,7 +144,7 @@ struct BackButton: View {
                 .font(.system(size: 17, weight: .semibold))
         }
         .buttonStyle(.plain)
-        .foregroundStyle(Color.accentBlue)
+        .foregroundStyle(Color.accentColor)
     }
 }
 
@@ -162,7 +162,7 @@ struct CloseButton: View {
             Image(systemName: "xmark.circle.fill")
                 .font(.system(size: 28))
                 .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(Color.labelSecondary)
+                .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
     }

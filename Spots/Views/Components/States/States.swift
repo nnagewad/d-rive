@@ -23,19 +23,19 @@ struct EmptyState: View {
             if let systemImage {
                 Image(systemName: systemImage)
                     .font(.system(size: 48, weight: .light))
-                    .foregroundColor(Color.labelTertiary)
+                    .foregroundStyle(Color.labelTertiary)
                     .padding(.bottom, Spacing.small)
             }
 
             Text(title)
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundColor(Color.labelSecondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
             if let subtitle {
                 Text(subtitle)
                     .font(.system(size: 22, weight: .medium))
-                    .foregroundColor(Color.labelSecondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -59,8 +59,8 @@ struct LoadingState: View {
 
             if let message {
                 Text(message)
-                    .font(.bodyRegular)
-                    .foregroundColor(Color.labelSecondary)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

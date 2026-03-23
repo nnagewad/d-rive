@@ -105,13 +105,13 @@ struct CityDetailView: View {
                                     if let curator = list.curator {
                                         Text(curator.name)
                                             .font(.subheadline)
-                                            .foregroundStyle(Color.labelSecondary)
+                                            .foregroundStyle(.secondary)
                                     }
                                 }
                                 Spacer()
                                 if list.notifyWhenNearby {
                                     Image(systemName: "bell.fill")
-                                        .foregroundStyle(Color.labelSecondary)
+                                        .foregroundStyle(.secondary)
                                 }
                             }
                         }
@@ -150,7 +150,7 @@ struct ListDetailView: View {
                 Section {
                     if !list.listDescription.isEmpty {
                         Text(list.listDescription)
-                            .foregroundStyle(Color.labelSecondary)
+                            .foregroundStyle(.secondary)
                     }
 
                     if let curator = list.curator {
@@ -172,10 +172,10 @@ struct ListDetailView: View {
                     }
                 } else if let error = spotsLoadError {
                     Text("Failed to load spots: \(error.localizedDescription)")
-                        .foregroundStyle(Color.labelSecondary)
+                        .foregroundStyle(.secondary)
                 } else if list.spots.isEmpty {
                     Text("No spots available")
-                        .foregroundStyle(Color.labelSecondary)
+                        .foregroundStyle(.secondary)
                 } else {
                     ForEach(list.spots) { spot in
                         SpotRow(name: spot.name, category: spot.category) {
@@ -318,7 +318,7 @@ struct CuratorDetailView: View {
                 Section {
                     if !curator.bio.isEmpty {
                         Text(curator.bio)
-                            .foregroundStyle(Color.labelSecondary)
+                            .foregroundStyle(.secondary)
                     }
 
                     if let instagram = curator.instagramHandle {
@@ -344,7 +344,7 @@ struct CuratorDetailView: View {
                                     Spacer()
                                     if list.notifyWhenNearby {
                                         Image(systemName: "bell.fill")
-                                            .foregroundStyle(Color.labelSecondary)
+                                            .foregroundStyle(.secondary)
                                     }
                                 }
                             }

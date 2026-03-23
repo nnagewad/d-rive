@@ -81,11 +81,11 @@ struct MapAppPickerView: View {
                 } label: {
                     HStack {
                         Text("Ask Next Time")
-                            .foregroundStyle(Color.labelPrimary)
+                            .foregroundStyle(.primary)
                         Spacer()
                         if settingsService.defaultMapApp == nil {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentBlue)
+                                .foregroundStyle(Color.accentColor)
                         }
                     }
                 }
@@ -95,11 +95,11 @@ struct MapAppPickerView: View {
                 } label: {
                     HStack {
                         Text("Apple Maps")
-                            .foregroundStyle(Color.labelPrimary)
+                            .foregroundStyle(.primary)
                         Spacer()
                         if settingsService.defaultMapApp == .appleMaps {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentBlue)
+                                .foregroundStyle(Color.accentColor)
                         }
                     }
                 }
@@ -109,11 +109,11 @@ struct MapAppPickerView: View {
                 } label: {
                     HStack {
                         Text("Google Maps")
-                            .foregroundStyle(Color.labelPrimary)
+                            .foregroundStyle(.primary)
                         Spacer()
                         if settingsService.defaultMapApp == .googleMaps {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentBlue)
+                                .foregroundStyle(Color.accentColor)
                         }
                     }
                 }

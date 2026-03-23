@@ -65,8 +65,8 @@ struct SectionHeader: View {
 
     var body: some View {
         Text(title)
-            .font(style == .standard ? .subheadlineRegular : .headlineRegular)
-            .foregroundColor(Color.labelSecondary)
+            .font(style == .standard ? .subheadline : .headline)
+            .foregroundStyle(.secondary)
             .padding(.horizontal, Spacing.medium)
             .padding(.top, Spacing.small)
             .padding(.bottom, Spacing.xSmall)
@@ -82,8 +82,8 @@ struct SectionFooter: View {
 
     var body: some View {
         Text(text)
-            .font(.footnoteRegular)
-            .foregroundColor(Color.labelSecondary)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
             .padding(.horizontal, Spacing.medium)
             .padding(.top, Spacing.xSmall)
             .padding(.bottom, Spacing.small)
@@ -99,8 +99,8 @@ struct DescriptionCard: View {
 
     var body: some View {
         Text(text)
-            .font(.bodyRegular)
-            .foregroundColor(Color.labelPrimary)
+            .font(.body)
+            .foregroundStyle(.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, 12)
@@ -119,8 +119,8 @@ struct CityHeader: View {
 
     var body: some View {
         Text("\(city), \(country)")
-            .font(.subheadlineRegular)
-            .foregroundColor(Color.labelSecondary)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, Spacing.xSmall)
     }
@@ -140,8 +140,8 @@ struct CountryHeader: View {
                 .frame(height: 0.5)
 
             Text(country)
-                .font(.bodyEmphasized)
-                .foregroundColor(Color.labelSecondary)
+                .font(.headline)
+                .foregroundStyle(.secondary)
                 .padding(.horizontal, Spacing.medium)
                 .padding(.top, Spacing.small)
                 .padding(.bottom, Spacing.xSmall)
@@ -164,8 +164,8 @@ struct ListSectionTitle: View {
                 .frame(height: 0.5)
 
             Text(title)
-                .font(.bodyEmphasized)
-                .foregroundColor(Color.labelSecondary)
+                .font(.headline)
+                .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, Spacing.medium)
                 .padding(.top, Spacing.xSmall)
