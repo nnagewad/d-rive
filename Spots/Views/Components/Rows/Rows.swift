@@ -156,7 +156,7 @@ struct SelectableRow: View {
                 }
             }
             .padding(.horizontal, Spacing.medium)
-            .frame(minHeight: RowHeight.standard)
+            .padding(.vertical, Spacing.small)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
