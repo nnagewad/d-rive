@@ -44,16 +44,3 @@ enum RowHeight {
     /// 56pt — tab bar button
     static let tabBarButton: CGFloat = 56
 }
-
-// MARK: - Icon Sizes
-
-enum IconSize {
-    /// 17pt — inline
-    static let inline: CGFloat = 17
-    /// 19pt — navigation
-    static let navigation: CGFloat = 19
-    /// 22pt — info button
-    static let info: CGFloat = 22
-    /// 28pt — tab bar
-    static let tabBar: CGFloat = 28
-}
