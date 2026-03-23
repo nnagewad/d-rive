@@ -47,7 +47,7 @@ struct DrillRow: View {
                     .foregroundStyle(.tertiary)
             }
             .padding(.horizontal, Spacing.medium)
-            .frame(minHeight: subtitle != nil ? RowHeight.withSubtitle : RowHeight.standard)
+            .padding(.vertical, Spacing.small)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -75,7 +75,7 @@ struct InfoRow: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, Spacing.medium)
-        .frame(minHeight: RowHeight.standard)
+        .padding(.vertical, Spacing.small)
     }
 }
 
@@ -103,7 +103,7 @@ struct LinkRow: View {
             }
         }
         .padding(.horizontal, Spacing.medium)
-        .frame(minHeight: RowHeight.standard)
+        .padding(.vertical, Spacing.small)
     }
 }
 
@@ -127,7 +127,7 @@ struct ToggleRow: View {
                 .labelsHidden()
         }
         .padding(.horizontal, Spacing.medium)
-        .frame(minHeight: RowHeight.standard)
+        .padding(.vertical, Spacing.small)
     }
 }
 

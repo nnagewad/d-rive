@@ -33,12 +33,3 @@ enum CornerRadius {
     /// 26pt — grouped cards
     static let large: CGFloat = 26
 }
-
-// MARK: - Row Heights
-
-enum RowHeight {
-    /// 44pt — standard
-    static let standard: CGFloat = 44
-    /// 68pt — with subtitle
-    static let withSubtitle: CGFloat = 68
-}
