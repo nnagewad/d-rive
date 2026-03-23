@@ -41,6 +41,4 @@ enum RowHeight {
     static let standard: CGFloat = 44
     /// 68pt — with subtitle
     static let withSubtitle: CGFloat = 68
-    /// 56pt — tab bar button
-    static let tabBarButton: CGFloat = 56
 }
