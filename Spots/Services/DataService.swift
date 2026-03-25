@@ -194,7 +194,8 @@ final class DataService {
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
-                websiteURL: supabaseSpot.websiteUrl
+                websiteURL: supabaseSpot.websiteUrl,
+                version: supabaseSpot.version
             )
 
             // Link category if available
@@ -242,7 +243,8 @@ final class DataService {
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
-                websiteURL: supabaseSpot.websiteUrl
+                websiteURL: supabaseSpot.websiteUrl,
+                version: supabaseSpot.version
             )
 
             if let categoryId = supabaseSpot.categoryId?.uuidString {
@@ -252,6 +254,9 @@ final class DataService {
             spot.list = list
             context.insert(spot)
         }
+
+        // Track the version we fetched at so future updates can be detected
+        list.downloadedVersion = list.version
 
         try context.save()
         logger.info("Fetched \(supabaseSpots.count) spots for preview: \(list.name)")
@@ -347,9 +352,12 @@ final class DataService {
         for supabaseCountry in countries {
             let id = supabaseCountry.id.uuidString
             if let existing = getCountry(byId: id) {
-                existing.name = supabaseCountry.countryName
+                if supabaseCountry.version > existing.version {
+                    existing.name = supabaseCountry.countryName
+                    existing.version = supabaseCountry.version
+                }
             } else {
-                context.insert(CountryData(id: id, name: supabaseCountry.countryName))
+                context.insert(CountryData(id: id, name: supabaseCountry.countryName, version: supabaseCountry.version))
             }
         }
 
@@ -357,9 +365,12 @@ final class DataService {
         for supabaseCategory in categories {
             let id = supabaseCategory.id.uuidString
             if let existing = getSpotCategory(byId: id) {
-                existing.name = supabaseCategory.categoryName
+                if supabaseCategory.version > existing.version {
+                    existing.name = supabaseCategory.categoryName
+                    existing.version = supabaseCategory.version
+                }
             } else {
-                context.insert(SpotCategoryData(id: id, name: supabaseCategory.categoryName))
+                context.insert(SpotCategoryData(id: id, name: supabaseCategory.categoryName, version: supabaseCategory.version))
             }
         }
 
@@ -367,17 +378,21 @@ final class DataService {
         for supabaseCurator in curators {
             let id = supabaseCurator.id.uuidString
             if let existing = getCurator(byId: id) {
-                existing.name = supabaseCurator.curatorName
-                existing.bio = supabaseCurator.curatorBio
-                existing.imageUrl = supabaseCurator.imageUrl
-                existing.instagramHandle = supabaseCurator.instagramHandle
+                if supabaseCurator.version > existing.version {
+                    existing.name = supabaseCurator.curatorName
+                    existing.bio = supabaseCurator.curatorBio
+                    existing.imageUrl = supabaseCurator.imageUrl
+                    existing.instagramHandle = supabaseCurator.instagramHandle
+                    existing.version = supabaseCurator.version
+                }
             } else {
                 context.insert(CuratorData(
                     id: id,
                     name: supabaseCurator.curatorName,
                     bio: supabaseCurator.curatorBio,
                     imageUrl: supabaseCurator.imageUrl,
-                    instagramHandle: supabaseCurator.instagramHandle
+                    instagramHandle: supabaseCurator.instagramHandle,
+                    version: supabaseCurator.version
                 ))
             }
         }
@@ -391,10 +406,13 @@ final class DataService {
             let countryId = supabaseCity.countryId?.uuidString
 
             if let existing = getCity(byId: id) {
-                existing.name = supabaseCity.cityName
-                if let countryId { existing.countryData = getCountry(byId: countryId) }
+                if supabaseCity.version > existing.version {
+                    existing.name = supabaseCity.cityName
+                    existing.version = supabaseCity.version
+                    if let countryId { existing.countryData = getCountry(byId: countryId) }
+                }
             } else {
-                let city = CityData(id: id, name: supabaseCity.cityName)
+                let city = CityData(id: id, name: supabaseCity.cityName, version: supabaseCity.version)
                 if let countryId { city.countryData = getCountry(byId: countryId) }
                 context.insert(city)
             }
@@ -462,27 +480,69 @@ final class DataService {
         try await syncDownloadedListsWithUpdates()
     }
 
-    /// Checks downloaded lists for version updates and re-fetches spots if needed
+    /// Checks all locally cached lists for version updates and re-fetches spots if needed
     private func syncDownloadedListsWithUpdates() async throws {
-        let downloadedLists = getDownloadedLists()
-        let listsWithUpdates = downloadedLists.filter { $0.hasUpdate }
+        let listsWithUpdates = getAllLists().filter { $0.hasUpdate && !$0.spots.isEmpty }
 
         guard !listsWithUpdates.isEmpty else {
-            logger.debug("No downloaded lists need updates")
+            logger.debug("No cached lists need updates")
             return
         }
 
-        logger.info("Found \(listsWithUpdates.count) downloaded list(s) with updates, syncing spots...")
+        logger.info("Found \(listsWithUpdates.count) list(s) with updates, syncing spots...")
+
+        var geofencesNeedReload = false
 
         for list in listsWithUpdates {
             logger.info("Updating spots for list: \(list.name) (v\(list.downloadedVersion ?? 0) → v\(list.version))")
-            try await downloadListFromSupabase(list)
+            if list.isDownloaded {
+                // Full re-download: refreshes spots and preserves activated state
+                try await downloadListFromSupabase(list)
+                geofencesNeedReload = true
+            } else {
+                // Preview refresh: update spots without activating the list
+                try await refreshPreviewSpots(list)
+            }
         }
 
-        // Reload geofences after updating spots
-        GeofenceLoaderService.shared.reloadAndRestartMonitoring()
+        if geofencesNeedReload {
+            GeofenceLoaderService.shared.reloadAndRestartMonitoring()
+        }
 
         logger.info("Completed updating \(listsWithUpdates.count) list(s)")
+    }
+
+    /// Refreshes spots for a previewed (non-activated) list without changing its download state
+    private func refreshPreviewSpots(_ list: CuratedListData) async throws {
+        guard let context = modelContext else { return }
+
+        let listUUID = UUID(uuidString: list.id)!
+        let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
+
+        for spot in list.spots { context.delete(spot) }
+
+        for supabaseSpot in supabaseSpots {
+            let spot = SpotData(
+                id: supabaseSpot.id.uuidString,
+                name: supabaseSpot.spotName,
+                spotDescription: supabaseSpot.spotDescription,
+                latitude: supabaseSpot.latitude,
+                longitude: supabaseSpot.longitude,
+                instagramHandle: supabaseSpot.instagramHandle,
+                websiteURL: supabaseSpot.websiteUrl,
+                version: supabaseSpot.version
+            )
+            if let categoryId = supabaseSpot.categoryId?.uuidString {
+                spot.categoryData = getSpotCategory(byId: categoryId)
+            }
+            spot.list = list
+            context.insert(spot)
+        }
+
+        list.downloadedVersion = list.version
+        list.lastUpdated = .now
+        try context.save()
+        logger.info("Refreshed preview spots for list: \(list.name) with \(supabaseSpots.count) spots")
     }
 
     // MARK: - Debug

@@ -16,11 +16,15 @@ import os.log
 struct SupabaseCountry: Codable, Identifiable, Sendable {
     let id: UUID
     let countryName: String
+    let version: Int
+    let lastUpdated: Date?
     let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
         case countryName = "country_name"
+        case version
+        case lastUpdated = "last_updated"
         case createdAt = "created_at"
     }
 }
@@ -29,6 +33,8 @@ struct SupabaseCity: Codable, Identifiable, Sendable {
     let id: UUID
     let cityName: String
     let countryId: UUID?
+    let version: Int
+    let lastUpdated: Date?
     let createdAt: Date?
 
     // Joined data
@@ -38,6 +44,8 @@ struct SupabaseCity: Codable, Identifiable, Sendable {
         case id
         case cityName = "city_name"
         case countryId = "country_id"
+        case version
+        case lastUpdated = "last_updated"
         case createdAt = "created_at"
         case country = "countries"
     }
@@ -49,6 +57,8 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
     let curatorBio: String
     let imageUrl: String?
     let instagramHandle: String?
+    let version: Int
+    let lastUpdated: Date?
     let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -57,6 +67,8 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
         case curatorBio = "curator_bio"
         case imageUrl = "image_url"
         case instagramHandle = "instagram_handle"
+        case version
+        case lastUpdated = "last_updated"
         case createdAt = "created_at"
     }
 }
@@ -64,11 +76,15 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
 struct SupabaseSpotCategory: Codable, Identifiable, Sendable {
     let id: UUID
     let categoryName: String
+    let version: Int
+    let lastUpdated: Date?
     let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
         case categoryName = "category_name"
+        case version
+        case lastUpdated = "last_updated"
         case createdAt = "created_at"
     }
 }
@@ -115,6 +131,8 @@ struct SupabaseSpot: Codable, Identifiable, Sendable {
     let websiteUrl: String?
     let categoryId: UUID?
     let listId: UUID?
+    let version: Int
+    let lastUpdated: Date?
     let createdAt: Date?
 
     // Joined data
@@ -130,6 +148,8 @@ struct SupabaseSpot: Codable, Identifiable, Sendable {
         case websiteUrl = "website_url"
         case categoryId = "category_id"
         case listId = "list_id"
+        case version
+        case lastUpdated = "last_updated"
         case createdAt = "created_at"
         case category = "spot_categories"
     }

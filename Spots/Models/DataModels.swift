@@ -15,13 +15,15 @@ import SwiftData
 final class CountryData {
     @Attribute(.unique) var id: String
     var name: String
+    var version: Int
 
     @Relationship(deleteRule: .cascade, inverse: \CityData.countryData)
     var cities: [CityData] = []
 
-    init(id: String = UUID().uuidString, name: String) {
+    init(id: String = UUID().uuidString, name: String, version: Int = 1) {
         self.id = id
         self.name = name
+        self.version = version
     }
 }
 
@@ -31,6 +33,7 @@ final class CountryData {
 final class CityData {
     @Attribute(.unique) var id: String
     var name: String
+    var version: Int
 
     var countryData: CountryData?
 
@@ -42,9 +45,10 @@ final class CityData {
         countryData?.name ?? ""
     }
 
-    init(id: String = UUID().uuidString, name: String, countryData: CountryData? = nil) {
+    init(id: String = UUID().uuidString, name: String, version: Int = 1, countryData: CountryData? = nil) {
         self.id = id
         self.name = name
+        self.version = version
         self.countryData = countryData
     }
 }
@@ -55,13 +59,15 @@ final class CityData {
 final class SpotCategoryData {
     @Attribute(.unique) var id: String
     var name: String
+    var version: Int
 
     @Relationship(deleteRule: .nullify, inverse: \SpotData.categoryData)
     var spots: [SpotData] = []
 
-    init(id: String = UUID().uuidString, name: String) {
+    init(id: String = UUID().uuidString, name: String, version: Int = 1) {
         self.id = id
         self.name = name
+        self.version = version
     }
 }
 
@@ -74,6 +80,7 @@ final class CuratorData {
     var bio: String
     var imageUrl: String?
     var instagramHandle: String?
+    var version: Int
 
     @Relationship(deleteRule: .nullify, inverse: \CuratedListData.curator)
     var lists: [CuratedListData] = []
@@ -83,13 +90,15 @@ final class CuratorData {
         name: String,
         bio: String,
         imageUrl: String? = nil,
-        instagramHandle: String? = nil
+        instagramHandle: String? = nil,
+        version: Int = 1
     ) {
         self.id = id
         self.name = name
         self.bio = bio
         self.imageUrl = imageUrl
         self.instagramHandle = instagramHandle
+        self.version = version
     }
 }
 
@@ -113,11 +122,9 @@ final class CuratedListData {
     @Relationship(deleteRule: .cascade, inverse: \SpotData.list)
     var spots: [SpotData] = []
 
-    /// Returns true if the list has been downloaded but a newer version is available
+    /// Returns true if spots are cached locally but a newer version exists on the server
     var hasUpdate: Bool {
-        guard isDownloaded, let downloadedVersion = downloadedVersion else {
-            return false
-        }
+        guard let downloadedVersion = downloadedVersion else { return false }
         return version > downloadedVersion
     }
 
@@ -174,6 +181,8 @@ final class SpotData {
         return list.isDownloaded && list.notifyWhenNearby
     }
 
+    var version: Int
+
     init(
         id: String = UUID().uuidString,
         name: String,
@@ -182,7 +191,8 @@ final class SpotData {
         longitude: Double,
         categoryData: SpotCategoryData? = nil,
         instagramHandle: String? = nil,
-        websiteURL: String? = nil
+        websiteURL: String? = nil,
+        version: Int = 1
     ) {
         self.id = id
         self.name = name
@@ -192,6 +202,7 @@ final class SpotData {
         self.categoryData = categoryData
         self.instagramHandle = instagramHandle
         self.websiteURL = websiteURL
+        self.version = version
     }
 }
 
