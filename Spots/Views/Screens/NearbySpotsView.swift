@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 import CoreLocation
-import UIKit
 
 // MARK: - Nearby Spots View
 
@@ -14,6 +13,7 @@ struct NearbySpotsView: View {
         }
     ) private var spots: [SpotData]
 
+    @Environment(\.openURL) private var openURL
     @ObservedObject private var permissionService = PermissionService.shared
     @ObservedObject private var locationManager = LocationManager.shared
     @State private var selectedSpot: SpotData?
@@ -75,9 +75,7 @@ struct NearbySpotsView: View {
             Text("Enable location in Settings to see nearby spots")
         } actions: {
             Button("Open Settings") {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
+                openURL(URL(string: "app-settings:")!)
             }
             .buttonStyle(.bordered)
         }

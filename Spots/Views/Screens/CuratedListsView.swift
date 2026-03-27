@@ -8,7 +8,6 @@
 
 import SwiftUI
 import SwiftData
-import UIKit
 import os.log
 
 // MARK: - Curated Lists View
@@ -127,6 +126,7 @@ struct CityDetailView: View {
 struct ListDetailView: View {
     private let logger = Logger(subsystem: "com.nikin.spots", category: "ListDetailView")
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.openURL) private var openURL
     @Bindable var list: CuratedListData
     @Binding var navigationPath: NavigationPath
     @State private var isLoadingSpots = false
@@ -210,9 +210,7 @@ struct ListDetailView: View {
         }
         .alert("Notifications Required", isPresented: $showPermissionAlert) {
             Button("Open Settings") {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
+                openURL(URL(string: "app-settings:")!)
             }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -298,6 +296,7 @@ struct ListDetailView: View {
 struct CuratorDetailView: View {
     let curator: CuratorData
     @Binding var navigationPath: NavigationPath
+    @Environment(\.openURL) private var openURL
 
     private var listsGroupedByCity: [(city: CityData?, lists: [CuratedListData])] {
         let grouped = Dictionary(grouping: curator.lists, by: { $0.city?.id })
@@ -355,7 +354,7 @@ struct CuratorDetailView: View {
     private func openInstagram(_ handle: String) {
         let cleanHandle = handle.replacingOccurrences(of: "@", with: "")
         if let url = URL(string: "https://instagram.com/\(cleanHandle)") {
-            UIApplication.shared.open(url)
+            openURL(url)
         }
     }
 }

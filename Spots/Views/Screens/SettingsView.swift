@@ -8,7 +8,6 @@
 
 import SwiftUI
 import SwiftData
-import UIKit
 
 // MARK: - Settings View
 
@@ -21,6 +20,7 @@ struct SettingsView: View {
         }
     ) private var activeSpots: [SpotData]
 
+    @Environment(\.openURL) private var openURL
     @ObservedObject private var settingsService = SettingsService.shared
 
     var body: some View {
@@ -61,9 +61,7 @@ struct SettingsView: View {
     }
 
     private func openIOSSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
-        }
+        openURL(URL(string: "app-settings:")!)
     }
 }
 

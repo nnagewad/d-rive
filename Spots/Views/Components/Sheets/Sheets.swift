@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import UIKit
 
 // MARK: - Spot Detail Sheet
 
@@ -16,6 +15,7 @@ struct SpotDetailSheet: View {
     let spot: SpotData
     let onClose: () -> Void
 
+    @Environment(\.openURL) private var openURL
     @ObservedObject private var settingsService = SettingsService.shared
     @State private var showMapAppPicker = false
 
@@ -114,13 +114,13 @@ struct SpotDetailSheet: View {
     private func openInstagram(_ handle: String) {
         let cleanHandle = handle.replacingOccurrences(of: "@", with: "")
         if let url = URL(string: "https://instagram.com/\(cleanHandle)") {
-            UIApplication.shared.open(url)
+            openURL(url)
         }
     }
 
     private func openWebsite(_ urlString: String) {
         if let url = URL(string: urlString) {
-            UIApplication.shared.open(url)
+            openURL(url)
         }
     }
 }
