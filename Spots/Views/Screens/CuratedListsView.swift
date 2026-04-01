@@ -16,8 +16,6 @@ import os.log
 /// Tab 2 in the app navigation
 struct CuratedListsView: View {
     @Query(sort: \CityData.name) private var cities: [CityData]
-    @State private var selectedList: CuratedListData?
-    @State private var navigationPath = NavigationPath()
 
     private var citiesGroupedByCountry: [(country: String, cities: [CityData])] {
         let grouped = Dictionary(grouping: cities, by: { $0.country })
@@ -26,25 +24,23 @@ struct CuratedListsView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            Group {
-                if cities.isEmpty {
-                    emptyState
-                } else {
-                    citiesListContent
-                }
+        Group {
+            if cities.isEmpty {
+                emptyState
+            } else {
+                citiesListContent
             }
-            .navigationTitle("Curated Lists")
-            .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(for: CityData.self) { city in
-                CityDetailView(city: city, navigationPath: $navigationPath)
-            }
-            .navigationDestination(for: CuratedListData.self) { list in
-                ListDetailView(list: list, navigationPath: $navigationPath)
-            }
-            .navigationDestination(for: CuratorData.self) { curator in
-                CuratorDetailView(curator: curator, navigationPath: $navigationPath)
-            }
+        }
+        .navigationTitle("Curated Lists")
+        .navigationBarTitleDisplayMode(.large)
+        .navigationDestination(for: CityData.self) { city in
+            CityDetailView(city: city)
+        }
+        .navigationDestination(for: CuratedListData.self) { list in
+            ListDetailView(list: list)
+        }
+        .navigationDestination(for: CuratorData.self) { curator in
+            CuratorDetailView(curator: curator)
         }
     }
 
@@ -82,7 +78,6 @@ struct CuratedListsView: View {
 /// Displayed when drilling in from multi-city list
 struct CityDetailView: View {
     let city: CityData
-    @Binding var navigationPath: NavigationPath
 
     var body: some View {
         Group {
@@ -128,7 +123,6 @@ struct ListDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
     @Bindable var list: CuratedListData
-    @Binding var navigationPath: NavigationPath
     @State private var isLoadingSpots = false
     @State private var spotsLoadError: Error?
     @State private var isActivating = false
@@ -295,7 +289,6 @@ struct ListDetailView: View {
 
 struct CuratorDetailView: View {
     let curator: CuratorData
-    @Binding var navigationPath: NavigationPath
     @Environment(\.openURL) private var openURL
 
     private var listsGroupedByCity: [(city: CityData?, lists: [CuratedListData])] {

@@ -1,11 +1,19 @@
+//
+//  NearbySpotsView.swift
+//  Purpose: Nearby spots list content, sorted by distance from current location
+//  Dérive
+//
+//  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
+//
+
 import SwiftUI
 import SwiftData
 import CoreLocation
 
 // MARK: - Nearby Spots View
 
-/// Main screen showing nearby spots from downloaded curated lists
-/// Tab 1 in the app navigation
+/// Content view showing nearby spots from downloaded curated lists
+/// Embedded inside HomeView's NavigationStack
 struct NearbySpotsView: View {
     @Query(
         filter: #Predicate<SpotData> { spot in
@@ -23,12 +31,10 @@ struct NearbySpotsView: View {
         return status == .authorizedAlways || status == .authorizedWhenInUse
     }
 
-    /// Spots sorted by distance from current location
     private var sortedSpots: [SpotData] {
         guard locationManager.currentLocation != nil else {
             return spots.sorted { $0.name < $1.name }
         }
-
         return spots.sorted { spot1, spot2 in
             let distance1 = locationManager.distance(to: spot1.latitude, longitude: spot1.longitude) ?? .infinity
             let distance2 = locationManager.distance(to: spot2.latitude, longitude: spot2.longitude) ?? .infinity
@@ -37,18 +43,14 @@ struct NearbySpotsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if sortedSpots.isEmpty {
-                    emptyState
-                } else if !hasLocationPermission {
-                    locationDisabledState
-                } else {
-                    spotsList
-                }
+        Group {
+            if sortedSpots.isEmpty {
+                emptyState
+            } else if !hasLocationPermission {
+                locationDisabledState
+            } else {
+                spotsList
             }
-            .navigationTitle("Nearby Spots")
-            .navigationBarTitleDisplayMode(.large)
         }
         .sheet(item: $selectedSpot) { spot in
             SpotDetailSheet(spot: spot) {
@@ -56,9 +58,7 @@ struct NearbySpotsView: View {
             }
         }
         .onAppear {
-            Task {
-                await permissionService.refreshPermissionStatus()
-            }
+            Task { await permissionService.refreshPermissionStatus() }
             locationManager.start()
         }
         .onDisappear {
@@ -66,7 +66,7 @@ struct NearbySpotsView: View {
         }
     }
 
-    // MARK: - Location Disabled State
+    // MARK: - States
 
     private var locationDisabledState: some View {
         ContentUnavailableView {
@@ -80,8 +80,6 @@ struct NearbySpotsView: View {
             .buttonStyle(.bordered)
         }
     }
-
-    // MARK: - Empty State
 
     private var emptyState: some View {
         ContentUnavailableView {
@@ -102,7 +100,17 @@ struct NearbySpotsView: View {
                     }
                 }
             } header: {
-                Text("Closest first")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("What's near me?")
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    Text("Closest spot appears on top of the list")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .textCase(nil)
+                .padding(.bottom, 4)
             }
         }
         .listStyle(.insetGrouped)
@@ -145,7 +153,7 @@ enum PreviewContainer {
             name: "Coffee Spots",
             listDescription: "Best coffee in Toronto",
             isDownloaded: true,
-            notifyWhenNearby: false
+            notifyWhenNearby: true
         )
         list.city = city
         list.curator = curator

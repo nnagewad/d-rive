@@ -24,34 +24,32 @@ struct SettingsView: View {
     @ObservedObject private var settingsService = SettingsService.shared
 
     var body: some View {
-        NavigationStack {
-            List {
-                // Main Settings Section
-                Section {
-                    NavigationLink {
-                        MapAppPickerView()
-                    } label: {
-                        LabeledContent("Default Map App", value: mapAppDisplayName)
-                    }
-
-                    LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
-                } footer: {
-                    Text("Spots monitors up to 20 nearest spots from your downloaded lists.")
+        List {
+            // Main Settings Section
+            Section {
+                NavigationLink {
+                    MapAppPickerView()
+                } label: {
+                    LabeledContent("Default Map App", value: mapAppDisplayName)
                 }
 
-                // iOS Settings Section
-                Section {
-                    Button {
-                        openIOSSettings()
-                    } label: {
-                        Text("iOS App Settings")
-                    }
+                LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
+            } footer: {
+                Text("Spots monitors up to 20 nearest spots from your downloaded lists.")
+            }
+
+            // iOS Settings Section
+            Section {
+                Button {
+                    openIOSSettings()
+                } label: {
+                    Text("iOS App Settings")
                 }
             }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
         }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.large)
     }
 
     // MARK: - Helpers

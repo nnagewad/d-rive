@@ -16,6 +16,11 @@
 - Reusability: Create reusable components and functions
 - Less Code = Less Debt: Minimize code footprint
 
+# UI Implementation Rules
+- Use SwiftUI exclusively — no UIKit components
+- Always use the app's accent colour (set in Assets) for interactive and highlighted elements; never hardcode colours
+- Rely on SwiftUI's `.accentColor` / `.tint` modifiers so the accent propagates automatically
+
 # Design principles
 - Use the Dieter Ram's 10 Principles of Good Design as template to aspire to
 - Use the guiding principles from Apple's Human Interface Guidelines: https://developer.apple.com/design/human-interface-guidelines
