@@ -166,7 +166,7 @@ struct ListDetailView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(list.spots) { spot in
-                        SpotRow(name: spot.name, category: spot.category) {
+                        SpotRow(name: spot.name) {
                             selectedSpot = spot
                         }
                     }

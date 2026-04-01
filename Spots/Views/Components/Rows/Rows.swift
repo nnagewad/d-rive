@@ -169,22 +169,14 @@ struct SelectableRow: View {
 /// Used for: Nearby Spots list, Curated spots list
 struct SpotRow: View {
     let name: String
-    let category: String
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(name)
-                    .foregroundStyle(Color.accentColor)
-                if !category.isEmpty {
-                    Text(category)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
+            Text(name)
+                .foregroundStyle(Color.accentColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -235,9 +227,9 @@ struct SpotRow: View {
 #Preview("Spot Rows") {
     List {
         Section {
-            SpotRow(name: "Café Lomi", category: "Coffee") {}
-            SpotRow(name: "Le Comptoir Général", category: "Bar") {}
-            SpotRow(name: "No Category Spot", category: "") {}
+            SpotRow(name: "Café Lomi") {}
+            SpotRow(name: "Le Comptoir Général") {}
+            SpotRow(name: "Boxcar Social") {}
         }
     }
 }

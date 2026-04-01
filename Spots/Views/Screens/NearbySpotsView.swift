@@ -95,7 +95,7 @@ struct NearbySpotsView: View {
         List {
             Section {
                 ForEach(sortedSpots) { spot in
-                    SpotRow(name: spot.name, category: spot.category) {
+                    SpotRow(name: spot.name) {
                         selectedSpot = spot
                     }
                 }
