@@ -1,7 +1,7 @@
 //
 //  Sheets.swift
 //  Purpose: Reusable sheet components for modal presentations
-//  Spots
+//  Dérive
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
 //
@@ -10,7 +10,7 @@ import SwiftUI
 
 // MARK: - Spot Detail Sheet
 
-/// Sheet showing details for a spot with Get Directions button
+/// Half-sheet showing spot name, category, and action buttons
 struct SpotDetailSheet: View {
     let spot: SpotData
     let onClose: () -> Void
@@ -21,65 +21,61 @@ struct SpotDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // Info Section
-                Section {
-                    if !spot.category.isEmpty {
-                        LabeledContent("Category", value: spot.category)
-                    }
-
-                    if let instagram = spot.instagramHandle {
-                        Button {
-                            openInstagram(instagram)
-                        } label: {
-                            Text("View Instagram")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-                    }
-
-                    if let website = spot.websiteURL {
-                        Button {
-                            openWebsite(website)
-                        } label: {
-                            Text("View Website")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-                    }
+            VStack(alignment: .leading, spacing: 0) {
+                // Category subtitle
+                if !spot.category.isEmpty {
+                    Text(spot.category)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, Spacing.medium)
                 }
 
-                // Directions Section
-                Section {
-                    Button {
-                        handleGetDirections()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            Text("Get Directions")
-                            Spacer()
-                        }
+                Spacer()
+
+                // Action buttons pinned to bottom
+                VStack(spacing: Spacing.small) {
+                    Button(action: handleGetDirections) {
+                        Text("Get directions")
+                            .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.capsule)
                     .controlSize(.large)
-                    .listRowBackground(Color.clear)
+
+                    Button {
+                        if let instagram = spot.instagramHandle { openInstagram(instagram) }
+                    } label: {
+                        Text("Instagram").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .disabled(spot.instagramHandle == nil)
+
+                    Button {
+                        if let website = spot.websiteURL { openWebsite(website) }
+                    } label: {
+                        Text("Website").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.large)
+                    .disabled(spot.websiteURL == nil)
                 }
+                .padding(.horizontal, Spacing.medium)
             }
-            .listStyle(.insetGrouped)
             .navigationTitle(spot.name)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        onClose()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                    }
+                    CloseButton(action: onClose)
+                        .controlSize(.large)
                 }
             }
         }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
         .alert("Select a Map App", isPresented: $showMapAppPicker) {
             Button("Apple Maps") {
                 settingsService.defaultMapApp = .appleMaps
@@ -94,6 +90,8 @@ struct SpotDetailSheet: View {
             Text("This will be your default map app for directions.")
         }
     }
+
+    // MARK: - Actions
 
     private func handleGetDirections() {
         if let mapApp = settingsService.defaultMapApp {
@@ -127,26 +125,44 @@ struct SpotDetailSheet: View {
 
 // MARK: - Previews
 
-#Preview("Spot Detail Sheet") {
+#Preview("All links") {
     struct PreviewWrapper: View {
         @State private var showSheet = true
-
         var body: some View {
-            Button("Show Spot Detail") {
-                showSheet = true
-            }
-            .sheet(isPresented: $showSheet) {
-                SpotDetailSheet(
-                    spot: SpotData(
-                        name: "Café Lomi",
-                        latitude: 48.8566,
-                        longitude: 2.3522,
-                        instagramHandle: "@cafelomi",
-                        websiteURL: "https://cafelomi.com"
-                    ),
-                    onClose: { showSheet = false }
-                )
-            }
+            Button("Show Sheet") { showSheet = true }
+                .sheet(isPresented: $showSheet) {
+                    SpotDetailSheet(
+                        spot: SpotData(
+                            name: "Café Lomi",
+                            latitude: 48.8566,
+                            longitude: 2.3522,
+                            categoryData: SpotCategoryData(name: "Coffee"),
+                            instagramHandle: "@cafelomi",
+                            websiteURL: "https://cafelomi.com"
+                        ),
+                        onClose: { showSheet = false }
+                    )
+                }
+        }
+    }
+    return PreviewWrapper()
+}
+
+#Preview("No links") {
+    struct PreviewWrapper: View {
+        @State private var showSheet = true
+        var body: some View {
+            Button("Show Sheet") { showSheet = true }
+                .sheet(isPresented: $showSheet) {
+                    SpotDetailSheet(
+                        spot: SpotData(
+                            name: "Boxcar Social",
+                            latitude: 43.6677,
+                            longitude: -79.3901
+                        ),
+                        onClose: { showSheet = false }
+                    )
+                }
         }
     }
     return PreviewWrapper()
