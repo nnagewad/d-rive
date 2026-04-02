@@ -55,7 +55,7 @@ struct ListDetailView: View {
 
             // Curator Section
             if let curator = list.curator {
-                Section("About the curator") {
+                Section("List curated by") {
                     NavigationLink(value: curator) {
                         Text(curator.name)
                     }
