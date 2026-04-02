@@ -34,7 +34,7 @@ struct HomeView: View {
                         NavigationLink(value: HomeDestination.settings) {
                             Image(systemName: "gearshape.fill")
                         }
-                        .labelStyle(.iconOnly)
+                        .buttonBorderShape(.circle)
                         .tint(.primary)
                     }
                 }

@@ -8,6 +8,22 @@
 
 import SwiftUI
 
+// MARK: - Close Button
+
+/// Sheet close button
+private struct CloseButton: View {
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .fontWeight(.medium)
+        }
+        .buttonBorderShape(.circle)
+        .tint(.secondary)
+    }
+}
+
 // MARK: - Spot Detail Sheet
 
 /// Half-sheet showing spot name, category, and action buttons
