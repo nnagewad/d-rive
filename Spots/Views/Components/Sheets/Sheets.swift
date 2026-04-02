@@ -34,7 +34,7 @@ struct SpotDetailSheet: View {
                 Spacer()
 
                 // Action buttons pinned to bottom
-                VStack(spacing: Spacing.medium) {
+                VStack(spacing: Spacing.small) {
                     Button(action: handleGetDirections) {
                         Text("Get directions")
                             .frame(maxWidth: .infinity)
