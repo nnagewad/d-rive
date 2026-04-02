@@ -76,7 +76,7 @@ struct ListDetailView: View {
                     Button {
                         deactivateList()
                     } label: {
-                        Image(systemName: "bell.slash")
+                        Image(systemName: "bell.slash.fill")
                     }
                     .buttonBorderShape(.circle)
                 } else {
