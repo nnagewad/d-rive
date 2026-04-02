@@ -40,7 +40,7 @@ struct HomeView: View {
                 }
                 .navigationDestination(for: HomeDestination.self) { destination in
                     switch destination {
-                    case .curatedLists: CuratedListsView()
+                    case .curatedLists: LocationsView()
                     case .settings: SettingsView()
                     }
                 }
