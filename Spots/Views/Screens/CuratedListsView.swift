@@ -31,7 +31,7 @@ struct CuratedListsView: View {
                 citiesListContent
             }
         }
-        .navigationTitle("Curated Lists")
+        .navigationTitle("Locations")
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: CityData.self) { city in
             CityDetailView(city: city)
