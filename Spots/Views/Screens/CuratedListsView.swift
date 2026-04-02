@@ -354,12 +354,27 @@ struct CuratorDetailView: View {
 
 // MARK: - Previews
 
-#Preview("Empty") {
-    CuratedListsView()
-        .modelContainer(PreviewContainer.container)
-}
+#Preview("With Cities") {
+    NavigationStack {
+        CuratedListsView()
+    }
+    .modelContainer({
+        let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
+        let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let ctx = container.mainContext
 
-#Preview("With Lists") {
-    CuratedListsView()
-        .modelContainer(PreviewContainer.containerWithData)
+        let france = CountryData(name: "France")
+        let uk = CountryData(name: "United Kingdom")
+
+        let paris = CityData(name: "Paris", countryData: france)
+        let lyon = CityData(name: "Lyon", countryData: france)
+        let marseille = CityData(name: "Marseille", countryData: france)
+        let london = CityData(name: "London", countryData: uk)
+        let manchester = CityData(name: "Manchester", countryData: uk)
+        let edinburgh = CityData(name: "Edinburgh", countryData: uk)
+
+        [france, uk].forEach { ctx.insert($0) }
+        [paris, lyon, marseille, london, manchester, edinburgh].forEach { ctx.insert($0) }
+        return container
+    }())
 }
