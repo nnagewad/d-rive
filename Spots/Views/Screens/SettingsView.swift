@@ -48,6 +48,7 @@ struct SettingsView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .contentMargins(.top, 16, for: .scrollContent)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
     }

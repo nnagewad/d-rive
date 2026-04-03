@@ -60,6 +60,7 @@ struct MapAppPickerView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .contentMargins(.top, 16, for: .scrollContent)
         .navigationTitle("Map Apps")
         .navigationBarTitleDisplayMode(.large)
     }
