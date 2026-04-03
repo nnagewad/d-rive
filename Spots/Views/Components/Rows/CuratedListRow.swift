@@ -13,23 +13,14 @@ struct CuratedListRow: View {
     let list: CuratedListData
     let onFollow: () -> Void
     let onStop: () -> Void
+    var navigable: Bool = true
 
     var body: some View {
-        NavigationLink(value: list) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(list.name)
-                    if let curator = list.curator {
-                        Text(curator.name)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                if list.isDownloaded && list.notifyWhenNearby {
-                    Image(systemName: "bell.fill")
-                        .foregroundStyle(.accent)
-                }
+        Group {
+            if navigable {
+                NavigationLink(value: list) { rowContent }
+            } else {
+                rowContent
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -43,6 +34,24 @@ struct CuratedListRow: View {
                     Label("Follow", systemImage: "bell.fill")
                 }
                 .tint(.accentColor)
+            }
+        }
+    }
+
+    private var rowContent: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(list.name)
+                if let curator = list.curator {
+                    Text(curator.name)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            if list.isDownloaded && list.notifyWhenNearby {
+                Image(systemName: "bell.fill")
+                    .foregroundStyle(.accent)
             }
         }
     }

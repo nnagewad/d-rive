@@ -33,7 +33,7 @@ struct CuratorListsView: View {
                             let cityName = group.city != nil ? "\(group.city!.name), \(group.city!.country)" : "Lists"
                             Section {
                                 ForEach(group.lists) { list in
-                                    CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) })
+                                    CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) }, navigable: false)
                                 }
                             } header: {
                                 Text(cityName)

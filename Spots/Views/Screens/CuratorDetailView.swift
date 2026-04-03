@@ -40,14 +40,16 @@ struct CuratorDetailView: View {
                             .controlSize(.large)
                         }
                     }
-                    NavigationLink {
-                        CuratorListsView(curator: curator)
-                    } label: {
-                        Text("Browse curated lists")
-                            .frame(maxWidth: .infinity)
+                    if curator.lists.count > 1 {
+                        NavigationLink {
+                            CuratorListsView(curator: curator)
+                        } label: {
+                            Text("Browse curated lists")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.glassProminent)
+                        .controlSize(.large)
                     }
-                    .buttonStyle(.glassProminent)
-                    .controlSize(.large)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
