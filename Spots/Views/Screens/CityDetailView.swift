@@ -8,58 +8,37 @@
 
 import SwiftUI
 import SwiftData
+
 struct CityDetailView: View {
     let city: CityData
-    @Environment(\.openURL) private var openURL
-    @State private var showPermissionAlert = false
 
     private var sectionHeader: String {
         city.lists.count == 1 ? "Curated list" : "Curated lists"
     }
 
     var body: some View {
-        Group {
-            if city.lists.isEmpty {
-                ContentUnavailableView {
-                    Label("No Lists", systemImage: "list.bullet")
-                } description: {
-                    Text("No curated lists available for this city")
-                }
-            } else {
-                List {
-                    Section(sectionHeader) {
-                        ForEach(city.lists) { list in
-                            CuratedListRow(list: list, onFollow: { followList(list) }, onStop: { stopList(list) })
+        ListActionContainer { follow, stop in
+            Group {
+                if city.lists.isEmpty {
+                    ContentUnavailableView {
+                        Label("No Lists", systemImage: "list.bullet")
+                    } description: {
+                        Text("No curated lists available for this city")
+                    }
+                } else {
+                    List {
+                        Section(sectionHeader) {
+                            ForEach(city.lists) { list in
+                                CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) })
+                            }
                         }
                     }
+                    .listStyle(.insetGrouped)
                 }
-                .listStyle(.insetGrouped)
             }
+            .navigationTitle(city.name)
+            .navigationBarTitleDisplayMode(.large)
         }
-        .navigationTitle(city.name)
-        .navigationBarTitleDisplayMode(.large)
-        .alert("Notifications Required", isPresented: $showPermissionAlert) {
-            Button("Open Settings") {
-                openURL(URL(string: "app-settings:")!)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Enable notifications in Settings to receive alerts when you're near any  spots on this list.")
-        }
-    }
-
-    // MARK: - Actions
-
-    private func followList(_ list: CuratedListData) {
-        Task {
-            if !(await ListActionService.shared.follow(list)) {
-                showPermissionAlert = true
-            }
-        }
-    }
-
-    private func stopList(_ list: CuratedListData) {
-        ListActionService.shared.stop(list)
     }
 }
 
@@ -78,19 +57,15 @@ private func makeCityDetailPreview() -> some View {
     let curator3 = CuratorData(name: "Sophie Bernard", bio: "Coffee addict")
 
     let list1 = CuratedListData(name: "After Work Spots", isDownloaded: true, notifyWhenNearby: true)
-    list1.city = city
-    list1.curator = curator1
+    list1.city = city; list1.curator = curator1
 
     let list2 = CuratedListData(name: "Weekend Brunch", isDownloaded: false, notifyWhenNearby: false)
-    list2.city = city
-    list2.curator = curator2
+    list2.city = city; list2.curator = curator2
 
     let list3 = CuratedListData(name: "Late Night Eats", isDownloaded: false, notifyWhenNearby: false)
-    list3.city = city
-    list3.curator = curator3
+    list3.city = city; list3.curator = curator3
 
-    ctx.insert(country)
-    ctx.insert(city)
+    ctx.insert(country); ctx.insert(city)
     [curator1, curator2, curator3].forEach { ctx.insert($0) }
     [list1, list2, list3].forEach { ctx.insert($0) }
 

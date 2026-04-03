@@ -1,6 +1,6 @@
 //
 //  CuratorDetailView.swift
-//  Purpose: Detail screen for a curator — bio, Instagram, and their curated lists
+//  Purpose: Profile screen for a curator — hero image, bio, and social links
 //  Dérive
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
@@ -12,100 +12,133 @@ import SwiftData
 struct CuratorDetailView: View {
     let curator: CuratorData
     @Environment(\.openURL) private var openURL
-    @State private var showPermissionAlert = false
 
-    private var listsGroupedByCity: [(city: CityData?, lists: [CuratedListData])] {
-        let grouped = Dictionary(grouping: curator.lists, by: { $0.city?.id })
-        return grouped.map { (city: $0.value.first?.city, lists: $0.value.sorted { $0.name < $1.name }) }
-            .sorted { ($0.city?.name ?? "") < ($1.city?.name ?? "") }
-    }
+    private var hasImage: Bool { curator.imageUrl != nil }
 
     var body: some View {
-        List {
-            if !curator.bio.isEmpty || curator.instagramHandle != nil {
-                Section("About") {
-                    if !curator.bio.isEmpty {
-                        Text(curator.bio)
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                heroView
 
-                    if let instagram = curator.instagramHandle {
-                        Button("Instagram") {
-                            openInstagram(instagram)
-                        }
-                    }
-
-                    if let website = curator.websiteURL {
-                        Button("Website") {
-                            openWebsite(website)
-                        }
-                    }
-                }
-            }
-
-            if !curator.lists.isEmpty {
-                ForEach(Array(listsGroupedByCity.enumerated()), id: \.element.city?.id) { index, group in
-                    let cityName = group.city != nil ? "\(group.city!.name), \(group.city!.country)" : "Lists"
-                    Section {
-                        ForEach(group.lists) { list in
-                            CuratedListRow(list: list, onFollow: { followList(list) }, onStop: { stopList(list) })
-                        }
-                    } header: {
-                        if index == 0 {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(curator.lists.count == 1 ? "Curator's list" : "Curator's lists")
-                                    .font(.title3.bold())
-                                    .foregroundColor(.primary)
-                                    .textCase(nil)
-                                Text(cityName)
-                                    .textCase(nil)
+                VStack(alignment: .leading, spacing: 0) {
+                    // About
+                    if !curator.bio.isEmpty || curator.instagramHandle != nil || curator.websiteURL != nil {
+                        sectionHeader("About")
+                        card {
+                            if !curator.bio.isEmpty {
+                                Text(curator.bio)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
                             }
-                        } else {
-                            Text(cityName)
-                                .textCase(nil)
+                            if let instagram = curator.instagramHandle {
+                                Divider().padding(.leading)
+                                cardButton("Instagram") { openInstagram(instagram) }
+                            }
+                            if let website = curator.websiteURL {
+                                Divider().padding(.leading)
+                                cardButton("Website") { openWebsite(website) }
+                            }
+                        }
+                    }
+
+                    // Lists
+                    if !curator.lists.isEmpty {
+                        sectionHeader(curator.lists.count == 1 ? "Curator's list" : "Curator's lists")
+                        card {
+                            NavigationLink {
+                                CuratorListsView(curator: curator)
+                            } label: {
+                                HStack {
+                                    Text("View all")
+                                    Spacer()
+                                    Text("\(curator.lists.count)")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding()
+                            }
                         }
                     }
                 }
+                .padding(.vertical)
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(curator.name)
-        .navigationBarTitleDisplayMode(.large)
-        .alert("Notifications Required", isPresented: $showPermissionAlert) {
-            Button("Open Settings") {
-                openURL(URL(string: "app-settings:")!)
+        .background(Color(.systemGroupedBackground))
+        .ignoresSafeArea(edges: hasImage ? .top : [])
+        .navigationTitle(hasImage ? "" : curator.name)
+        .navigationBarTitleDisplayMode(hasImage ? .inline : .large)
+        .toolbarBackground(hasImage ? .hidden : .automatic, for: .navigationBar)
+    }
+
+    // MARK: - Hero
+
+    @ViewBuilder
+    private var heroView: some View {
+        if let imageUrl = curator.imageUrl, let url = URL(string: imageUrl) {
+            ZStack(alignment: .bottomLeading) {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.secondary.opacity(0.3)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 420)
+                .clipped()
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.75)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
+                .frame(height: 420)
+
+                Text(curator.name)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
             }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Enable notifications in Settings to receive alerts when you're near any spots on this list.")
+            .frame(height: 420)
         }
     }
 
-    // MARK: - Actions
+    // MARK: - Card Helpers
 
-    private func followList(_ list: CuratedListData) {
-        Task {
-            if !(await ListActionService.shared.follow(list)) {
-                showPermissionAlert = true
-            }
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 6)
+    }
+
+    private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            content()
+        }
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal)
+    }
+
+    private func cardButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
         }
     }
 
-    private func stopList(_ list: CuratedListData) {
-        ListActionService.shared.stop(list)
-    }
+    // MARK: - URL Helpers
 
     private func openInstagram(_ value: String) {
         let urlString = value.hasPrefix("http") ? value : "https://instagram.com/\(value.trimmingCharacters(in: .init(charactersIn: "@")))"
-        if let url = URL(string: urlString) {
-            openURL(url)
-        }
+        if let url = URL(string: urlString) { openURL(url) }
     }
 
     private func openWebsite(_ urlString: String) {
         let prefixed = urlString.hasPrefix("http") ? urlString : "https://\(urlString)"
-        if let url = URL(string: prefixed) {
-            openURL(url)
-        }
+        if let url = URL(string: prefixed) { openURL(url) }
     }
 }
 
@@ -122,31 +155,19 @@ private func makeCuratorDetailPreview() -> some View {
     let curator = CuratorData(
         name: "Marie Dupont",
         bio: "Parisian food lover and weekend wanderer.",
+        imageUrl: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800",
         instagramHandle: "@mariedupont",
         websiteURL: "https://mariedupont.com"
     )
 
-    let country2 = CountryData(name: "Japan")
-    let city2 = CityData(name: "Tokyo", countryData: country2)
-
     let list1 = CuratedListData(name: "After Work Spots", isDownloaded: true, notifyWhenNearby: true)
-    list1.city = city
-    list1.curator = curator
+    list1.city = city; list1.curator = curator
 
     let list2 = CuratedListData(name: "Weekend Brunch", isDownloaded: false)
-    list2.city = city
-    list2.curator = curator
+    list2.city = city; list2.curator = curator
 
-    let list3 = CuratedListData(name: "Hidden Gems", isDownloaded: false)
-    list3.city = city2
-    list3.curator = curator
-
-    ctx.insert(country)
-    ctx.insert(country2)
-    ctx.insert(city)
-    ctx.insert(city2)
-    ctx.insert(curator)
-    [list1, list2, list3].forEach { ctx.insert($0) }
+    ctx.insert(country); ctx.insert(city); ctx.insert(curator)
+    [list1, list2].forEach { ctx.insert($0) }
 
     return NavigationStack {
         CuratorDetailView(curator: curator)
@@ -155,7 +176,7 @@ private func makeCuratorDetailPreview() -> some View {
 }
 
 @MainActor
-private func makeCuratorDetailSingleListPreview() -> some View {
+private func makeCuratorDetailNoImagePreview() -> some View {
     let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
     let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
     let ctx = container.mainContext
@@ -169,13 +190,9 @@ private func makeCuratorDetailSingleListPreview() -> some View {
     )
 
     let list = CuratedListData(name: "After Work Spots", isDownloaded: false)
-    list.city = city
-    list.curator = curator
+    list.city = city; list.curator = curator
 
-    ctx.insert(country)
-    ctx.insert(city)
-    ctx.insert(curator)
-    ctx.insert(list)
+    ctx.insert(country); ctx.insert(city); ctx.insert(curator); ctx.insert(list)
 
     return NavigationStack {
         CuratorDetailView(curator: curator)
@@ -183,5 +200,5 @@ private func makeCuratorDetailSingleListPreview() -> some View {
     .modelContainer(container)
 }
 
-#Preview("Curator Detail — Multiple Lists") { makeCuratorDetailPreview() }
-#Preview("Curator Detail — Single List") { makeCuratorDetailSingleListPreview() }
+#Preview("Curator Detail — With Image") { makeCuratorDetailPreview() }
+#Preview("Curator Detail — No Image") { makeCuratorDetailNoImagePreview() }
