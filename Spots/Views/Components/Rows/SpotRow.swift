@@ -1,5 +1,5 @@
 //
-//  Rows.swift
+//  SpotRow.swift
 //  Purpose: Reusable row components
 //  Dérive
 //
