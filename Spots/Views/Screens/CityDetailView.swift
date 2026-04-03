@@ -34,40 +34,7 @@ struct CityDetailView: View {
                 List {
                     Section(sectionHeader) {
                         ForEach(city.lists) { list in
-                            NavigationLink(value: list) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(list.name)
-                                        if let curator = list.curator {
-                                            Text(curator.name)
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-                                    Spacer()
-                                    if list.isDownloaded && list.notifyWhenNearby {
-                                        Image(systemName: "bell.fill")
-                                            .foregroundStyle(.accent)
-                                    }
-                                }
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                if list.isDownloaded && list.notifyWhenNearby {
-                                    Button(role: .destructive) {
-                                        stopList(list)
-                                    } label: {
-                                        Label("Stop", systemImage: "bell.slash.fill")
-                                    }
-                                    .tint(.red)
-                                } else {
-                                    Button {
-                                        followList(list)
-                                    } label: {
-                                        Label("Follow", systemImage: "bell.fill")
-                                    }
-                                    .tint(.accentColor)
-                                }
-                            }
+                            CuratedListRow(list: list, onFollow: { followList(list) }, onStop: { stopList(list) })
                         }
                     }
                 }
