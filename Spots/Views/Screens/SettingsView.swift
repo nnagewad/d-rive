@@ -47,10 +47,9 @@ struct SettingsView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
+        .standardListStyle()
         .contentMargins(.top, 16, for: .scrollContent)
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.large)
+        .largeNavigationTitle("Settings")
     }
 
     // MARK: - Helpers
@@ -60,7 +59,7 @@ struct SettingsView: View {
     }
 
     private func openIOSSettings() {
-        openURL(URL(string: "app-settings:")!)
+        openURL(.appSettings)
     }
 }
 

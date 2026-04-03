@@ -38,11 +38,10 @@ struct LocationsView: View {
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
+                .standardListStyle()
             }
         }
-        .navigationTitle("Locations")
-        .navigationBarTitleDisplayMode(.large)
+        .largeNavigationTitle("Locations")
         .navigationDestination(for: CityData.self) { city in
             CityDetailView(city: city)
         }

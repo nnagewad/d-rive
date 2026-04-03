@@ -10,7 +10,6 @@ import SwiftUI
 
 struct ListActionContainer<Content: View>: View {
     @State private var showPermissionAlert = false
-    @Environment(\.openURL) private var openURL
 
     @ViewBuilder let content: (
         _ follow: @escaping (CuratedListData) -> Void,
@@ -19,12 +18,7 @@ struct ListActionContainer<Content: View>: View {
 
     var body: some View {
         content(follow, stop)
-            .alert("Notifications Required", isPresented: $showPermissionAlert) {
-                Button("Open Settings") { openURL(URL(string: "app-settings:")!) }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Enable notifications in Settings to receive alerts when you're near any spots on this list.")
-            }
+            .notificationsPermissionAlert(isPresented: $showPermissionAlert)
     }
 
     private func follow(_ list: CuratedListData) {

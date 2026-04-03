@@ -41,11 +41,10 @@ struct CuratorListsView: View {
                             }
                         }
                     }
-                    .listStyle(.insetGrouped)
+                    .standardListStyle()
                 }
             }
-            .navigationTitle(curator.name)
-            .navigationBarTitleDisplayMode(.large)
+            .largeNavigationTitle(curator.name)
         }
     }
 }

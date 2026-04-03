@@ -29,10 +29,10 @@ struct CuratorDetailView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack(spacing: 16) {
                                 if let instagram = curator.instagramHandle {
-                                    Button("Instagram") { openInstagram(instagram) }
+                                    Button("Instagram") { openURL.openInstagram(instagram) }
                                 }
                                 if let website = curator.websiteURL {
-                                    Button("Website") { openWebsite(website) }
+                                    Button("Website") { openURL.openWebsite(website) }
                                 }
                             }
                             .buttonStyle(.glass)
@@ -110,17 +110,6 @@ struct CuratorDetailView: View {
         .background(Color.accentColor)
     }
 
-    // MARK: - URL Helpers
-
-    private func openInstagram(_ value: String) {
-        let urlString = value.hasPrefix("http") ? value : "https://instagram.com/\(value.trimmingCharacters(in: .init(charactersIn: "@")))"
-        if let url = URL(string: urlString) { openURL(url) }
-    }
-
-    private func openWebsite(_ urlString: String) {
-        let prefixed = urlString.hasPrefix("http") ? urlString : "https://\(urlString)"
-        if let url = URL(string: prefixed) { openURL(url) }
-    }
 }
 
 // MARK: - Preview

@@ -13,7 +13,6 @@ import os.log
 struct ListDetailView: View {
     private let logger = Logger(subsystem: "com.nikin.spots", category: "ListDetailView")
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.openURL) private var openURL
     @Bindable var list: CuratedListData
     @State private var isLoadingSpots = false
     @State private var spotsLoadError: Error?
@@ -62,9 +61,8 @@ struct ListDetailView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(list.name)
-        .navigationBarTitleDisplayMode(.large)
+        .standardListStyle()
+        .largeNavigationTitle(list.name)
         .task {
             await loadSpots()
         }
@@ -91,19 +89,8 @@ struct ListDetailView: View {
                 }
             }
         }
-        .alert("Notifications Required", isPresented: $showPermissionAlert) {
-            Button("Open Settings") {
-                openURL(URL(string: "app-settings:")!)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Enable notifications in Settings to receive alerts when you're near saved spots.")
-        }
-        .sheet(item: $selectedSpot) { spot in
-            SpotDetailSheet(spot: spot) {
-                selectedSpot = nil
-            }
-        }
+        .notificationsPermissionAlert(isPresented: $showPermissionAlert)
+        .spotDetailSheet(item: $selectedSpot) { selectedSpot = nil }
     }
 
     // MARK: - Spots Loading

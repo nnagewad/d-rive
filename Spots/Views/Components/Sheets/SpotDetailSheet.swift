@@ -60,7 +60,7 @@ struct SpotDetailSheet: View {
                     .controlSize(.large)
 
                     Button {
-                        if let instagram = spot.instagramHandle { openInstagram(instagram) }
+                        if let instagram = spot.instagramHandle { openURL.openInstagram(instagram) }
                     } label: {
                         Text("Instagram").frame(maxWidth: .infinity)
                     }
@@ -70,7 +70,7 @@ struct SpotDetailSheet: View {
                     .disabled(spot.instagramHandle == nil)
 
                     Button {
-                        if let website = spot.websiteURL { openWebsite(website) }
+                        if let website = spot.websiteURL { openURL.openWebsite(website) }
                     } label: {
                         Text("Website").frame(maxWidth: .infinity)
                     }
@@ -126,18 +126,6 @@ struct SpotDetailSheet: View {
         )
     }
 
-    private func openInstagram(_ handle: String) {
-        let cleanHandle = handle.replacingOccurrences(of: "@", with: "")
-        if let url = URL(string: "https://instagram.com/\(cleanHandle)") {
-            openURL(url)
-        }
-    }
-
-    private func openWebsite(_ urlString: String) {
-        if let url = URL(string: urlString) {
-            openURL(url)
-        }
-    }
 }
 
 // MARK: - Previews

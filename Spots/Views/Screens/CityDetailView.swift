@@ -33,11 +33,10 @@ struct CityDetailView: View {
                             }
                         }
                     }
-                    .listStyle(.insetGrouped)
+                    .standardListStyle()
                 }
             }
-            .navigationTitle(city.name)
-            .navigationBarTitleDisplayMode(.large)
+            .largeNavigationTitle(city.name)
         }
     }
 }

@@ -67,7 +67,7 @@ struct HomeView: View {
                         subtitle: "In order for Spots to work, enable Location Access",
                         buttonLabel: "iOS Settings"
                     ) {
-                        openURL(URL(string: "app-settings:")!)
+                        openURL(.appSettings)
                     }
                 } else {
                     NearbySpotsView(spots: sortedSpots)
@@ -97,11 +97,9 @@ struct HomeView: View {
                 }
             }
         }
-        .sheet(item: $spotForSheet) { spot in
-            SpotDetailSheet(spot: spot) {
-                navigationCoordinator.dismissSpotDetail()
-                spotForSheet = nil
-            }
+        .spotDetailSheet(item: $spotForSheet) {
+            navigationCoordinator.dismissSpotDetail()
+            spotForSheet = nil
         }
         .onAppear {
             Task { await permissionService.refreshPermissionStatus() }

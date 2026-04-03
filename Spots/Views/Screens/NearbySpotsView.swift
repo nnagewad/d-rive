@@ -34,12 +34,8 @@ struct NearbySpotsView: View {
                 .padding(.bottom, 4)
             }
         }
-        .listStyle(.insetGrouped)
-        .sheet(item: $selectedSpot) { spot in
-            SpotDetailSheet(spot: spot) {
-                selectedSpot = nil
-            }
-        }
+        .standardListStyle()
+        .spotDetailSheet(item: $selectedSpot) { selectedSpot = nil }
     }
 }
 
