@@ -8,15 +8,10 @@
 
 import SwiftUI
 import SwiftData
-import os.log
-
 struct CityDetailView: View {
     let city: CityData
     @Environment(\.openURL) private var openURL
-    @State private var activatingList: CuratedListData? = nil
     @State private var showPermissionAlert = false
-
-    private let logger = Logger(subsystem: "com.nikin.spots", category: "CityDetailView")
 
     private var sectionHeader: String {
         city.lists.count == 1 ? "Curated list" : "Curated lists"
@@ -41,7 +36,7 @@ struct CityDetailView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle("\(city.name)")
+        .navigationTitle(city.name)
         .navigationBarTitleDisplayMode(.large)
         .alert("Notifications Required", isPresented: $showPermissionAlert) {
             Button("Open Settings") {
@@ -56,7 +51,6 @@ struct CityDetailView: View {
     // MARK: - Actions
 
     private func followList(_ list: CuratedListData) {
-        activatingList = list
         Task {
             if !PermissionService.shared.hasRequestedLocationPermissions {
                 _ = await PermissionService.shared.requestLocationPermission()
@@ -65,10 +59,7 @@ struct CityDetailView: View {
             if !PermissionService.shared.hasRequestedNotificationPermissions {
                 let granted = await PermissionService.shared.requestNotificationPermission()
                 if !granted {
-                    await MainActor.run {
-                        activatingList = nil
-                        showPermissionAlert = true
-                    }
+                    await MainActor.run { showPermissionAlert = true }
                     return
                 }
             } else {
@@ -76,17 +67,13 @@ struct CityDetailView: View {
                 let hasNotifications = PermissionService.shared.notificationStatus == .authorized ||
                                       PermissionService.shared.notificationStatus == .provisional
                 if !hasNotifications {
-                    await MainActor.run {
-                        activatingList = nil
-                        showPermissionAlert = true
-                    }
+                    await MainActor.run { showPermissionAlert = true }
                     return
                 }
             }
 
             await MainActor.run {
                 DataService.shared.activateList(list)
-                activatingList = nil
                 reloadGeofences()
             }
         }
