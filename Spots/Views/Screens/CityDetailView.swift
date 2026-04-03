@@ -52,19 +52,14 @@ struct CityDetailView: View {
 
     private func followList(_ list: CuratedListData) {
         Task {
-            guard await PermissionService.shared.requestPermissionsForListActivation() else {
+            if !(await ListActionService.shared.follow(list)) {
                 showPermissionAlert = true
-                return
             }
-            DataService.shared.activateList(list)
-            reloadGeofences()
         }
     }
 
     private func stopList(_ list: CuratedListData) {
-        list.notifyWhenNearby = false
-        DataService.shared.save()
-        reloadGeofences()
+        ListActionService.shared.stop(list)
     }
 }
 

@@ -52,7 +52,7 @@ struct CuratorDetailView: View {
                     } header: {
                         if index == 0 {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Curator's lists")
+                                Text(curator.lists.count == 1 ? "Curator's list" : "Curator's lists")
                                     .font(.title3.bold())
                                     .foregroundStyle(.primary)
                                     .textCase(nil)
@@ -84,19 +84,14 @@ struct CuratorDetailView: View {
 
     private func followList(_ list: CuratedListData) {
         Task {
-            guard await PermissionService.shared.requestPermissionsForListActivation() else {
+            if !(await ListActionService.shared.follow(list)) {
                 showPermissionAlert = true
-                return
             }
-            DataService.shared.activateList(list)
-            reloadGeofences()
         }
     }
 
     private func stopList(_ list: CuratedListData) {
-        list.notifyWhenNearby = false
-        DataService.shared.save()
-        reloadGeofences()
+        ListActionService.shared.stop(list)
     }
 
     private func openInstagram(_ value: String) {
@@ -159,4 +154,34 @@ private func makeCuratorDetailPreview() -> some View {
     .modelContainer(container)
 }
 
-#Preview("Curator Detail") { makeCuratorDetailPreview() }
+@MainActor
+private func makeCuratorDetailSingleListPreview() -> some View {
+    let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
+    let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let ctx = container.mainContext
+
+    let country = CountryData(name: "France")
+    let city = CityData(name: "Paris", countryData: country)
+    let curator = CuratorData(
+        name: "Marie Dupont",
+        bio: "Parisian food lover and weekend wanderer.",
+        instagramHandle: "@mariedupont"
+    )
+
+    let list = CuratedListData(name: "After Work Spots", isDownloaded: false)
+    list.city = city
+    list.curator = curator
+
+    ctx.insert(country)
+    ctx.insert(city)
+    ctx.insert(curator)
+    ctx.insert(list)
+
+    return NavigationStack {
+        CuratorDetailView(curator: curator)
+    }
+    .modelContainer(container)
+}
+
+#Preview("Curator Detail — Multiple Lists") { makeCuratorDetailPreview() }
+#Preview("Curator Detail — Single List") { makeCuratorDetailSingleListPreview() }

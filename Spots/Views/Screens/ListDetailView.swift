@@ -129,14 +129,12 @@ struct ListDetailView: View {
     private func activateList() {
         isActivating = true
         Task {
-            guard await PermissionService.shared.requestPermissionsForListActivation() else {
+            if await ListActionService.shared.follow(list) {
+                isActivating = false
+            } else {
                 isActivating = false
                 showPermissionAlert = true
-                return
             }
-            DataService.shared.activateList(list)
-            isActivating = false
-            reloadGeofences()
         }
     }
 
