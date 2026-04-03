@@ -36,7 +36,7 @@ struct EmptyStateView: View {
                 Text(buttonLabel)
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glassProminent)
             .buttonBorderShape(.capsule)
             .controlSize(.large)
             .padding(.horizontal, 16)

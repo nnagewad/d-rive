@@ -55,7 +55,7 @@ struct SpotDetailSheet: View {
                         Text("Get directions")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
 
@@ -64,7 +64,7 @@ struct SpotDetailSheet: View {
                     } label: {
                         Text("Instagram").frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .disabled(spot.instagramHandle == nil)
@@ -74,7 +74,7 @@ struct SpotDetailSheet: View {
                     } label: {
                         Text("Website").frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .disabled(spot.websiteURL == nil)
