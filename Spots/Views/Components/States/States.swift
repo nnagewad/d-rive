@@ -24,7 +24,7 @@ struct EmptyState: View {
                 Image(systemName: systemImage)
                     .font(.system(size: 48, weight: .light))
                     .foregroundStyle(.tertiary)
-                    .padding(.bottom, Spacing.small)
+                    .padding(.bottom, 10)
             }
 
             Text(title)
@@ -39,7 +39,7 @@ struct EmptyState: View {
                     .multilineTextAlignment(.center)
             }
         }
-        .padding(.horizontal, Spacing.medium)
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
@@ -52,7 +52,7 @@ struct LoadingState: View {
     var message: String? = nil
 
     var body: some View {
-        VStack(spacing: Spacing.medium) {
+        VStack(spacing: 16) {
             ProgressView()
                 .progressViewStyle(.circular)
                 .scaleEffect(1.2)

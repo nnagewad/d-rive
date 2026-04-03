@@ -44,13 +44,13 @@ struct SpotDetailSheet: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, Spacing.medium)
+                        .padding(.horizontal, 16)
                 }
 
                 Spacer()
 
                 // Action buttons pinned to bottom
-                VStack(spacing: Spacing.small) {
+                VStack(spacing: 10) {
                     Button(action: handleGetDirections) {
                         Text("Get directions")
                             .frame(maxWidth: .infinity)
@@ -79,8 +79,8 @@ struct SpotDetailSheet: View {
                     .controlSize(.large)
                     .disabled(spot.websiteURL == nil)
                 }
-                .padding(.horizontal, Spacing.medium)
-                .padding(.bottom, Spacing.medium)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
             }
             .navigationTitle(spot.name)
             .navigationBarTitleDisplayMode(.large)
