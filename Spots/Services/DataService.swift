@@ -383,6 +383,7 @@ final class DataService {
                     existing.bio = supabaseCurator.curatorBio
                     existing.imageUrl = supabaseCurator.imageUrl
                     existing.instagramHandle = supabaseCurator.instagramHandle
+                    existing.websiteURL = supabaseCurator.websiteURL
                     existing.version = supabaseCurator.version
                 }
             } else {
@@ -392,6 +393,7 @@ final class DataService {
                     bio: supabaseCurator.curatorBio,
                     imageUrl: supabaseCurator.imageUrl,
                     instagramHandle: supabaseCurator.instagramHandle,
+                    websiteURL: supabaseCurator.websiteURL,
                     version: supabaseCurator.version
                 ))
             }
