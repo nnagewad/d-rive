@@ -26,7 +26,7 @@ struct NearbySpotsView: View {
                         .font(.body)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
-                    Text("Closest spot appears on top of the list")
+                    Text("The closest spot appears at the top of the list.")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                 }
