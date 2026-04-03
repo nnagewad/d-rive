@@ -129,37 +129,14 @@ struct ListDetailView: View {
     private func activateList() {
         isActivating = true
         Task {
-            if !PermissionService.shared.hasRequestedLocationPermissions {
-                _ = await PermissionService.shared.requestLocationPermission()
-            }
-
-            if !PermissionService.shared.hasRequestedNotificationPermissions {
-                let granted = await PermissionService.shared.requestNotificationPermission()
-                if !granted {
-                    await MainActor.run {
-                        isActivating = false
-                        showPermissionAlert = true
-                    }
-                    return
-                }
-            } else {
-                await PermissionService.shared.refreshPermissionStatus()
-                let hasNotifications = PermissionService.shared.notificationStatus == .authorized ||
-                                      PermissionService.shared.notificationStatus == .provisional
-                if !hasNotifications {
-                    await MainActor.run {
-                        isActivating = false
-                        showPermissionAlert = true
-                    }
-                    return
-                }
-            }
-
-            await MainActor.run {
-                DataService.shared.activateList(list)
+            guard await PermissionService.shared.requestPermissionsForListActivation() else {
                 isActivating = false
-                reloadGeofences()
+                showPermissionAlert = true
+                return
             }
+            DataService.shared.activateList(list)
+            isActivating = false
+            reloadGeofences()
         }
     }
 

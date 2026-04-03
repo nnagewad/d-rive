@@ -62,6 +62,23 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
         return hasNotifications && hasLocation
     }
 
+    // MARK: - List Activation
+
+    /// Requests location and notification permissions needed to activate a list.
+    /// Returns true if notifications are authorised and the activation should proceed.
+    func requestPermissionsForListActivation() async -> Bool {
+        if !hasRequestedLocationPermissions {
+            _ = await requestLocationPermission()
+        }
+
+        if !hasRequestedNotificationPermissions {
+            return await requestNotificationPermission()
+        }
+
+        await refreshPermissionStatus()
+        return notificationStatus == .authorized || notificationStatus == .provisional
+    }
+
     // MARK: - Request Permissions
 
     /// Request notification permission only
