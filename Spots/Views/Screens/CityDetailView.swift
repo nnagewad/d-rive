@@ -74,7 +74,7 @@ struct CityDetailView: View {
                 .listStyle(.insetGrouped)
             }
         }
-        .navigationTitle("\(city.name), \(city.country)")
+        .navigationTitle("\(city.name)")
         .navigationBarTitleDisplayMode(.large)
         .alert("Notifications Required", isPresented: $showPermissionAlert) {
             Button("Open Settings") {
