@@ -54,7 +54,7 @@ struct CuratorDetailView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(curator.lists.count == 1 ? "Curator's list" : "Curator's lists")
                                     .font(.title3.bold())
-                                    .foregroundStyle(.primary)
+                                    .foregroundColor(.primary)
                                     .textCase(nil)
                                 Text(cityName)
                                     .textCase(nil)
