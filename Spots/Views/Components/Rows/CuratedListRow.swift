@@ -34,7 +34,7 @@ struct CuratedListRow: View {
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if list.isDownloaded && list.notifyWhenNearby {
-                Button(role: .destructive, action: onStop) {
+                Button(action: onStop) {
                     Label("Stop", systemImage: "bell.slash.fill")
                 }
                 .tint(.red)
