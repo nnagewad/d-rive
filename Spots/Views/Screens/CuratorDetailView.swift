@@ -13,120 +13,101 @@ struct CuratorDetailView: View {
     let curator: CuratorData
     @Environment(\.openURL) private var openURL
 
-    private var hasImage: Bool { curator.imageUrl != nil }
-
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 24) {
                 heroView
 
-                VStack(alignment: .leading, spacing: 0) {
-                    // About
-                    if !curator.bio.isEmpty || curator.instagramHandle != nil || curator.websiteURL != nil {
-                        sectionHeader("About")
-                        card {
-                            if !curator.bio.isEmpty {
-                                Text(curator.bio)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding()
-                            }
-                            if let instagram = curator.instagramHandle {
-                                Divider().padding(.leading)
-                                cardButton("Instagram") { openInstagram(instagram) }
-                            }
-                            if let website = curator.websiteURL {
-                                Divider().padding(.leading)
-                                cardButton("Website") { openWebsite(website) }
-                            }
+                VStack(alignment: .leading, spacing: 24) {
+                    if !curator.bio.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(curator.bio)
                         }
                     }
 
-                    // Lists
-                    if !curator.lists.isEmpty {
-                        sectionHeader(curator.lists.count == 1 ? "Curator's list" : "Curator's lists")
-                        card {
-                            NavigationLink {
-                                CuratorListsView(curator: curator)
-                            } label: {
-                                HStack {
-                                    Text("View all")
-                                    Spacer()
-                                    Text("\(curator.lists.count)")
-                                        .foregroundStyle(.secondary)
+                    if curator.instagramHandle != nil || curator.websiteURL != nil {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(spacing: 16) {
+                                if let instagram = curator.instagramHandle {
+                                    Button("Instagram") { openInstagram(instagram) }
                                 }
-                                .padding()
+                                if let website = curator.websiteURL {
+                                    Button("Website") { openWebsite(website) }
+                                }
                             }
+                            .buttonStyle(.glass)
+                            .buttonBorderShape(.capsule)
+                            .controlSize(.large)
                         }
                     }
+                    NavigationLink {
+                        CuratorListsView(curator: curator)
+                    } label: {
+                        Text("Browse curated lists")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
                 }
-                .padding(.vertical)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
         .background(Color(.systemGroupedBackground))
-        .ignoresSafeArea(edges: hasImage ? .top : [])
-        .navigationTitle(hasImage ? "" : curator.name)
-        .navigationBarTitleDisplayMode(hasImage ? .inline : .large)
-        .toolbarBackground(hasImage ? .hidden : .automatic, for: .navigationBar)
+        .ignoresSafeArea(edges: .top)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
     }
 
     // MARK: - Hero
 
     @ViewBuilder
     private var heroView: some View {
-        if let imageUrl = curator.imageUrl, let url = URL(string: imageUrl) {
-            ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .bottomLeading) {
+            if let imageUrl = curator.imageUrl, let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
-                    Color.secondary.opacity(0.3)
+                    dotPatternPlaceholder
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 420)
                 .clipped()
-
-                LinearGradient(
-                    colors: [.clear, .black.opacity(0.75)],
-                    startPoint: .center,
-                    endPoint: .bottom
-                )
-                .frame(height: 420)
-
-                Text(curator.name)
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal)
-                    .padding(.bottom, 24)
+            } else {
+                dotPatternPlaceholder
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 420)
             }
+
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.75)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
             .frame(height: 420)
+
+            Text(curator.name)
+                .font(.largeTitle.bold())
+                .foregroundStyle(.white)
+                .padding(.horizontal)
+                .padding(.bottom, 24)
         }
+        .frame(height: 420)
     }
 
-    // MARK: - Card Helpers
-
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
-            .padding(.bottom, 6)
-    }
-
-    private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(spacing: 0) {
-            content()
+    private var dotPatternPlaceholder: some View {
+        Canvas { context, size in
+            let spacing: CGFloat = 40
+            let radius: CGFloat = 7
+            for row in stride(from: spacing / 5, through: size.height, by: spacing) {
+                for col in stride(from: spacing / 5, through: size.width, by: spacing) {
+                    let rect = CGRect(x: col - radius, y: row - radius, width: radius * 5, height: radius * 5)
+                    context.fill(Path(ellipseIn: rect), with: .color(.white.opacity(0.35)))
+                }
+            }
         }
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .padding(.horizontal)
-    }
-
-    private func cardButton(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-        }
+        .background(Color.accentColor)
     }
 
     // MARK: - URL Helpers
