@@ -84,6 +84,11 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
 
+    // Batch nearby notifications into one when multiple geofences trigger within this window
+    private var pendingNotifications: [GeofenceConfiguration] = []
+    private var notificationBatchTask: Task<Void, Never>?
+    private let notificationBatchWindow: TimeInterval = 3
+
     override init() {
         super.init()
         manager.delegate = self
@@ -402,18 +407,16 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
-        // Check cooldown to prevent duplicate notifications
+        // Check cooldown to prevent duplicate notifications for the same spot
         if let lastTime = lastNotificationTime[configuration.id] {
-            let timeSinceLastNotification = Date().timeIntervalSince(lastTime)
-            if timeSinceLastNotification < notificationCooldown {
-                logger.info("⏱️ Skipping notification (cooldown) - sent \(Int(timeSinceLastNotification))s ago")
+            let elapsed = Date().timeIntervalSince(lastTime)
+            if elapsed < notificationCooldown {
+                logger.info("⏱️ Skipping notification (cooldown) - sent \(Int(elapsed))s ago")
                 return
             }
         }
 
         lastNotificationTime[configuration.id] = Date()
-
-        logger.info("🔔 Attempting to send notification for: \(configuration.name)")
 
         // If app is active, show sheet directly instead of notification
         let appState = UIApplication.shared.applicationState
@@ -423,30 +426,49 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             return
         }
 
+        // Buffer this notification and (re)start the batch window
+        pendingNotifications.append(configuration)
+        notificationBatchTask?.cancel()
+        notificationBatchTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await self.flushPendingNotifications()
+        }
+    }
+
+    private func flushPendingNotifications() {
+        let batch = pendingNotifications
+        pendingNotifications.removeAll()
+
+        guard let first = batch.first else { return }
+
+        let isGrouped = batch.count > 1
+        let body: String
+        if isGrouped {
+            body = "You're near \(first.name) and \(batch.count - 1) other spot\(batch.count - 1 == 1 ? "" : "s")"
+        } else {
+            body = "You're close to \(first.name)!"
+        }
+
+        logger.info("🔔 Sending notification (batch of \(batch.count)): \(body)")
+
         let content = UNMutableNotificationContent()
         content.title = "Spots"
-        content.body = "You're close to \(configuration.name)!"
+        content.body = body
         content.sound = .default
-
-        // Include destination coordinates in userInfo for action handling
         content.userInfo = [
-            "destinationLat": configuration.latitude,
-            "destinationLon": configuration.longitude,
-            "geofenceId": configuration.id,
-            "geofenceName": configuration.name,
-            "geofenceGroup": configuration.group,
-            "geofenceCity": configuration.city,
-            "geofenceCountry": configuration.country
+            "geofenceId": first.id,
+            "geofenceName": first.name,
+            "geofenceGroup": first.group,
+            "geofenceCity": first.city,
+            "geofenceCountry": first.country,
+            "destinationLat": first.latitude,
+            "destinationLon": first.longitude,
+            "isGrouped": isGrouped
         ]
 
-        // Add trigger for background delivery
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: trigger
-        )
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
 
         UNUserNotificationCenter.current().add(request) { error in
             Task { @MainActor [weak self] in
@@ -454,7 +476,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
                 if let error = error {
                     self.logger.error("❌ Notification failed: \(error.localizedDescription)")
                 } else {
-                    self.logger.info("✅ Notification scheduled for: \(configuration.name)")
+                    self.logger.info("✅ Notification sent for batch of \(batch.count)")
                 }
             }
         }

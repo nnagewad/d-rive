@@ -54,12 +54,18 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         }
 
         let name = userInfo["geofenceName"] as? String ?? "Unknown Location"
+        let isGrouped = userInfo["isGrouped"] as? Bool ?? false
 
-        // Handle notification tap - show spot detail sheet
+        // Handle notification tap
         if actionIdentifier == UNNotificationDefaultActionIdentifier {
             Task { @MainActor in
-                logger.info("🗺️ Notification tapped - showing spot detail for: \(name)")
-                NavigationCoordinator.shared.showSpotDetail(spotId: spotId)
+                if isGrouped {
+                    logger.info("🗺️ Grouped notification tapped - navigating home")
+                    NavigationCoordinator.shared.clearNavigation()
+                } else {
+                    logger.info("🗺️ Notification tapped - showing spot detail for: \(name)")
+                    NavigationCoordinator.shared.showSpotDetail(spotId: spotId)
+                }
             }
         } else {
             logger.warning("⚠️ Unknown action identifier: \(actionIdentifier)")
