@@ -14,6 +14,7 @@ struct CuratedListRow: View {
     let onFollow: () -> Void
     let onStop: () -> Void
     var navigable: Bool = true
+    var subtitle: String? = nil
 
     var body: some View {
         Group {
@@ -42,8 +43,9 @@ struct CuratedListRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(list.name)
-                if let curator = list.curator {
-                    Text(curator.name)
+                let resolvedSubtitle = subtitle ?? list.curator?.name
+                if let resolvedSubtitle {
+                    Text(resolvedSubtitle)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
