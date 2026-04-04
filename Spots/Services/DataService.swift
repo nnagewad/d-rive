@@ -190,7 +190,6 @@ final class DataService {
             let spot = SpotData(
                 id: supabaseSpot.id.uuidString,
                 name: supabaseSpot.spotName,
-                spotDescription: supabaseSpot.spotDescription,
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
@@ -239,7 +238,6 @@ final class DataService {
             let spot = SpotData(
                 id: supabaseSpot.id.uuidString,
                 name: supabaseSpot.spotName,
-                spotDescription: supabaseSpot.spotDescription,
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
@@ -432,7 +430,6 @@ final class DataService {
             if let existing = getList(byId: id) {
                 existing.name = supabaseList.listName
                 existing.listDescription = supabaseList.listDescription
-                existing.imageUrl = supabaseList.imageUrl
                 existing.version = supabaseList.version
                 if let lastUpdated = supabaseList.lastUpdated { existing.lastUpdated = lastUpdated }
                 if let cityId { existing.city = getCity(byId: cityId) }
@@ -442,7 +439,6 @@ final class DataService {
                     id: id,
                     name: supabaseList.listName,
                     listDescription: supabaseList.listDescription,
-                    imageUrl: supabaseList.imageUrl,
                     isDownloaded: false,
                     version: supabaseList.version,
                     lastUpdated: supabaseList.lastUpdated ?? .now,
@@ -527,7 +523,6 @@ final class DataService {
             let spot = SpotData(
                 id: supabaseSpot.id.uuidString,
                 name: supabaseSpot.spotName,
-                spotDescription: supabaseSpot.spotDescription,
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,

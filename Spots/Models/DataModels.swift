@@ -112,7 +112,6 @@ final class CuratedListData {
     @Attribute(.unique) var id: String
     var name: String
     var listDescription: String
-    var imageUrl: String?
     var isDownloaded: Bool
     var version: Int
     var downloadedVersion: Int?
@@ -135,7 +134,6 @@ final class CuratedListData {
         id: String = UUID().uuidString,
         name: String,
         listDescription: String = "",
-        imageUrl: String? = nil,
         isDownloaded: Bool = false,
         version: Int = 1,
         downloadedVersion: Int? = nil,
@@ -145,7 +143,6 @@ final class CuratedListData {
         self.id = id
         self.name = name
         self.listDescription = listDescription
-        self.imageUrl = imageUrl
         self.isDownloaded = isDownloaded
         self.version = version
         self.downloadedVersion = downloadedVersion
@@ -160,7 +157,6 @@ final class CuratedListData {
 final class SpotData {
     @Attribute(.unique) var id: String
     var name: String
-    var spotDescription: String
 
     // Geofence coordinates
     var latitude: Double
@@ -189,7 +185,6 @@ final class SpotData {
     init(
         id: String = UUID().uuidString,
         name: String,
-        spotDescription: String = "",
         latitude: Double,
         longitude: Double,
         categoryData: SpotCategoryData? = nil,
@@ -199,7 +194,6 @@ final class SpotData {
     ) {
         self.id = id
         self.name = name
-        self.spotDescription = spotDescription
         self.latitude = latitude
         self.longitude = longitude
         self.categoryData = categoryData
