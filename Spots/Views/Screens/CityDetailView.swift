@@ -45,8 +45,7 @@ struct CityDetailView: View {
 
 @MainActor
 private func makeCityDetailPreview() -> some View {
-    let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
-    let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let container = PreviewContainer.container
     let ctx = container.mainContext
 
     let country = CountryData(name: "France")

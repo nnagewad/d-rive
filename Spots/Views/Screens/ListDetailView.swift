@@ -136,8 +136,7 @@ struct ListDetailView: View {
 
 @MainActor
 private func makePreviewContainer(notifyWhenNearby: Bool) -> some View {
-    let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
-    let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let container = PreviewContainer.container
     let ctx = container.mainContext
 
     let curator = CuratorData(name: "Marie Dupont", bio: "Parisian food lover")

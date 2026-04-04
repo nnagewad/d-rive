@@ -44,7 +44,7 @@ struct CuratorDetailView: View {
                         NavigationLink {
                             CuratorListsView(curator: curator)
                         } label: {
-                            Text("Browse curated lists")
+                            Text("View their lists")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.glassProminent)
@@ -118,8 +118,7 @@ struct CuratorDetailView: View {
 
 @MainActor
 private func makeCuratorDetailPreview() -> some View {
-    let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
-    let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let container = PreviewContainer.container
     let ctx = container.mainContext
 
     let country = CountryData(name: "France")
@@ -149,8 +148,7 @@ private func makeCuratorDetailPreview() -> some View {
 
 @MainActor
 private func makeCuratorDetailNoImagePreview() -> some View {
-    let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
-    let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let container = PreviewContainer.container
     let ctx = container.mainContext
 
     let country = CountryData(name: "France")
