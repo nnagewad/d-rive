@@ -1,7 +1,7 @@
 //
 //  HomeView.swift
 //  Purpose: Root app view with spots list and navigation to curated lists and settings
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-01.
 //

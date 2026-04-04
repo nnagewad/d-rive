@@ -1,7 +1,7 @@
 //
 //  StandardModifiers.swift
 //  Purpose: Reusable view modifiers for list styling and navigation titles
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

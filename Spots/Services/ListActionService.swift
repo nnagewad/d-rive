@@ -1,7 +1,7 @@
 //
 //  ListActionService.swift
 //  Purpose: Orchestrates follow and stop actions for curated lists
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

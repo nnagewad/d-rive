@@ -1,7 +1,7 @@
 //
 //  SpotDetailSheetModifier.swift
 //  Purpose: View modifier for presenting a SpotDetailSheet from any view
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

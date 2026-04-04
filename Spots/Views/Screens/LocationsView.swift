@@ -1,7 +1,7 @@
 //
 //  LocationsView.swift
 //  Purpose: Root locations screen — cities grouped by country, entry point for curated lists
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

@@ -1,7 +1,7 @@
 //
 //  EmptyStateView.swift
 //  Purpose: Reusable empty state with icon, message, and a primary CTA button
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

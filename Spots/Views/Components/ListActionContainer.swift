@@ -1,7 +1,7 @@
 //
 //  ListActionContainer.swift
 //  Purpose: Wrapper that provides follow/stop list actions and the permission alert to any view
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

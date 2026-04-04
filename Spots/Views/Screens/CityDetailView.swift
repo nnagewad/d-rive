@@ -1,7 +1,7 @@
 //
 //  CityDetailView.swift
 //  Purpose: Detail screen showing curated lists available for a specific city
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

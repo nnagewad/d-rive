@@ -1,7 +1,7 @@
 //
 //  NearbySpotsView.swift
 //  Purpose: Nearby spots list, sorted by distance. Rendered by HomeView when spots and location are available.
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

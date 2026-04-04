@@ -1,7 +1,7 @@
 //
 //  ListDetailView.swift
 //  Purpose: Detail screen for a curated list — spots, curator info, and notification activation
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

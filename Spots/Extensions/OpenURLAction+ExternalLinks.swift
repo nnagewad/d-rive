@@ -1,7 +1,7 @@
 //
 //  OpenURLAction+ExternalLinks.swift
 //  Purpose: OpenURLAction helpers for opening Instagram handles and website URLs
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

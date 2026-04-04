@@ -1,7 +1,7 @@
 //
 //  SpotRow.swift
 //  Purpose: Reusable row components
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

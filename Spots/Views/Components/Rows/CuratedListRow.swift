@@ -1,7 +1,7 @@
 //
 //  CuratedListRow.swift
 //  Purpose: Reusable row for displaying a curated list with follow/stop swipe actions
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

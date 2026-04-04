@@ -1,7 +1,7 @@
 //
 //  MapAppPickerView.swift
 //  Purpose: Picker screen for selecting the default map app
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //
