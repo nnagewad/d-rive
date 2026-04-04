@@ -6,6 +6,10 @@
 	<array>
 		<string>comgooglemaps</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Spots uses your location to show you the nearest spots on your lists.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Spots uses your location in the background to notify you when you're near a spot on your lists.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
