@@ -15,12 +15,14 @@ struct EmptyStateView: View {
     let buttonLabel: String
     let action: () -> Void
 
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize: CGFloat = 72
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
             VStack(spacing: 12) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 72, weight: .thin))
+                    .font(.system(size: iconSize, weight: .thin))
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
                 VStack(spacing: 4) {
