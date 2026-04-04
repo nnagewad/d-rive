@@ -71,7 +71,7 @@ For every .Swift document be sure to start with a comment based on the following
 //
 //  [Document name].swift
 //  Purpose: [Purpose of this file]
-//  Dérive
+//  Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on [YYYY-MM-DD].
 //
