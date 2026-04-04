@@ -30,7 +30,7 @@ struct CuratorListsView: View {
                 } else {
                     List {
                         ForEach(listsGroupedByCity, id: \.city?.id) { group in
-                            let cityName = group.city != nil ? "\(group.city!.name), \(group.city!.country)" : "Lists"
+                            let cityName = group.city.map { "\($0.name), \($0.country)" } ?? "Lists"
                             Section {
                                 ForEach(group.lists) { list in
                                     let spotCount = list.spots.count
@@ -55,8 +55,7 @@ struct CuratorListsView: View {
 
 @MainActor
 private func makeCuratorListsPreview() -> some View {
-    let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
-    let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let container = PreviewContainer.container
     let ctx = container.mainContext
 
     let country = CountryData(name: "France")

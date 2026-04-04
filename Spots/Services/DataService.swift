@@ -10,6 +10,16 @@ import Foundation
 import SwiftData
 import os.log
 
+enum DataServiceError: Error, LocalizedError {
+    case invalidListId(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidListId(let id): return "Invalid list ID: \(id)"
+        }
+    }
+}
+
 @MainActor
 final class DataService {
 
@@ -177,7 +187,10 @@ final class DataService {
         logger.info("Downloading list: \(list.name)...")
 
         // Fetch spots for this list from Supabase
-        let listUUID = UUID(uuidString: list.id)!
+        guard let listUUID = UUID(uuidString: list.id) else {
+            logger.error("Invalid list ID format: \(list.id)")
+            throw DataServiceError.invalidListId(list.id)
+        }
         let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
 
         // Clear existing local spots for this list (in case of update)
@@ -231,7 +244,10 @@ final class DataService {
 
         logger.info("Fetching spots for preview: \(list.name)...")
 
-        let listUUID = UUID(uuidString: list.id)!
+        guard let listUUID = UUID(uuidString: list.id) else {
+            logger.error("Invalid list ID format: \(list.id)")
+            throw DataServiceError.invalidListId(list.id)
+        }
         let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
 
         for supabaseSpot in supabaseSpots {
@@ -514,7 +530,10 @@ final class DataService {
     private func refreshPreviewSpots(_ list: CuratedListData) async throws {
         guard let context = modelContext else { return }
 
-        let listUUID = UUID(uuidString: list.id)!
+        guard let listUUID = UUID(uuidString: list.id) else {
+            logger.error("Invalid list ID format: \(list.id)")
+            throw DataServiceError.invalidListId(list.id)
+        }
         let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
 
         for spot in list.spots { context.delete(spot) }
