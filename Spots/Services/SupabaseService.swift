@@ -175,17 +175,24 @@ final class SupabaseService: Sendable {
 
     private let logger = Logger(subsystem: "com.nikin.spots", category: "SupabaseService")
 
-    private let client: SupabaseClient
+    private let client: SupabaseClient?
 
     private init() {
         guard let secrets = SupabaseService.loadSecrets(),
               let urlString = secrets["SUPABASE_URL"] as? String,
               let key = secrets["SUPABASE_ANON_KEY"] as? String,
               let url = URL(string: urlString) else {
-            fatalError("Missing or invalid Secrets.plist. Ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.")
+            assertionFailure("Missing or invalid Secrets.plist. Ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.")
+            client = nil
+            return
         }
 
         client = SupabaseClient(supabaseURL: url, supabaseKey: key)
+    }
+
+    private func supabaseClient() throws -> SupabaseClient {
+        guard let client else { throw SupabaseServiceError.notConfigured }
+        return client
     }
 
     private static func loadSecrets() -> [String: Any]? {
@@ -200,7 +207,7 @@ final class SupabaseService: Sendable {
 
     func fetchCountries() async throws -> [SupabaseCountry] {
         do {
-            let countries: [SupabaseCountry] = try await client
+            let countries: [SupabaseCountry] = try await supabaseClient()
                 .from("countries")
                 .select()
                 .order("country_name")
@@ -219,7 +226,7 @@ final class SupabaseService: Sendable {
 
     func fetchCities() async throws -> [SupabaseCity] {
         do {
-            let cities: [SupabaseCity] = try await client
+            let cities: [SupabaseCity] = try await supabaseClient()
                 .from("cities")
                 .select("*, countries(*)")
                 .order("city_name")
@@ -238,7 +245,7 @@ final class SupabaseService: Sendable {
 
     func fetchCurators() async throws -> [SupabaseCurator] {
         do {
-            let curators: [SupabaseCurator] = try await client
+            let curators: [SupabaseCurator] = try await supabaseClient()
                 .from("curators")
                 .select()
                 .order("curator_name")
@@ -257,7 +264,7 @@ final class SupabaseService: Sendable {
 
     func fetchSpotCategories() async throws -> [SupabaseSpotCategory] {
         do {
-            let categories: [SupabaseSpotCategory] = try await client
+            let categories: [SupabaseSpotCategory] = try await supabaseClient()
                 .from("spot_categories")
                 .select()
                 .order("category_name")
@@ -276,7 +283,7 @@ final class SupabaseService: Sendable {
 
     func fetchCuratedLists() async throws -> [SupabaseCuratedList] {
         do {
-            let lists: [SupabaseCuratedList] = try await client
+            let lists: [SupabaseCuratedList] = try await supabaseClient()
                 .from("curated_lists")
                 .select("*, cities(*, countries(*)), curators(*)")
                 .order("list_name")
@@ -295,7 +302,7 @@ final class SupabaseService: Sendable {
 
     func fetchCuratedLists(forCityId cityId: UUID) async throws -> [SupabaseCuratedList] {
         do {
-            let lists: [SupabaseCuratedList] = try await client
+            let lists: [SupabaseCuratedList] = try await supabaseClient()
                 .from("curated_lists")
                 .select("*, cities(*, countries(*)), curators(*)")
                 .eq("city_id", value: cityId)
@@ -315,7 +322,7 @@ final class SupabaseService: Sendable {
 
     func fetchSpots() async throws -> [SupabaseSpot] {
         do {
-            let spots: [SupabaseSpot] = try await client
+            let spots: [SupabaseSpot] = try await supabaseClient()
                 .from("spots")
                 .select("*, spot_categories(*)")
                 .order("spot_name")
@@ -334,7 +341,7 @@ final class SupabaseService: Sendable {
 
     func fetchSpots(forListId listId: UUID) async throws -> [SupabaseSpot] {
         do {
-            let spots: [SupabaseSpot] = try await client
+            let spots: [SupabaseSpot] = try await supabaseClient()
                 .from("spots")
                 .select("*, spot_categories(*)")
                 .eq("list_id", value: listId)
@@ -354,7 +361,7 @@ final class SupabaseService: Sendable {
 
     func fetchCompleteList(listId: UUID) async throws -> SupabaseCuratedList {
         do {
-            let list: SupabaseCuratedList = try await client
+            let list: SupabaseCuratedList = try await supabaseClient()
                 .from("curated_lists")
                 .select("*, cities(*, countries(*)), curators(*), spots(*, spot_categories(*))")
                 .eq("id", value: listId)
