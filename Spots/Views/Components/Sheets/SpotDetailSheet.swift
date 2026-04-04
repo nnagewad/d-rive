@@ -21,6 +21,7 @@ private struct CloseButton: View {
         }
         .buttonBorderShape(.circle)
         .tint(.secondary)
+        .accessibilityLabel("Close")
     }
 }
 
@@ -68,6 +69,7 @@ struct SpotDetailSheet: View {
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .disabled(spot.instagramHandle == nil)
+                    .accessibilityHint(spot.instagramHandle == nil ? "No Instagram account available" : "Opens Instagram")
 
                     Button {
                         if let website = spot.websiteURL { openURL.openWebsite(website) }
@@ -78,6 +80,7 @@ struct SpotDetailSheet: View {
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .disabled(spot.websiteURL == nil)
+                    .accessibilityHint(spot.websiteURL == nil ? "No website available" : "Opens website in browser")
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)

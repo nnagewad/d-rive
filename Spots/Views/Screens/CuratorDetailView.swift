@@ -30,9 +30,11 @@ struct CuratorDetailView: View {
                             HStack(spacing: 16) {
                                 if let instagram = curator.instagramHandle {
                                     Button("Instagram") { openURL.openInstagram(instagram) }
+                                        .accessibilityHint("Opens Instagram")
                                 }
                                 if let website = curator.websiteURL {
                                     Button("Website") { openURL.openWebsite(website) }
+                                        .accessibilityHint("Opens website in browser")
                                 }
                             }
                             .buttonStyle(.glass)
@@ -76,10 +78,12 @@ struct CuratorDetailView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 420)
                 .clipped()
+                .accessibilityHidden(true)
             } else {
                 dotPatternPlaceholder
                     .frame(maxWidth: .infinity)
                     .frame(height: 420)
+                    .accessibilityHidden(true)
             }
 
             LinearGradient(
@@ -88,12 +92,14 @@ struct CuratorDetailView: View {
                 endPoint: .bottom
             )
             .frame(height: 420)
+            .accessibilityHidden(true)
 
             Text(curator.name)
                 .font(.largeTitle.bold())
                 .foregroundStyle(.white)
                 .padding(.horizontal)
                 .padding(.bottom, 24)
+                .accessibilityAddTraits(.isHeader)
         }
         .frame(height: 420)
     }

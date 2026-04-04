@@ -22,6 +22,7 @@ struct EmptyStateView: View {
                 Image(systemName: systemImage)
                     .font(.system(size: 72, weight: .thin))
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
                 VStack(spacing: 4) {
                     Text(title)
                         .font(.headline)

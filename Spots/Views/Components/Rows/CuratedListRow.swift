@@ -24,15 +24,17 @@ struct CuratedListRow: View {
                 rowContent
             }
         }
+        .accessibilityValue(list.isDownloaded && list.notifyWhenNearby ? "Following" : "Not following")
+        .accessibilityHint("Swipe left to \(list.isDownloaded && list.notifyWhenNearby ? "stop following" : "follow")")
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if list.isDownloaded && list.notifyWhenNearby {
                 Button(action: onStop) {
-                    Label("Stop", systemImage: "bell.slash.fill")
+                    Label("Stop following", systemImage: "bell.slash.fill")
                 }
                 .tint(.red)
             } else {
                 Button(action: onFollow) {
-                    Label("Follow", systemImage: "bell.fill")
+                    Label("Follow list", systemImage: "bell.fill")
                 }
                 .tint(.accentColor)
             }
@@ -54,6 +56,7 @@ struct CuratedListRow: View {
             if list.isDownloaded && list.notifyWhenNearby {
                 Image(systemName: "bell.fill")
                     .foregroundStyle(.accent)
+                    .accessibilityHidden(true)
             }
         }
     }

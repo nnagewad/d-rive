@@ -78,12 +78,14 @@ struct HomeView: View {
                                 }
                                 .buttonStyle(.borderedProminent)
                                 .buttonBorderShape(.circle)
+                                .accessibilityLabel("Add curated list")
 
                                 NavigationLink(value: HomeDestination.settings) {
                                     Image(systemName: "gearshape.fill")
                                 }
                                 .buttonBorderShape(.circle)
                                 .tint(.primary)
+                                .accessibilityLabel("Settings")
                             }
                         }
                 }

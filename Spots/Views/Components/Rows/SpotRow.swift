@@ -24,6 +24,7 @@ struct SpotRow: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(.isButton)
     }
 }
 

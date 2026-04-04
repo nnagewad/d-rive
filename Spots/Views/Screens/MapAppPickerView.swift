@@ -52,10 +52,13 @@ private struct SelectableRow: View {
                 Text(label).foregroundStyle(.primary)
                 Spacer()
                 if isSelected {
-                    Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(Color.accentColor)
+                        .accessibilityHidden(true)
                 }
             }
         }
+        .accessibilityLabel("\(label)\(isSelected ? ", selected" : "")")
     }
 }
 

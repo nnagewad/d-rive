@@ -70,6 +70,7 @@ struct ListDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 if isActivating {
                     ProgressView()
+                        .accessibilityLabel("Updating notifications")
                 } else if isActivated {
                     Button {
                         deactivateList()
@@ -77,6 +78,7 @@ struct ListDetailView: View {
                         Image(systemName: "bell.slash.fill")
                     }
                     .buttonBorderShape(.circle)
+                    .accessibilityLabel("Stop following this list")
                 } else {
                     Button {
                         activateList()
@@ -86,6 +88,7 @@ struct ListDetailView: View {
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.circle)
                     .disabled(isLoadingSpots)
+                    .accessibilityLabel("Start notifications for this list")
                 }
             }
         }
