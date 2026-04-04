@@ -22,9 +22,9 @@ struct LocationsView: View {
         Group {
             if cities.isEmpty {
                 ContentUnavailableView {
-                    Label("No Curated Lists", systemImage: "list.bullet.clipboard")
+                    Label("Something went wrong", systemImage: "exclamationmark.triangle.fill")
                 } description: {
-                    Text("Browse and download lists to get started")
+                    Text("We couldn't load any lists. Please try again later.")
                 }
             } else {
                 List {

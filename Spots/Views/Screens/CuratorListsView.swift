@@ -23,9 +23,9 @@ struct CuratorListsView: View {
             Group {
                 if curator.lists.isEmpty {
                     ContentUnavailableView {
-                        Label("No Lists", systemImage: "list.bullet")
+                        Label("No Lists", systemImage: "exclamationmark.triangle.fill")
                     } description: {
-                        Text("No curated lists available")
+                        Text("Something went wrong loading lists for this curator.")
                     }
                 } else {
                     List {

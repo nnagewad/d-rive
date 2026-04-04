@@ -21,9 +21,9 @@ struct CityDetailView: View {
             Group {
                 if city.lists.isEmpty {
                     ContentUnavailableView {
-                        Label("No Lists", systemImage: "list.bullet")
+                        Label("No Lists", systemImage: "exclamationmark.triangle.fill")
                     } description: {
-                        Text("No curated lists available for this city")
+                        Text("Something went wrong loading lists for this city.")
                     }
                 } else {
                     List {
