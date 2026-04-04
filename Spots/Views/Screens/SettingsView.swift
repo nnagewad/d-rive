@@ -24,34 +24,32 @@ struct SettingsView: View {
     @ObservedObject private var settingsService = SettingsService.shared
 
     var body: some View {
-        NavigationStack {
-            List {
-                // Main Settings Section
-                Section {
-                    NavigationLink {
-                        MapAppPickerView()
-                    } label: {
-                        LabeledContent("Default Map App", value: mapAppDisplayName)
-                    }
-
-                    LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
-                } footer: {
-                    Text("Spots monitors up to 20 nearest spots from your downloaded lists.")
+        List {
+            // Main Settings Section
+            Section {
+                NavigationLink {
+                    MapAppPickerView()
+                } label: {
+                    LabeledContent("Default Map App", value: mapAppDisplayName)
                 }
 
-                // iOS Settings Section
-                Section {
-                    Button {
-                        openIOSSettings()
-                    } label: {
-                        Text("iOS App Settings")
-                    }
+                LabeledContent("Active geofences", value: "\(min(activeSpots.count, 20))")
+            } footer: {
+                Text("This app monitors up to 20 nearest spots.")
+            }
+
+            // iOS Settings Section
+            Section {
+                Button {
+                    openIOSSettings()
+                } label: {
+                    Text("iOS App Settings")
                 }
             }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
         }
+        .standardListStyle()
+        .contentMargins(.top, 16, for: .scrollContent)
+        .largeNavigationTitle("Settings")
     }
 
     // MARK: - Helpers
@@ -61,78 +59,15 @@ struct SettingsView: View {
     }
 
     private func openIOSSettings() {
-        openURL(URL(string: "app-settings:")!)
-    }
-}
-
-// MARK: - Map App Picker View
-
-struct MapAppPickerView: View {
-    @ObservedObject private var settingsService = SettingsService.shared
-
-    var body: some View {
-        List {
-            Section {
-                Button {
-                    settingsService.defaultMapApp = nil
-                } label: {
-                    HStack {
-                        Text("Ask Next Time")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        if settingsService.defaultMapApp == nil {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentColor)
-                        }
-                    }
-                }
-
-                Button {
-                    settingsService.defaultMapApp = .appleMaps
-                } label: {
-                    HStack {
-                        Text("Apple Maps")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        if settingsService.defaultMapApp == .appleMaps {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentColor)
-                        }
-                    }
-                }
-
-                Button {
-                    settingsService.defaultMapApp = .googleMaps
-                } label: {
-                    HStack {
-                        Text("Google Maps")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        if settingsService.defaultMapApp == .googleMaps {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentColor)
-                        }
-                    }
-                }
-            } footer: {
-                Text("This will set your preferred map app when you select the Get Direction button")
-            }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Map Apps")
-        .navigationBarTitleDisplayMode(.large)
+        openURL(.appSettings)
     }
 }
 
 // MARK: - Previews
 
 #Preview("Settings") {
-    SettingsView()
-        .modelContainer(PreviewContainer.containerWithData)
-}
-
-#Preview("Map App Picker") {
     NavigationStack {
-        MapAppPickerView()
+        SettingsView()
     }
+    .modelContainer(PreviewContainer.containerWithData)
 }

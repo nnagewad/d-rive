@@ -57,6 +57,7 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
     let curatorBio: String
     let imageUrl: String?
     let instagramHandle: String?
+    let websiteURL: String?
     let version: Int
     let lastUpdated: Date?
     let createdAt: Date?
@@ -67,6 +68,7 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
         case curatorBio = "curator_bio"
         case imageUrl = "image_url"
         case instagramHandle = "instagram_handle"
+        case websiteURL = "website_url"
         case version
         case lastUpdated = "last_updated"
         case createdAt = "created_at"
@@ -93,7 +95,6 @@ struct SupabaseCuratedList: Codable, Identifiable, Sendable {
     let id: UUID
     let listName: String
     let listDescription: String
-    let imageUrl: String?
     let version: Int
     let lastUpdated: Date?
     let cityId: UUID?
@@ -109,7 +110,6 @@ struct SupabaseCuratedList: Codable, Identifiable, Sendable {
         case id
         case listName = "list_name"
         case listDescription = "list_description"
-        case imageUrl = "image_url"
         case version
         case lastUpdated = "last_updated"
         case cityId = "city_id"
@@ -124,7 +124,6 @@ struct SupabaseCuratedList: Codable, Identifiable, Sendable {
 struct SupabaseSpot: Codable, Identifiable, Sendable {
     let id: UUID
     let spotName: String
-    let spotDescription: String
     let latitude: Double
     let longitude: Double
     let instagramHandle: String?
@@ -141,7 +140,6 @@ struct SupabaseSpot: Codable, Identifiable, Sendable {
     enum CodingKeys: String, CodingKey {
         case id
         case spotName = "spot_name"
-        case spotDescription = "spot_description"
         case latitude
         case longitude
         case instagramHandle = "instagram_handle"

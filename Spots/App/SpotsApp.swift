@@ -44,7 +44,7 @@ struct SpotsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            HomeView()
                 .environmentObject(navigationCoordinator)
                 .modelContainer(sharedModelContainer)
                 .task {

@@ -10,6 +10,16 @@ import Foundation
 import SwiftData
 import os.log
 
+enum DataServiceError: Error, LocalizedError {
+    case invalidListId(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidListId(let id): return "Invalid list ID: \(id)"
+        }
+    }
+}
+
 @MainActor
 final class DataService {
 
@@ -177,7 +187,10 @@ final class DataService {
         logger.info("Downloading list: \(list.name)...")
 
         // Fetch spots for this list from Supabase
-        let listUUID = UUID(uuidString: list.id)!
+        guard let listUUID = UUID(uuidString: list.id) else {
+            logger.error("Invalid list ID format: \(list.id)")
+            throw DataServiceError.invalidListId(list.id)
+        }
         let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
 
         // Clear existing local spots for this list (in case of update)
@@ -190,7 +203,6 @@ final class DataService {
             let spot = SpotData(
                 id: supabaseSpot.id.uuidString,
                 name: supabaseSpot.spotName,
-                spotDescription: supabaseSpot.spotDescription,
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
@@ -232,14 +244,16 @@ final class DataService {
 
         logger.info("Fetching spots for preview: \(list.name)...")
 
-        let listUUID = UUID(uuidString: list.id)!
+        guard let listUUID = UUID(uuidString: list.id) else {
+            logger.error("Invalid list ID format: \(list.id)")
+            throw DataServiceError.invalidListId(list.id)
+        }
         let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
 
         for supabaseSpot in supabaseSpots {
             let spot = SpotData(
                 id: supabaseSpot.id.uuidString,
                 name: supabaseSpot.spotName,
-                spotDescription: supabaseSpot.spotDescription,
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
@@ -383,6 +397,7 @@ final class DataService {
                     existing.bio = supabaseCurator.curatorBio
                     existing.imageUrl = supabaseCurator.imageUrl
                     existing.instagramHandle = supabaseCurator.instagramHandle
+                    existing.websiteURL = supabaseCurator.websiteURL
                     existing.version = supabaseCurator.version
                 }
             } else {
@@ -392,6 +407,7 @@ final class DataService {
                     bio: supabaseCurator.curatorBio,
                     imageUrl: supabaseCurator.imageUrl,
                     instagramHandle: supabaseCurator.instagramHandle,
+                    websiteURL: supabaseCurator.websiteURL,
                     version: supabaseCurator.version
                 ))
             }
@@ -430,7 +446,6 @@ final class DataService {
             if let existing = getList(byId: id) {
                 existing.name = supabaseList.listName
                 existing.listDescription = supabaseList.listDescription
-                existing.imageUrl = supabaseList.imageUrl
                 existing.version = supabaseList.version
                 if let lastUpdated = supabaseList.lastUpdated { existing.lastUpdated = lastUpdated }
                 if let cityId { existing.city = getCity(byId: cityId) }
@@ -440,7 +455,6 @@ final class DataService {
                     id: id,
                     name: supabaseList.listName,
                     listDescription: supabaseList.listDescription,
-                    imageUrl: supabaseList.imageUrl,
                     isDownloaded: false,
                     version: supabaseList.version,
                     lastUpdated: supabaseList.lastUpdated ?? .now,
@@ -516,7 +530,10 @@ final class DataService {
     private func refreshPreviewSpots(_ list: CuratedListData) async throws {
         guard let context = modelContext else { return }
 
-        let listUUID = UUID(uuidString: list.id)!
+        guard let listUUID = UUID(uuidString: list.id) else {
+            logger.error("Invalid list ID format: \(list.id)")
+            throw DataServiceError.invalidListId(list.id)
+        }
         let supabaseSpots = try await SupabaseService.shared.fetchSpots(forListId: listUUID)
 
         for spot in list.spots { context.delete(spot) }
@@ -525,7 +542,6 @@ final class DataService {
             let spot = SpotData(
                 id: supabaseSpot.id.uuidString,
                 name: supabaseSpot.spotName,
-                spotDescription: supabaseSpot.spotDescription,
                 latitude: supabaseSpot.latitude,
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
