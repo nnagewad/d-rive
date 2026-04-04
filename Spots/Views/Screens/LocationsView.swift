@@ -11,6 +11,7 @@ import SwiftData
 
 struct LocationsView: View {
     @Query(sort: \CityData.name) private var cities: [CityData]
+    @State private var isLoading = false
 
     private var citiesGroupedByCountry: [(country: String, cities: [CityData])] {
         let grouped = Dictionary(grouping: cities, by: { $0.country })
@@ -24,7 +25,14 @@ struct LocationsView: View {
                 ContentUnavailableView {
                     Label("Something went wrong", systemImage: "exclamationmark.triangle.fill")
                 } description: {
-                    Text("We couldn't load any lists. Please try again later.")
+                    Text("We couldn't load any lists.")
+                } actions: {
+                    Button(isLoading ? "Retrying…" : "Try Again") {
+                        Task { await sync() }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isLoading)
                 }
             } else {
                 List {
@@ -39,6 +47,7 @@ struct LocationsView: View {
                     }
                 }
                 .standardListStyle()
+                .refreshable { await sync() }
             }
         }
         .largeNavigationTitle("Locations")
@@ -51,6 +60,14 @@ struct LocationsView: View {
         .navigationDestination(for: CuratorData.self) { curator in
             CuratorDetailView(curator: curator)
         }
+    }
+
+    // MARK: - Sync
+
+    private func sync() async {
+        isLoading = true
+        defer { isLoading = false }
+        try? await DataService.shared.syncFromSupabase()
     }
 }
 
@@ -78,6 +95,17 @@ struct LocationsView: View {
             CityData(name: "Edinburgh", countryData: uk)
         ].forEach { ctx.insert($0) }
 
+        return container
+    }())
+}
+
+#Preview("No Connection") {
+    NavigationStack {
+        LocationsView()
+    }
+    .modelContainer({
+        let schema = Schema([CountryData.self, CityData.self, SpotCategoryData.self, CuratorData.self, CuratedListData.self, SpotData.self])
+        let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         return container
     }())
 }
