@@ -1,40 +1,26 @@
 {
   "color-space-for-untagged-svg-colors" : "display-p3",
   "fill" : {
-    "automatic-gradient" : "display-p3:0.94043,0.57520,0.26172,1.00000"
+    "automatic-gradient" : "extended-srgb:0.38039,0.33333,0.96078,1.00000",
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
   },
   "groups" : [
     {
       "layers" : [
         {
-          "hidden" : false,
-          "image-name" : "outline.svg",
-          "name" : "outline",
-          "position" : {
-            "scale" : 1.75,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        },
-        {
-          "blend-mode" : "normal",
-          "glass" : true,
-          "hidden" : false,
-          "image-name" : "background.svg",
-          "name" : "background",
-          "opacity" : 1,
-          "position" : {
-            "scale" : 1.75,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
+          "image-name" : "spots.svg",
+          "name" : "spots"
         }
       ],
-      "name" : "Group",
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
