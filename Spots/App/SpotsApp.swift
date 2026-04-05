@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import OSLog
 
 @main
 struct SpotsApp: App {

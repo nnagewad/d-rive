@@ -429,7 +429,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         notificationBatchTask = Task {
             try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
             guard !Task.isCancelled else { return }
-            await self.flushPendingNotifications()
+            self.flushPendingNotifications()
         }
     }
 
