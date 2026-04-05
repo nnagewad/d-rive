@@ -26,16 +26,26 @@ struct SpotsApp: App {
             CuratedListData.self,
             SpotData.self
         ])
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false
-        )
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+        if let container = try? ModelContainer(for: schema, configurations: [config]) {
+            return container
         }
+
+        // Store may be corrupted — wipe and recreate (data re-syncs from Supabase)
+        let logger = Logger(subsystem: "com.nikin.spots", category: "SpotsApp")
+        logger.error("ModelContainer failed — attempting recovery by wiping local store")
+        let storeURL = URL.applicationSupportDirectory.appending(path: "default.store")
+        try? FileManager.default.removeItem(at: storeURL)
+
+        if let container = try? ModelContainer(for: schema, configurations: [config]) {
+            return container
+        }
+
+        // Last resort: in-memory store so the app remains functional
+        logger.error("ModelContainer recovery failed — falling back to in-memory store")
+        let memoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        return try! ModelContainer(for: schema, configurations: [memoryConfig])
     }()
 
     init() {

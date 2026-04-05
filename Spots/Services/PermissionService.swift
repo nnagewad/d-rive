@@ -104,20 +104,31 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
         hasRequestedLocationPermissions = true
         let currentStatus = locationManager.authorizationStatus
 
-        // Already authorized
-        if currentStatus == .authorizedAlways || currentStatus == .authorizedWhenInUse {
-            logger.info("Location already authorized: \(currentStatus.rawValue)")
+        if currentStatus == .authorizedAlways {
+            logger.info("Location already authorized: always")
             return true
         }
 
-        // Request authorization and wait for delegate callback
-        let granted = await withCheckedContinuation { continuation in
+        // Step 1: Request when-in-use first (required by Apple before requesting always)
+        if currentStatus == .notDetermined {
+            let whenInUse = await withCheckedContinuation { continuation in
+                locationContinuation = continuation
+                locationManager.requestWhenInUseAuthorization()
+            }
+            guard whenInUse else {
+                await refreshPermissionStatus()
+                return false
+            }
+        }
+
+        // Step 2: Upgrade to always (needed for background geofencing)
+        let always = await withCheckedContinuation { continuation in
             locationContinuation = continuation
             locationManager.requestAlwaysAuthorization()
         }
 
         await refreshPermissionStatus()
-        return granted
+        return always
     }
 
     // MARK: - CLLocationManagerDelegate

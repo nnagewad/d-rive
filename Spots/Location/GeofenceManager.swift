@@ -105,9 +105,6 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
         logger.info("Starting hybrid monitoring for \(configurations.count) geofences (will monitor nearest \(self.maxMonitoredRegions))")
 
-        // Request authorization
-        manager.requestAlwaysAuthorization()
-
         // Configure for background region monitoring
         manager.allowsBackgroundLocationUpdates = true
 
