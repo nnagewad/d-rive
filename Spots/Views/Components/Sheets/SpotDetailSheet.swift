@@ -48,6 +48,15 @@ struct SpotDetailSheet: View {
                         .padding(.horizontal, 16)
                 }
 
+                // Short description
+                if let note = spot.shortNote, !note.isEmpty {
+                    Text(note)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                }
+
                 Spacer()
 
                 // Action buttons pinned to bottom
@@ -60,27 +69,23 @@ struct SpotDetailSheet: View {
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
 
-                    Button {
-                        if let instagram = spot.instagramHandle { openURL.openInstagram(instagram) }
-                    } label: {
-                        Text("Instagram").frame(maxWidth: .infinity)
+                    if let instagram = spot.instagramHandle {
+                        Button { openURL.openInstagram(instagram) } label: {
+                            Text("Instagram").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
                     }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .disabled(spot.instagramHandle == nil)
-                    .accessibilityHint(spot.instagramHandle == nil ? "No Instagram account available" : "Opens Instagram")
 
-                    Button {
-                        if let website = spot.websiteURL { openURL.openWebsite(website) }
-                    } label: {
-                        Text("Website").frame(maxWidth: .infinity)
+                    if let website = spot.websiteURL {
+                        Button { openURL.openWebsite(website) } label: {
+                            Text("Website").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
                     }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.large)
-                    .disabled(spot.websiteURL == nil)
-                    .accessibilityHint(spot.websiteURL == nil ? "No website available" : "Opens website in browser")
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
@@ -133,7 +138,7 @@ struct SpotDetailSheet: View {
 
 // MARK: - Previews
 
-#Preview("All links") {
+#Preview("All links + description") {
     struct PreviewWrapper: View {
         @State private var showSheet = true
         var body: some View {
@@ -146,7 +151,8 @@ struct SpotDetailSheet: View {
                             longitude: 2.3522,
                             categoryData: SpotCategoryData(name: "Coffee"),
                             instagramHandle: "@cafelomi",
-                            websiteURL: "https://cafelomi.com"
+                            websiteURL: "https://cafelomi.com",
+                            shortNote: "A Parisian specialty coffee institution known for their light roasts and bright, clean brews."
                         ),
                         onClose: { showSheet = false }
                     )
@@ -156,7 +162,7 @@ struct SpotDetailSheet: View {
     return PreviewWrapper()
 }
 
-#Preview("No links") {
+#Preview("No links, no description") {
     struct PreviewWrapper: View {
         @State private var showSheet = true
         var body: some View {

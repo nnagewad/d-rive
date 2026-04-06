@@ -207,6 +207,7 @@ final class DataService {
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
                 websiteURL: supabaseSpot.websiteUrl,
+                shortNote: supabaseSpot.shortNote,
                 version: supabaseSpot.version
             )
 
@@ -258,6 +259,7 @@ final class DataService {
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
                 websiteURL: supabaseSpot.websiteUrl,
+                shortNote: supabaseSpot.shortNote,
                 version: supabaseSpot.version
             )
 
@@ -546,6 +548,7 @@ final class DataService {
                 longitude: supabaseSpot.longitude,
                 instagramHandle: supabaseSpot.instagramHandle,
                 websiteURL: supabaseSpot.websiteUrl,
+                shortNote: supabaseSpot.shortNote,
                 version: supabaseSpot.version
             )
             if let categoryId = supabaseSpot.categoryId?.uuidString {

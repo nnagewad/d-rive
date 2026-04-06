@@ -165,6 +165,7 @@ final class SpotData {
     // Optional metadata
     var instagramHandle: String?
     var websiteURL: String?
+    var shortNote: String?
 
     var categoryData: SpotCategoryData?
     var list: CuratedListData?
@@ -190,6 +191,7 @@ final class SpotData {
         categoryData: SpotCategoryData? = nil,
         instagramHandle: String? = nil,
         websiteURL: String? = nil,
+        shortNote: String? = nil,
         version: Int = 1
     ) {
         self.id = id
@@ -199,6 +201,7 @@ final class SpotData {
         self.categoryData = categoryData
         self.instagramHandle = instagramHandle
         self.websiteURL = websiteURL
+        self.shortNote = shortNote
         self.version = version
     }
 }

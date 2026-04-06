@@ -128,6 +128,7 @@ struct SupabaseSpot: Codable, Identifiable, Sendable {
     let longitude: Double
     let instagramHandle: String?
     let websiteUrl: String?
+    let shortNote: String?
     let categoryId: UUID?
     let listId: UUID?
     let version: Int
@@ -144,6 +145,7 @@ struct SupabaseSpot: Codable, Identifiable, Sendable {
         case longitude
         case instagramHandle = "instagram_handle"
         case websiteUrl = "website_url"
+        case shortNote = "short_note"
         case categoryId = "category_id"
         case listId = "list_id"
         case version
