@@ -21,6 +21,7 @@ final class ListActionService {
         guard await PermissionService.shared.requestPermissionsForListActivation() else {
             return false
         }
+        try? await DataService.shared.fetchSpotsForList(list)
         DataService.shared.activateList(list)
         reloadGeofences()
         return true
