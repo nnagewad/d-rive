@@ -107,6 +107,8 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
         // Configure for background region monitoring
         manager.allowsBackgroundLocationUpdates = true
+        manager.pausesLocationUpdatesAutomatically = false
+        manager.showsBackgroundLocationIndicator = true
 
         isMonitoring = true
 
