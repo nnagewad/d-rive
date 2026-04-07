@@ -21,6 +21,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         UNUserNotificationCenter.current().delegate = notificationDelegate
 
+        // Initialize GeofenceManager immediately so CLLocationManager receives
+        // region events when the app is woken from a terminated state.
+        // Without this, the delegate isn't set until after Supabase sync and
+        // iOS may discard the region event before we're ready to handle it.
+        _ = GeofenceManager.shared
+
         return true
     }
 
