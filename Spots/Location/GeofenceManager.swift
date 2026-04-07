@@ -425,11 +425,17 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             return
         }
 
-        // Buffer this notification and (re)start the batch window
         pendingNotifications.append(configuration)
         notificationBatchTask?.cancel()
         notificationBatchTask = Task {
-            try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
+            if appState == .background {
+                // Extend background execution so iOS doesn't suspend us mid-batch
+                let bgTask = UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
+                defer { UIApplication.shared.endBackgroundTask(bgTask) }
+                try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
+            } else {
+                try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
+            }
             guard !Task.isCancelled else { return }
             self.flushPendingNotifications()
         }
