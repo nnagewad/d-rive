@@ -490,7 +490,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         logger.info("🔔 Sending notification (batch of \(batch.count)): \(body)")
 
         let content = UNMutableNotificationContent()
-        content.title = "Spots"
+        content.title = "Cool Spots"
         content.body = body
         content.sound = .default
         content.userInfo = [

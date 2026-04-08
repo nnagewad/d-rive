@@ -48,7 +48,7 @@ struct NearbySpotsView: View {
             SpotData(name: "Pilot Coffee Roasters", latitude: 43.6465, longitude: -79.3963),
             SpotData(name: "Boxcar Social", latitude: 43.6677, longitude: -79.3901)
         ])
-        .navigationTitle("Spots")
+        .navigationTitle("Cool Spots")
         .navigationBarTitleDisplayMode(.large)
     }
 }

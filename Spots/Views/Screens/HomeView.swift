@@ -90,7 +90,7 @@ struct HomeView: View {
                         }
                 }
             }
-            .navigationTitle("Spots")
+            .navigationTitle("Cool Spots")
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(for: HomeDestination.self) { destination in
                 switch destination {

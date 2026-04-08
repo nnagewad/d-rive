@@ -272,7 +272,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Spots-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Spots;
+				INFOPLIST_KEY_CFBundleDisplayName = "Cool Spots";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Spots uses your location to determine your current position.";
@@ -312,7 +312,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Spots-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Spots;
+				INFOPLIST_KEY_CFBundleDisplayName = "Cool Spots";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Spots uses your location to determine your current position.";
