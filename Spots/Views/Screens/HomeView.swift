@@ -64,7 +64,7 @@ struct HomeView: View {
                     EmptyStateView(
                         systemImage: "location.slash.fill",
                         title: "Location Access disabled",
-                        subtitle: "In order for Spots to work, enable Location Access",
+                        subtitle: "In order for Cool Spots to work, enable Location Access",
                         buttonLabel: "iOS Settings"
                     ) {
                         openURL(.appSettings)

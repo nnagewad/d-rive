@@ -9,11 +9,11 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Spots uses your location to show you the nearest spots on your lists.</string>
+	<string>Cool Spots uses your location to show you the nearest spots on your lists.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Spots uses your location in the background to notify you when you're near a spot on your lists.</string>
+	<string>Cool Spots uses your location in the background to notify you when you're near a spot on your lists.</string>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>Spots notifies you when you're near a place on your lists.</string>
+	<string>Cool Spots notifies you when you're near a place on your lists.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
