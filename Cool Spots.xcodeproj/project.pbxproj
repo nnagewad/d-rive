@@ -8,18 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		F01312922F1ED7DA004A06D9 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F01312912F1ED7DA004A06D9 /* Supabase */; };
-		F0D8C2C52F7085C5009052F5 /* Spots.icon in Resources */ = {isa = PBXBuildFile; fileRef = F0D8C2C42F7085C5009052F5 /* Spots.icon */; };
+		F0D8C2C52F7085C5009052F5 /* Cool Spots.icon in Resources */ = {isa = PBXBuildFile; fileRef = F0D8C2C42F7085C5009052F5 /* Cool Spots.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F0450E792EF1F171006BA7A0 /* Spots.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spots.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F0D8C2C42F7085C5009052F5 /* Spots.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = Spots.icon; sourceTree = "<group>"; };
+		F0450E792EF1F171006BA7A0 /* Cool Spots.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cool Spots.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0D8C2C42F7085C5009052F5 /* Cool Spots.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Cool Spots.icon"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		F0450E7B2EF1F171006BA7A0 /* Spots */ = {
+		F0450E7B2EF1F171006BA7A0 /* Cool Spots */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Spots;
+			path = "Cool Spots";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -39,16 +39,16 @@
 		F0450E702EF1F171006BA7A0 = {
 			isa = PBXGroup;
 			children = (
-				F0450E7B2EF1F171006BA7A0 /* Spots */,
+				F0450E7B2EF1F171006BA7A0 /* Cool Spots */,
 				F0450E7A2EF1F171006BA7A0 /* Products */,
-				F0D8C2C42F7085C5009052F5 /* Spots.icon */,
+				F0D8C2C42F7085C5009052F5 /* Cool Spots.icon */,
 			);
 			sourceTree = "<group>";
 		};
 		F0450E7A2EF1F171006BA7A0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F0450E792EF1F171006BA7A0 /* Spots.app */,
+				F0450E792EF1F171006BA7A0 /* Cool Spots.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -56,9 +56,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F0450E782EF1F171006BA7A0 /* Spots */ = {
+		F0450E782EF1F171006BA7A0 /* Cool Spots */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F0450E842EF1F172006BA7A0 /* Build configuration list for PBXNativeTarget "Spots" */;
+			buildConfigurationList = F0450E842EF1F172006BA7A0 /* Build configuration list for PBXNativeTarget "Cool Spots" */;
 			buildPhases = (
 				F0450E752EF1F171006BA7A0 /* Sources */,
 				F0450E762EF1F171006BA7A0 /* Frameworks */,
@@ -69,14 +69,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				F0450E7B2EF1F171006BA7A0 /* Spots */,
+				F0450E7B2EF1F171006BA7A0 /* Cool Spots */,
 			);
-			name = Spots;
+			name = "Cool Spots";
 			packageProductDependencies = (
 				F01312912F1ED7DA004A06D9 /* Supabase */,
 			);
 			productName = "Dérive";
-			productReference = F0450E792EF1F171006BA7A0 /* Spots.app */;
+			productReference = F0450E792EF1F171006BA7A0 /* Cool Spots.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -94,7 +94,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F0450E742EF1F171006BA7A0 /* Build configuration list for PBXProject "Spots" */;
+			buildConfigurationList = F0450E742EF1F171006BA7A0 /* Build configuration list for PBXProject "Cool Spots" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -111,7 +111,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F0450E782EF1F171006BA7A0 /* Spots */,
+				F0450E782EF1F171006BA7A0 /* Cool Spots */,
 			);
 		};
 /* End PBXProject section */
@@ -121,7 +121,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F0D8C2C52F7085C5009052F5 /* Spots.icon in Resources */,
+				F0D8C2C52F7085C5009052F5 /* Cool Spots.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,18 +264,18 @@
 		F0450E852EF1F172006BA7A0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Spots;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Cool Spots";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7GRXYQ9955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Spots-Info.plist";
+				INFOPLIST_FILE = "Cool Spots-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Cool Spots";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Spots uses your location to determine your current position.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Cool Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Cool Spots uses your location to determine your current position.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine where you are.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -304,18 +304,18 @@
 		F0450E862EF1F172006BA7A0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Spots;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Cool Spots";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7GRXYQ9955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Spots-Info.plist";
+				INFOPLIST_FILE = "Cool Spots-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Cool Spots";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Spots uses your location to determine your current position.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Cool Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Cool Spots uses your location to determine your current position.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine where you are.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -344,7 +344,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F0450E742EF1F171006BA7A0 /* Build configuration list for PBXProject "Spots" */ = {
+		F0450E742EF1F171006BA7A0 /* Build configuration list for PBXProject "Cool Spots" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F0450E822EF1F172006BA7A0 /* Debug */,
@@ -353,7 +353,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F0450E842EF1F172006BA7A0 /* Build configuration list for PBXNativeTarget "Spots" */ = {
+		F0450E842EF1F172006BA7A0 /* Build configuration list for PBXNativeTarget "Cool Spots" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F0450E852EF1F172006BA7A0 /* Debug */,
