@@ -101,6 +101,9 @@ struct SpotDetailSheet: View {
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+        .onDisappear {
+            GeofenceManager.shared.snooze(spotId: spot.id)
+        }
         .alert("Select a Map App", isPresented: $showMapAppPicker) {
             Button("Apple Maps") {
                 settingsService.defaultMapApp = .appleMaps

@@ -84,6 +84,11 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
 
+    // Snooze: suppress notifications for a spot after its sheet is dismissed
+    private var snoozedUntil: [String: Date] = [:]
+    private let snoozeKey = "GeofenceManager.snoozedUntil"
+    private let snoozeDuration: TimeInterval = 3600  // 1 hour
+
     // Batch nearby notifications into one when multiple geofences trigger within this window
     private var pendingNotifications: [GeofenceConfiguration] = []
     private var notificationBatchTask: Task<Void, Never>?
@@ -92,6 +97,23 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     override init() {
         super.init()
         manager.delegate = self
+        if let data = UserDefaults.standard.data(forKey: snoozeKey),
+           let saved = try? JSONDecoder().decode([String: Date].self, from: data) {
+            snoozedUntil = saved
+        }
+    }
+
+    func snooze(spotId: String) {
+        snoozedUntil[spotId] = Date().addingTimeInterval(snoozeDuration)
+        if let data = try? JSONEncoder().encode(snoozedUntil) {
+            UserDefaults.standard.set(data, forKey: snoozeKey)
+        }
+        logger.info("💤 Snoozed \(spotId) for \(Int(self.snoozeDuration / 60)) minutes")
+    }
+
+    private func isSnoozed(_ spotId: String) -> Bool {
+        guard let expiry = snoozedUntil[spotId] else { return false }
+        return Date() < expiry
     }
 
     /// Start monitoring multiple geofences from configurations
@@ -410,6 +432,12 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
+        // Check snooze first
+        if isSnoozed(configuration.id) {
+            logger.info("💤 Skipping notification (snoozed): \(configuration.name)")
+            return
+        }
+
         // Check cooldown to prevent duplicate notifications for the same spot
         if let lastTime = lastNotificationTime[configuration.id] {
             let elapsed = Date().timeIntervalSince(lastTime)
