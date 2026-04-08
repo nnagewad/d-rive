@@ -67,5 +67,9 @@ final class LocationManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
         latitude = location.coordinate.latitude
         longitude = location.coordinate.longitude
+
+        // Feed accurate GPS fixes into GeofenceManager so entry/exit is detected
+        // without waiting for iOS region monitoring, which can be delayed minutes.
+        GeofenceManager.shared.handleLocationUpdate(location)
     }
 }

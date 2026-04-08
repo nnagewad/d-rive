@@ -149,7 +149,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         logger.info("Started monitoring: regions + significant location changes")
     }
 
-    // MARK: - GPS Location Updates (also handles significant location changes)
+    // MARK: - GPS Location Updates (significant location changes when background/terminated)
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
 
@@ -158,15 +158,20 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             reloadGeofenceConfigurations()
         }
 
+        handleLocationUpdate(location)
+    }
+
+    /// Process a location update from any source (significant changes or continuous GPS via LocationManager).
+    /// Called frequently when the app is active so geofence entry/exit is detected without relying
+    /// solely on iOS region monitoring, which can be delayed by several minutes.
+    func handleLocationUpdate(_ location: CLLocation) {
         currentLocation = location
 
         // Check if we need to update which regions are monitored
         let shouldUpdateRegions: Bool
         if lastRegionUpdateLocation == nil {
-            // First location update - select initial nearest geofences
             shouldUpdateRegions = true
         } else if let lastLocation = lastRegionUpdateLocation {
-            // Re-evaluate if we've moved significantly
             let distanceMoved = location.distance(from: lastLocation)
             shouldUpdateRegions = distanceMoved >= regionUpdateDistanceThreshold
         } else {
@@ -178,17 +183,13 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         }
 
         // Calculate distances for ALL geofences (for UI display)
-        var geofenceDistances: [(id: String, name: String, distance: Int)] = []
-        for config in allGeofences {
-            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
-            let distance = location.distance(from: center)
-            geofenceDistances.append((id: config.id, name: config.name, distance: Int(distance)))
-        }
-
-        // Update geofence info list sorted by distance (shows ALL locations)
-        geofenceInfoList = geofenceDistances
+        geofenceInfoList = allGeofences
+            .map { config -> GeofenceInfo in
+                let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+                let distance = Int(location.distance(from: center))
+                return GeofenceInfo(id: config.id, name: config.name, distance: distance)
+            }
             .sorted { $0.distance < $1.distance }
-            .map { GeofenceInfo(id: $0.id, name: $0.name, distance: $0.distance) }
 
         // Check entry/exit only for actively monitored geofences
         for (id, config) in activeGeofences {
@@ -197,17 +198,13 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             let wasInside = insideGeofences.contains(id)
             let isInside = distance <= config.radius
 
-            // Log distance for debugging
             logger.debug("Distance to \(config.name): \(Int(distance))m (radius: \(Int(config.radius))m)")
 
-            // State changed - entered geofence
             if !wasInside && isInside {
                 insideGeofences.insert(id)
                 logger.info("✅ ENTERED: \(config.name) - Distance: \(Int(distance))m")
                 notify(config)
-            }
-            // State changed - exited geofence
-            else if wasInside && !isInside {
+            } else if wasInside && !isInside {
                 insideGeofences.remove(id)
                 logger.info("🚪 EXITED: \(config.name) - Distance: \(Int(distance))m")
             }
