@@ -220,7 +220,14 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
     // MARK: - Region Monitoring (for terminated state)
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        let wasInside = insideGeofences.contains(region.identifier)
         insideGeofences.insert(region.identifier)
+
+        // If GPS already tracked this entry, skip to avoid duplicates
+        if wasInside {
+            logger.debug("🌍 REGION ENTER (already tracked): \(region.identifier)")
+            return
+        }
 
         // If activeGeofences is empty (app was terminated), reload configurations
         if activeGeofences.isEmpty {
