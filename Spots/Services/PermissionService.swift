@@ -27,7 +27,7 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
     }()
 
     @Published var notificationStatus: UNAuthorizationStatus = .notDetermined
-    @Published var locationStatus: CLAuthorizationStatus = .notDetermined
+    @Published var locationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
     private var locationContinuation: CheckedContinuation<Bool, Never>?
 
