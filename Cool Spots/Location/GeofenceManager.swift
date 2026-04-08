@@ -74,6 +74,9 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     // iOS Core Location limit for monitored regions
     private let maxMonitoredRegions = 20
 
+    // Maximum age of a cached location to be considered valid for GPS cross-checks
+    private let maxLocationAge: TimeInterval = 30
+
     // Track which geofences we're currently inside
     private var insideGeofences: Set<String> = []
 
@@ -114,6 +117,15 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     private func isSnoozed(_ spotId: String) -> Bool {
         guard let expiry = snoozedUntil[spotId] else { return false }
         return Date() < expiry
+    }
+
+    /// Returns a verified GPS location for cross-checking region events, or nil if none is available.
+    /// Only uses currentLocation (set by LocationManager with ≤50m accuracy) — never falls back
+    /// to manager.location which uses cell towers/WiFi and can be hundreds of metres off.
+    private var verifiedGPSLocation: CLLocation? {
+        guard let loc = currentLocation else { return nil }
+        guard Date().timeIntervalSince(loc.timestamp) <= maxLocationAge else { return nil }
+        return loc
     }
 
     /// Start monitoring multiple geofences from configurations
@@ -258,6 +270,17 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             return
         }
 
+        // Cross-check with GPS if available. If not (background/terminated), trust iOS.
+        if let gpsLocation = verifiedGPSLocation {
+            let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+            let gpsDistance = gpsLocation.distance(from: center)
+            guard gpsDistance <= config.radius else {
+                logger.info("🌍 REGION ENTER but GPS says \(Int(gpsDistance))m away, ignoring")
+                insideGeofences.remove(region.identifier)
+                return
+            }
+        }
+
         logger.info("🌍 REGION ENTER: \(config.name)")
         notify(config)
     }
@@ -281,6 +304,22 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             insideGeofences.insert(region.identifier)
 
             if !wasInside {
+                // didDetermineState fires on startup/foreground return and uses iOS's
+                // coarse positioning (cell towers/WiFi) which can be inaccurate by hundreds
+                // of metres. Always require a verified GPS fix. If none yet, defer — the
+                // GPS path in handleLocationUpdate will confirm entry once a fix arrives.
+                guard let gpsLocation = verifiedGPSLocation else {
+                    logger.info("🌍 REGION STATE INSIDE but no verified GPS, deferring: \(config.name)")
+                    insideGeofences.remove(region.identifier)
+                    return
+                }
+                let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+                let gpsDistance = gpsLocation.distance(from: center)
+                guard gpsDistance <= config.radius else {
+                    logger.info("🌍 REGION STATE INSIDE but GPS says \(Int(gpsDistance))m away, ignoring: \(config.name)")
+                    insideGeofences.remove(region.identifier)
+                    return
+                }
                 logger.info("🌍 REGION STATE INSIDE (was outside): \(config.name)")
                 notify(config)
             } else {
@@ -343,6 +382,11 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         for region in manager.monitoredRegions {
             manager.stopMonitoring(for: region)
         }
+
+        // Cancel any pending batch notification
+        notificationBatchTask?.cancel()
+        notificationBatchTask = nil
+        pendingNotifications.removeAll()
 
         // Clear state
         allGeofences.removeAll()
