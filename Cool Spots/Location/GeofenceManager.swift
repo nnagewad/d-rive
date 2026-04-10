@@ -524,19 +524,23 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         guard let first = batch.first else { return }
 
         let isGrouped = batch.count > 1
-        let body: String
-        if isGrouped {
-            body = "You're near \(first.name) and \(batch.count - 1) other spot\(batch.count - 1 == 1 ? "" : "s")"
-        } else {
-            body = "You're close to \(first.name)!"
-        }
 
-        logger.info("🔔 Sending notification (batch of \(batch.count)): \(body)")
+        logger.info("🔔 Sending notification (batch of \(batch.count))")
 
         let content = UNMutableNotificationContent()
-        content.title = "Cool Spots"
-        content.body = body
+        content.categoryIdentifier = NotificationCategory.geofence
         content.sound = .default
+
+        if isGrouped {
+            let others = batch.count - 1
+            content.title = "Nearby Spots"
+            content.body = "\(first.name) and \(others) other\(others == 1 ? "" : "s")"
+        } else {
+            content.title = first.name
+            if !first.group.isEmpty { content.subtitle = first.group }
+            content.body = "You're nearby"
+        }
+
         content.userInfo = [
             "geofenceId": first.id,
             "geofenceName": first.name,

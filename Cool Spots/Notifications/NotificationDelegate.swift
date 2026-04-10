@@ -9,6 +9,14 @@ import UIKit
 import UserNotifications
 import os.log
 
+enum NotificationCategory {
+    static let geofence = "GEOFENCE_NOTIFICATION"
+}
+
+enum NotificationAction {
+    static let viewOnPhone = "VIEW_ON_IPHONE"
+}
+
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
     private let logger = Logger(subsystem: "com.nikin.spots", category: "NotificationDelegate")
@@ -56,8 +64,10 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let name = userInfo["geofenceName"] as? String ?? "Unknown Location"
         let isGrouped = userInfo["isGrouped"] as? Bool ?? false
 
-        // Handle notification tap
-        if actionIdentifier == UNNotificationDefaultActionIdentifier {
+        let isDefaultTap = actionIdentifier == UNNotificationDefaultActionIdentifier
+        let isViewOnPhone = actionIdentifier == NotificationAction.viewOnPhone
+
+        if isDefaultTap || isViewOnPhone {
             Task { @MainActor in
                 if isGrouped {
                     logger.info("🗺️ Grouped notification tapped - navigating home")
