@@ -63,7 +63,7 @@ final class LocationManager: NSObject, ObservableObject, @preconcurrency CLLocat
                          didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last,
               location.horizontalAccuracy > 0,
-              location.horizontalAccuracy <= 50 else { return }
+              location.horizontalAccuracy <= 100 else { return }
 
         latitude = location.coordinate.latitude
         longitude = location.coordinate.longitude
