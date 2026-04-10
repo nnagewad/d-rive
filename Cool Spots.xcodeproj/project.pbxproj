@@ -274,9 +274,9 @@
 				INFOPLIST_FILE = "Cool Spots-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Cool Spots";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Cool Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Cool Spots uses your location to determine your current position.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine where you are.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Cool Spots uses your location to detect when you enter or leave individual spots, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Cool Spots uses your location to notify you when you're near a spot, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Cool Spots uses your location to show nearby spots and detect when you arrive.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIBackgroundModes = location;
@@ -314,9 +314,9 @@
 				INFOPLIST_FILE = "Cool Spots-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Cool Spots";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Cool Spots uses your location to detect when you enter or leave important places, even when the app is not open.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Cool Spots uses your location to determine your current position.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to determine where you are.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Cool Spots uses your location to detect when you enter or leave individual spots, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Cool Spots uses your location to notify you when you're near a spot, even when the app is not open.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Cool Spots uses your location to show nearby spots and detect when you arrive.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UIBackgroundModes = location;
