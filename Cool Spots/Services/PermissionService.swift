@@ -109,30 +109,37 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
             return true
         }
 
-        // Already have when-in-use — request upgrade to always (non-blocking, iOS
-        // will prompt via banner) and return success so the flow can continue.
+        // Already have when-in-use — await the upgrade prompt before returning.
         if currentStatus == .authorizedWhenInUse {
-            locationManager.requestAlwaysAuthorization()
-            return true
+            return await requestAlwaysUpgrade()
+        }
+
+        guard currentStatus == .notDetermined else {
+            await refreshPermissionStatus()
+            return false
         }
 
         // Step 1: Request when-in-use first (required by Apple before requesting always)
-        if currentStatus == .notDetermined {
-            let whenInUse = await withCheckedContinuation { continuation in
-                locationContinuation = continuation
-                locationManager.requestWhenInUseAuthorization()
-            }
-            guard whenInUse else {
-                await refreshPermissionStatus()
-                return false
-            }
+        let whenInUse = await withCheckedContinuation { continuation in
+            locationContinuation = continuation
+            locationManager.requestWhenInUseAuthorization()
+        }
+        guard whenInUse else {
+            await refreshPermissionStatus()
+            return false
         }
 
-        // Step 2: Request upgrade to always (non-blocking — iOS defers this prompt
-        // and may show it as a banner, so we don't await it here)
-        locationManager.requestAlwaysAuthorization()
+        // Step 2: Await the always upgrade so notifications don't appear mid-flow
+        return await requestAlwaysUpgrade()
+    }
+
+    private func requestAlwaysUpgrade() async -> Bool {
+        let granted = await withCheckedContinuation { continuation in
+            locationContinuation = continuation
+            locationManager.requestAlwaysAuthorization()
+        }
         await refreshPermissionStatus()
-        return true
+        return granted
     }
 
     // MARK: - CLLocationManagerDelegate
