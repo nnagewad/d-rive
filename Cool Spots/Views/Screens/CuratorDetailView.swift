@@ -20,28 +20,25 @@ struct CuratorDetailView: View {
 
                 VStack(alignment: .leading, spacing: 24) {
                     if !curator.bio.isEmpty {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(curator.bio)
-                        }
+                        Text(curator.bio)
                     }
 
                     if curator.instagramHandle != nil || curator.websiteURL != nil {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 16) {
-                                if let instagram = curator.instagramHandle {
-                                    Button("Instagram") { openURL.openInstagram(instagram) }
-                                        .accessibilityHint("Opens Instagram")
-                                }
-                                if let website = curator.websiteURL {
-                                    Button("Website") { openURL.openWebsite(website) }
-                                        .accessibilityHint("Opens website in browser")
-                                }
+                        HStack(spacing: 16) {
+                            if let instagram = curator.instagramHandle {
+                                Button("Instagram") { openURL.openInstagram(instagram) }
+                                    .accessibilityHint("Opens Instagram")
                             }
-                            .glassButtonStyle()
-                            .buttonBorderShape(.capsule)
-                            .controlSize(.large)
+                            if let website = curator.websiteURL {
+                                Button("Website") { openURL.openWebsite(website) }
+                                    .accessibilityHint("Opens website in browser")
+                            }
                         }
+                        .glassButtonStyle()
+                        .buttonBorderShape(.capsule)
+                        .controlSize(.large)
                     }
+
                     if curator.lists.count > 1 {
                         NavigationLink {
                             CuratorListsView(curator: curator)
@@ -53,8 +50,9 @@ struct CuratorDetailView: View {
                         .controlSize(.large)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 24)
             }
         }
         .background(Color(.systemGroupedBackground))
@@ -69,21 +67,26 @@ struct CuratorDetailView: View {
     @ViewBuilder
     private var heroView: some View {
         ZStack(alignment: .bottomLeading) {
-            if let imageUrl = curator.imageUrl, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { image in
-                    image.resizable().scaledToFill()
-                } placeholder: {
-                    dotPatternPlaceholder
+            dotPatternPlaceholder
+                .frame(maxWidth: .infinity)
+                .frame(height: 420)
+                .accessibilityHidden(true)
+
+            if let url = curator.imageUrl.flatMap(URL.init) {
+                AsyncImage(url: url) { phase in
+                    let isLoaded = phase.image != nil
+                    Group {
+                        if let image = phase.image {
+                            image.resizable().scaledToFill()
+                                .transition(.opacity)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.3), value: isLoaded)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 420)
                 .clipped()
                 .accessibilityHidden(true)
-            } else {
-                dotPatternPlaceholder
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 420)
-                    .accessibilityHidden(true)
             }
 
             LinearGradient(
@@ -97,11 +100,11 @@ struct CuratorDetailView: View {
             Text(curator.name)
                 .font(.largeTitle.bold())
                 .foregroundStyle(.white)
-                .padding(.horizontal)
+                .padding(.horizontal, 32)
                 .padding(.bottom, 24)
                 .accessibilityAddTraits(.isHeader)
         }
-        .frame(height: 420)
+        .frame(maxWidth: .infinity, minHeight: 420, maxHeight: 420)
     }
 
     private var dotPatternPlaceholder: some View {
