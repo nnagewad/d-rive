@@ -1,7 +1,7 @@
 //
 //  SpotsApp.swift
 //  Purpose: App entry point and SwiftData model container setup
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

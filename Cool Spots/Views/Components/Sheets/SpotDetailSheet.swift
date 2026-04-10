@@ -1,7 +1,7 @@
 //
 //  SpotDetailSheet.swift
 //  Purpose: Modal sheet presenting spot details, directions, and links
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
 //

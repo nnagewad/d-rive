@@ -1,7 +1,7 @@
 //
 //  APIModels.swift
 //  Purpose: Data models for remote API responses (city manifest, geofences)
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
 //

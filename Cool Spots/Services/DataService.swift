@@ -1,7 +1,7 @@
 //
 //  DataService.swift
 //  Purpose: Manages SwiftData operations and syncs with Supabase
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-01-19.
 //

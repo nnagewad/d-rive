@@ -1,7 +1,7 @@
 //
 //  NotificationsPermissionAlertModifier.swift
 //  Purpose: View modifier for the notifications permission alert
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

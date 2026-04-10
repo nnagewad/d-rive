@@ -1,6 +1,6 @@
 //
 //  MapNavigationService.swift
-//  Spots
+//  Cool Spots
 //
 //  Created by Nikin Nagewadia on 2025-12-28.
 //

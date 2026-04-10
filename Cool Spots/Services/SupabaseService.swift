@@ -1,7 +1,7 @@
 //
 //  SupabaseService.swift
 //  Purpose: Fetches data from Supabase backend
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-01-19.
 //

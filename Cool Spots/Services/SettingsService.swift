@@ -1,6 +1,6 @@
 //
 //  SettingsService.swift
-//  Spots
+//  Cool Spots
 //
 
 import Foundation

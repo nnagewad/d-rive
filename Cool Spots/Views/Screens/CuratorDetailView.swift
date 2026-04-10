@@ -1,7 +1,7 @@
 //
 //  CuratorDetailView.swift
 //  Purpose: Profile screen for a curator — hero image, bio, and social links
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-16.
 //

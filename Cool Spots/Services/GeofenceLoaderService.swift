@@ -1,6 +1,6 @@
 //
 //  GeofenceLoaderService.swift
-//  Spots
+//  Cool Spots
 //
 //  Purpose: Load geofences from SwiftData (spots in downloaded lists)
 //

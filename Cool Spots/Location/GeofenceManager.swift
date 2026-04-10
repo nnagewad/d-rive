@@ -1,7 +1,7 @@
 //
 //  GeofenceManager.swift
 //  Purpose: background-safe region monitoring + notifications
-//  Dérive
+//  Cool Spots
 //
 //  Created by Nikin Nagewadia on 2025-12-16.
 //

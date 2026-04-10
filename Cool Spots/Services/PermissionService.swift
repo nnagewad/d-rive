@@ -1,6 +1,6 @@
 //
 //  PermissionService.swift
-//  Spots
+//  Cool Spots
 //
 //  Purpose: Handle notification and location permission requests
 //

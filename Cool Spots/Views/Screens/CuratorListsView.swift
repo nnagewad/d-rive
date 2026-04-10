@@ -1,7 +1,7 @@
 //
 //  CuratorListsView.swift
 //  Purpose: Shows all curated lists for a curator, grouped by city
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-04-03.
 //

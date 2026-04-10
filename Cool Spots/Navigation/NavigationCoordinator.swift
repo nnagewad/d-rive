@@ -1,7 +1,7 @@
 //
 //  NavigationCoordinator.swift
 //  Purpose: Coordinates app navigation and handles deep linking from notifications
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2025-12-30.
 //

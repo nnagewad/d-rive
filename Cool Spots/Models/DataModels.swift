@@ -1,7 +1,7 @@
 //
 //  DataModels.swift
 //  Purpose: SwiftData models for the app's core data
-//  Spots
+//  Cool Spots
 //
 //  Created by Claude Code and Nikin Nagewadia on 2026-01-19.
 //
