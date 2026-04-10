@@ -37,7 +37,7 @@ struct CuratorDetailView: View {
                                         .accessibilityHint("Opens website in browser")
                                 }
                             }
-                            .buttonStyle(.glass)
+                            .glassButtonStyle()
                             .buttonBorderShape(.capsule)
                             .controlSize(.large)
                         }
@@ -49,7 +49,7 @@ struct CuratorDetailView: View {
                             Text("View their lists")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.glassProminent)
+                        .glassProminentButtonStyle()
                         .controlSize(.large)
                     }
                 }
