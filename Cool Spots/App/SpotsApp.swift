@@ -18,40 +18,9 @@ struct SpotsApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var hasCompletedInitialSync = false
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            CountryData.self,
-            CityData.self,
-            SpotCategoryData.self,
-            CuratorData.self,
-            CuratedListData.self,
-            SpotData.self
-        ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        if let container = try? ModelContainer(for: schema, configurations: [config]) {
-            return container
-        }
-
-        // Store may be corrupted — wipe and recreate (data re-syncs from Supabase)
-        let logger = Logger(subsystem: "com.nikin.spots", category: "SpotsApp")
-        logger.error("ModelContainer failed — attempting recovery by wiping local store")
-        let storeURL = URL.applicationSupportDirectory.appending(path: "default.store")
-        try? FileManager.default.removeItem(at: storeURL)
-
-        if let container = try? ModelContainer(for: schema, configurations: [config]) {
-            return container
-        }
-
-        // Last resort: in-memory store so the app remains functional
-        logger.error("ModelContainer recovery failed — falling back to in-memory store")
-        let memoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        return try! ModelContainer(for: schema, configurations: [memoryConfig])
-    }()
-
-    init() {
-        DataService.shared.configure(with: sharedModelContainer)
-    }
+    // Container is owned by AppDelegate so DataService is configured before
+    // any CLLocationManager events fire on terminated-state wake.
+    var sharedModelContainer: ModelContainer { appDelegate.sharedModelContainer }
 
     var body: some Scene {
         WindowGroup {
@@ -59,13 +28,18 @@ struct SpotsApp: App {
                 .environmentObject(navigationCoordinator)
                 .modelContainer(sharedModelContainer)
                 .task {
-                    // Sync data from Supabase on launch
+                    // Start monitoring immediately from local data so geofences
+                    // are active before the Supabase sync completes.
+                    appDelegate.startGeofenceMonitoringIfNeeded()
+
                     do {
                         try await DataService.shared.syncFromSupabase()
                     } catch {
                         print("Failed to sync from Supabase: \(error)")
                     }
-                    appDelegate.startGeofenceMonitoringIfNeeded()
+
+                    // Reload after sync in case spots changed on the server.
+                    reloadGeofences()
                     hasCompletedInitialSync = true
                 }
                 .onChange(of: scenePhase) { oldPhase, newPhase in
