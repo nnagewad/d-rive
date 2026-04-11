@@ -21,17 +21,9 @@ struct NearbySpotsView: View {
                     }
                 }
             } header: {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("What's near me?")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-                    Text("The closest spot appears at the top of the list.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .textCase(nil)
-                .padding(.bottom, 4)
+                Text("What's near me?")
+                    .font(.body)
+                    .foregroundStyle(.primary)
             }
         }
         .standardListStyle()

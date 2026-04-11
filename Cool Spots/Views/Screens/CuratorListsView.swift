@@ -39,7 +39,6 @@ struct CuratorListsView: View {
                                 }
                             } header: {
                                 Text(cityName)
-                                    .textCase(nil)
                             }
                         }
                     }
