@@ -80,9 +80,6 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     // Track which geofences we're currently inside
     private var insideGeofences: Set<String> = []
 
-    // Track initial state determinations to send notifications
-    private var pendingInitialStates: Set<String> = []
-
     // Track last notification time to prevent duplicates (region + GPS triggering together)
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
@@ -156,7 +153,6 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         activeGeofences.removeAll()
         monitoredGeofenceIds.removeAll()
         insideGeofences.removeAll()
-        pendingInitialStates.removeAll()
         lastRegionUpdateLocation = nil
 
         // Log all geofences loaded
@@ -271,11 +267,13 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         }
 
         // Cross-check with GPS if available. If not (background/terminated), trust iOS.
+        // Include horizontalAccuracy so boundary-hugging GPS fixes don't block legit entries.
         if let gpsLocation = verifiedGPSLocation {
             let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
             let gpsDistance = gpsLocation.distance(from: center)
-            guard gpsDistance <= config.radius else {
-                logger.info("🌍 REGION ENTER but GPS says \(Int(gpsDistance))m away, ignoring")
+            let allowedDistance = config.radius + gpsLocation.horizontalAccuracy
+            guard gpsDistance <= allowedDistance else {
+                logger.info("🌍 REGION ENTER but GPS says \(Int(gpsDistance))m away (radius: \(Int(config.radius))m + \(Int(gpsLocation.horizontalAccuracy))m accuracy), ignoring")
                 insideGeofences.remove(region.identifier)
                 return
             }
@@ -304,21 +302,19 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             insideGeofences.insert(region.identifier)
 
             if !wasInside {
-                // didDetermineState fires on startup/foreground return and uses iOS's
-                // coarse positioning (cell towers/WiFi) which can be inaccurate by hundreds
-                // of metres. Always require a verified GPS fix. If none yet, defer — the
-                // GPS path in handleLocationUpdate will confirm entry once a fix arrives.
-                guard let gpsLocation = verifiedGPSLocation else {
-                    logger.info("🌍 REGION STATE INSIDE but no verified GPS, deferring: \(config.name)")
-                    insideGeofences.remove(region.identifier)
-                    return
-                }
-                let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
-                let gpsDistance = gpsLocation.distance(from: center)
-                guard gpsDistance <= config.radius else {
-                    logger.info("🌍 REGION STATE INSIDE but GPS says \(Int(gpsDistance))m away, ignoring: \(config.name)")
-                    insideGeofences.remove(region.identifier)
-                    return
+                // Verify with GPS if we have a fresh fix. Include horizontalAccuracy so
+                // boundary-edge fixes don't produce false negatives.
+                // If no GPS fix yet (cold start, terminated wake, or background), trust iOS —
+                // the hardware geofence is more reliable than silently dropping the event.
+                if let gpsLocation = verifiedGPSLocation {
+                    let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+                    let gpsDistance = gpsLocation.distance(from: center)
+                    let allowedDistance = config.radius + gpsLocation.horizontalAccuracy
+                    guard gpsDistance <= allowedDistance else {
+                        logger.info("🌍 REGION STATE INSIDE but GPS says \(Int(gpsDistance))m away (radius: \(Int(config.radius))m + \(Int(gpsLocation.horizontalAccuracy))m accuracy), ignoring: \(config.name)")
+                        insideGeofences.remove(region.identifier)
+                        return
+                    }
                 }
                 logger.info("🌍 REGION STATE INSIDE (was outside): \(config.name)")
                 notify(config)
@@ -393,7 +389,6 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         activeGeofences.removeAll()
         monitoredGeofenceIds.removeAll()
         insideGeofences.removeAll()
-        pendingInitialStates.removeAll()
         lastRegionUpdateLocation = nil
     }
 
