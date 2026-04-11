@@ -64,19 +64,28 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
 
     // MARK: - List Activation
 
-    /// Requests location and notification permissions needed to activate a list.
+    /// Requests permissions in the correct sequence for list activation:
+    /// 1. Location "while using"  2. Notifications  3. Location "always" upgrade
     /// Returns true if notifications are authorised and the activation should proceed.
     func requestPermissionsForListActivation() async -> Bool {
+        // Step 1: Location "while using"
         if !hasRequestedLocationPermissions {
-            _ = await requestLocationPermission()
+            _ = await requestWhenInUseOnly()
         }
 
+        // Step 2: Notifications
+        let notificationsGranted: Bool
         if !hasRequestedNotificationPermissions {
-            return await requestNotificationPermission()
+            notificationsGranted = await requestNotificationPermission()
+        } else {
+            await refreshPermissionStatus()
+            notificationsGranted = notificationStatus == .authorized || notificationStatus == .provisional
         }
 
-        await refreshPermissionStatus()
-        return notificationStatus == .authorized || notificationStatus == .provisional
+        // Step 3: Always upgrade — fires after notifications, non-blocking
+        fireAlwaysUpgrade()
+
+        return notificationsGranted
     }
 
     // MARK: - Request Permissions
@@ -109,9 +118,12 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
             return true
         }
 
-        // Already have when-in-use — await the upgrade prompt before returning.
         if currentStatus == .authorizedWhenInUse {
-            return await requestAlwaysUpgrade()
+            // Already sufficient — fire the upgrade without blocking.
+            // The delegate will update locationStatus if the user later grants always.
+            locationManager.requestAlwaysAuthorization()
+            await refreshPermissionStatus()
+            return true
         }
 
         guard currentStatus == .notDetermined else {
@@ -124,22 +136,46 @@ final class PermissionService: NSObject, ObservableObject, CLLocationManagerDele
             locationContinuation = continuation
             locationManager.requestWhenInUseAuthorization()
         }
-        guard whenInUse else {
+
+        await refreshPermissionStatus()
+
+        if whenInUse {
+            // Fire the always upgrade without blocking — whenInUse is sufficient.
+            // If the user declines the upgrade the status stays authorizedWhenInUse
+            // and the delegate won't fire (no change), so we must not await here.
+            locationManager.requestAlwaysAuthorization()
+        }
+
+        return whenInUse
+    }
+
+    // MARK: - Private Helpers
+
+    /// Requests "when in use" only — does not fire the always upgrade.
+    private func requestWhenInUseOnly() async -> Bool {
+        hasRequestedLocationPermissions = true
+        let currentStatus = locationManager.authorizationStatus
+
+        if currentStatus == .authorizedAlways || currentStatus == .authorizedWhenInUse {
+            return true
+        }
+
+        guard currentStatus == .notDetermined else {
             await refreshPermissionStatus()
             return false
         }
 
-        // Step 2: Await the always upgrade so notifications don't appear mid-flow
-        return await requestAlwaysUpgrade()
+        return await withCheckedContinuation { continuation in
+            locationContinuation = continuation
+            locationManager.requestWhenInUseAuthorization()
+        }
     }
 
-    private func requestAlwaysUpgrade() async -> Bool {
-        let granted = await withCheckedContinuation { continuation in
-            locationContinuation = continuation
-            locationManager.requestAlwaysAuthorization()
-        }
-        await refreshPermissionStatus()
-        return granted
+    /// Fires the "always" upgrade non-blocking. Safe when the user declines — no
+    /// continuation means the missing delegate callback won't cause a hang.
+    private func fireAlwaysUpgrade() {
+        guard locationManager.authorizationStatus == .authorizedWhenInUse else { return }
+        locationManager.requestAlwaysAuthorization()
     }
 
     // MARK: - CLLocationManagerDelegate
