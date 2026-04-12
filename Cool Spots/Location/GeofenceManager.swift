@@ -77,17 +77,17 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     // Maximum age of a cached location to be considered valid for GPS cross-checks
     private let maxLocationAge: TimeInterval = 30
 
-    // Track which geofences we're currently inside
-    private var insideGeofences: Set<String> = []
+    // Track which geofences we're currently inside — persisted so restarts don't re-notify
+    private static let insideGeofencesKey = "GeofenceManager.insideGeofences"
+    private var insideGeofences: Set<String> {
+        didSet {
+            UserDefaults.standard.set(Array(insideGeofences), forKey: Self.insideGeofencesKey)
+        }
+    }
 
     // Track last notification time to prevent duplicates (region + GPS triggering together)
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
-
-    // Snooze: suppress notifications for a spot after its sheet is dismissed
-    private var snoozedUntil: [String: Date] = [:]
-    private let snoozeKey = "GeofenceManager.snoozedUntil"
-    private let snoozeDuration: TimeInterval = 3600  // 1 hour
 
     // Batch nearby notifications into one when multiple geofences trigger within this window
     private var pendingNotifications: [GeofenceConfiguration] = []
@@ -95,25 +95,10 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     private let notificationBatchWindow: TimeInterval = 3
 
     override init() {
+        let saved = UserDefaults.standard.stringArray(forKey: Self.insideGeofencesKey) ?? []
+        insideGeofences = Set(saved)
         super.init()
         manager.delegate = self
-        if let data = UserDefaults.standard.data(forKey: snoozeKey),
-           let saved = try? JSONDecoder().decode([String: Date].self, from: data) {
-            snoozedUntil = saved
-        }
-    }
-
-    func snooze(spotId: String) {
-        snoozedUntil[spotId] = Date().addingTimeInterval(snoozeDuration)
-        if let data = try? JSONEncoder().encode(snoozedUntil) {
-            UserDefaults.standard.set(data, forKey: snoozeKey)
-        }
-        logger.info("💤 Snoozed \(spotId) for \(Int(self.snoozeDuration / 60)) minutes")
-    }
-
-    private func isSnoozed(_ spotId: String) -> Bool {
-        guard let expiry = snoozedUntil[spotId] else { return false }
-        return Date() < expiry
     }
 
     /// Returns a verified GPS location for cross-checking region events, or nil if none is available.
@@ -471,11 +456,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
-        // Check snooze first
-        if isSnoozed(configuration.id) {
-            logger.info("💤 Skipping notification (snoozed): \(configuration.name)")
-            return
-        }
+
 
         // Check cooldown to prevent duplicate notifications for the same spot
         if let lastTime = lastNotificationTime[configuration.id] {
