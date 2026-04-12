@@ -10,14 +10,14 @@ import SwiftUI
 
 struct NearbySpotsView: View {
     let spots: [SpotData]
-    @State private var selectedSpot: SpotData?
+    var onSpotSelected: (SpotData) -> Void
 
     var body: some View {
         List {
             Section {
                 ForEach(spots) { spot in
                     SpotRow(name: spot.name) {
-                        selectedSpot = spot
+                        onSpotSelected(spot)
                     }
                 }
             } header: {
@@ -27,7 +27,6 @@ struct NearbySpotsView: View {
             }
         }
         .standardListStyle()
-        .spotDetailSheet(item: $selectedSpot) { selectedSpot = nil }
     }
 }
 
@@ -39,7 +38,7 @@ struct NearbySpotsView: View {
             SpotData(name: "Sam James Coffee Bar", latitude: 43.6544, longitude: -79.4055),
             SpotData(name: "Pilot Coffee Roasters", latitude: 43.6465, longitude: -79.3963),
             SpotData(name: "Boxcar Social", latitude: 43.6677, longitude: -79.3901)
-        ])
+        ]) { _ in }
         .navigationTitle("Cool Spots")
         .navigationBarTitleDisplayMode(.large)
     }

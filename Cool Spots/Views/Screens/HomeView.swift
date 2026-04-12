@@ -70,7 +70,9 @@ struct HomeView: View {
                         openURL(.appSettings)
                     }
                 } else {
-                    NearbySpotsView(spots: sortedSpots)
+                    NearbySpotsView(spots: sortedSpots) { spot in
+                        spotForSheet = spot
+                    }
                         .toolbar {
                             ToolbarItemGroup(placement: .topBarTrailing) {
                                 NavigationLink(value: HomeDestination.curatedLists) {
