@@ -7,34 +7,19 @@
 //
 
 import SwiftUI
-
-// MARK: - Close Button
-
-/// Sheet close button
-private struct CloseButton: View {
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: "xmark")
-                .fontWeight(.medium)
-        }
-        .buttonBorderShape(.circle)
-        .tint(.secondary)
-        .accessibilityLabel("Close")
-    }
-}
+import os.log
 
 // MARK: - Spot Detail Sheet
 
 /// Half-sheet showing spot name, category, and action buttons
 struct SpotDetailSheet: View {
     let spot: SpotData
-    let onClose: () -> Void
 
     @Environment(\.openURL) private var openURL
     @ObservedObject private var settingsService = SettingsService.shared
     @State private var showMapAppPicker = false
+
+    private let logger = Logger(subsystem: "com.nikin.spots", category: "SpotDetailSheet")
 
     var body: some View {
         NavigationStack {
@@ -92,17 +77,11 @@ struct SpotDetailSheet: View {
             }
             .navigationTitle(spot.name)
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    CloseButton(action: onClose)
-                        .controlSize(.large)
-                }
-            }
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
-        .onDisappear {
-            GeofenceManager.shared.snooze(spotId: spot.id)
+        .onAppear {
+            logger.info("📋 Sheet opened: \(spot.name)")
         }
         .alert("Select a Map App", isPresented: $showMapAppPicker) {
             Button("Apple Maps") {
@@ -156,8 +135,7 @@ struct SpotDetailSheet: View {
                             instagramHandle: "@cafelomi",
                             websiteURL: "https://cafelomi.com",
                             shortNote: "A Parisian specialty coffee institution known for their light roasts and bright, clean brews."
-                        ),
-                        onClose: { showSheet = false }
+                        )
                     )
                 }
         }
@@ -176,8 +154,7 @@ struct SpotDetailSheet: View {
                             name: "Boxcar Social",
                             latitude: 43.6677,
                             longitude: -79.3901
-                        ),
-                        onClose: { showSheet = false }
+                        )
                     )
                 }
         }

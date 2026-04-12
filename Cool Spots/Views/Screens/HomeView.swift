@@ -103,7 +103,6 @@ struct HomeView: View {
         }
         .spotDetailSheet(item: $spotForSheet) {
             navigationCoordinator.dismissSpotDetail()
-            spotForSheet = nil
         }
         .onAppear {
             Task { await permissionService.refreshPermissionStatus() }

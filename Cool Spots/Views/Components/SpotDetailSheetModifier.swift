@@ -9,9 +9,9 @@
 import SwiftUI
 
 extension View {
-    func spotDetailSheet(item: Binding<SpotData?>, onClose: @escaping () -> Void) -> some View {
-        sheet(item: item) { spot in
-            SpotDetailSheet(spot: spot, onClose: onClose)
+    func spotDetailSheet(item: Binding<SpotData?>, onDismiss: @escaping () -> Void = {}) -> some View {
+        sheet(item: item, onDismiss: onDismiss) { spot in
+            SpotDetailSheet(spot: spot)
         }
     }
 }
