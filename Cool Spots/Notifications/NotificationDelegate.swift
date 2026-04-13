@@ -33,15 +33,12 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         logger.info("📬 Notification arriving - App state: \(stateDescription)")
         logger.info("Notification content: \(notification.request.content.body)")
 
-        // Suppress notifications only when app is active (foreground)
-        // Allow notifications in all other states (background, inactive, terminated)
-        if appState == .active {
-            logger.info("❌ Suppressing notification - app is active")
-            completionHandler([])
-        } else {
-            logger.info("✅ Showing notification - app is \(stateDescription)")
-            completionHandler([.banner, .sound, .badge])
-        }
+        // Always show the banner — foreground geofence entries are handled via the direct
+        // sheet path (GeofenceManager.notify), so a notification reaching willPresent
+        // in the active state means the batch fired after the app came to foreground,
+        // and the user should still see it.
+        logger.info("✅ Showing notification - app is \(stateDescription)")
+        completionHandler([.banner, .sound, .badge])
     }
 
     func userNotificationCenter(

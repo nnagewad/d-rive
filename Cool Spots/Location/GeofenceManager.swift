@@ -89,14 +89,9 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
 
-    // Batch nearby notifications into one when multiple geofences trigger within this window
-    private var pendingNotifications: [GeofenceConfiguration] = []
-    private var notificationBatchTask: Task<Void, Never>?
-    private let notificationBatchWindow: TimeInterval = 3
-
     override init() {
-        let saved = UserDefaults.standard.stringArray(forKey: Self.insideGeofencesKey) ?? []
-        insideGeofences = Set(saved)
+        insideGeofences = []
+        UserDefaults.standard.removeObject(forKey: Self.insideGeofencesKey)
         super.init()
         manager.delegate = self
     }
@@ -364,11 +359,6 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             manager.stopMonitoring(for: region)
         }
 
-        // Cancel any pending batch notification
-        notificationBatchTask?.cancel()
-        notificationBatchTask = nil
-        pendingNotifications.removeAll()
-
         // Clear state
         allGeofences.removeAll()
         activeGeofences.removeAll()
@@ -456,8 +446,6 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
-
-
         // Check cooldown to prevent duplicate notifications for the same spot
         if let lastTime = lastNotificationTime[configuration.id] {
             let elapsed = Date().timeIntervalSince(lastTime)
@@ -477,68 +465,43 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             return
         }
 
-        pendingNotifications.append(configuration)
-        notificationBatchTask?.cancel()
-        notificationBatchTask = Task {
-            if appState == .background {
-                // Extend background execution so iOS doesn't suspend us mid-batch
-                let bgTask = UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
-                defer { UIApplication.shared.endBackgroundTask(bgTask) }
-                try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
-            } else {
-                try? await Task.sleep(nanoseconds: UInt64(notificationBatchWindow * 1_000_000_000))
-            }
-            guard !Task.isCancelled else { return }
-            self.flushPendingNotifications()
-        }
+        // In background/terminated send immediately — no batch delay.
+        // The async Task.sleep approach is unreliable when iOS gives us a short execution window.
+        sendNotification(for: configuration)
     }
 
-    private func flushPendingNotifications() {
-        let batch = pendingNotifications
-        pendingNotifications.removeAll()
-
-        guard let first = batch.first else { return }
-
-        let isGrouped = batch.count > 1
-
-        logger.info("🔔 Sending notification (batch of \(batch.count))")
+    private func sendNotification(for configuration: GeofenceConfiguration) {
+        logger.info("🔔 Sending notification for: \(configuration.name)")
 
         let content = UNMutableNotificationContent()
         content.categoryIdentifier = NotificationCategory.geofence
         content.sound = .default
-
-        if isGrouped {
-            let others = batch.count - 1
-            content.title = "Nearby Spots"
-            content.body = "\(first.name) and \(others) other\(others == 1 ? "" : "s")"
-        } else {
-            content.title = first.name
-            if !first.group.isEmpty { content.subtitle = first.group }
-            content.body = "You're nearby"
-        }
-
+        content.title = configuration.name
+        if !configuration.group.isEmpty { content.subtitle = configuration.group }
+        content.body = "You're nearby"
         content.userInfo = [
-            "geofenceId": first.id,
-            "geofenceName": first.name,
-            "geofenceGroup": first.group,
-            "geofenceCity": first.city,
-            "geofenceCountry": first.country,
-            "destinationLat": first.latitude,
-            "destinationLon": first.longitude,
-            "isGrouped": isGrouped
+            "geofenceId": configuration.id,
+            "geofenceName": configuration.name,
+            "geofenceGroup": configuration.group,
+            "geofenceCity": configuration.city,
+            "geofenceCountry": configuration.country,
+            "destinationLat": configuration.latitude,
+            "destinationLon": configuration.longitude,
+            "isGrouped": false
         ]
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil  // deliver immediately
+        )
 
-        UNUserNotificationCenter.current().add(request) { error in
-            Task { @MainActor [weak self] in
-                guard let self = self else { return }
-                if let error = error {
-                    self.logger.error("❌ Notification failed: \(error.localizedDescription)")
-                } else {
-                    self.logger.info("✅ Notification sent for batch of \(batch.count)")
-                }
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            guard let self else { return }
+            if let error {
+                self.logger.error("❌ Notification failed: \(error.localizedDescription)")
+            } else {
+                self.logger.info("✅ Notification delivered for: \(configuration.name)")
             }
         }
     }
