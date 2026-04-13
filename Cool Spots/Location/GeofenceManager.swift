@@ -77,7 +77,10 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     // Maximum age of a cached location to be considered valid for GPS cross-checks
     private let maxLocationAge: TimeInterval = 30
 
-    // Track which geofences we're currently inside — persisted so restarts don't re-notify
+    // Track which geofences we're currently inside.
+    // Persisted so that after stopMonitoring+startMonitoring (e.g. reloadGeofences on every
+    // foreground resume), didDetermineState(.inside) sees wasInside=true and skips the notify.
+    // On a genuine first entry (terminated wake or new entry), wasInside=false → notifies.
     private static let insideGeofencesKey = "GeofenceManager.insideGeofences"
     private var insideGeofences: Set<String> {
         didSet {
@@ -90,8 +93,9 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
 
     override init() {
-        insideGeofences = []
-        UserDefaults.standard.removeObject(forKey: Self.insideGeofencesKey)
+        // Load persisted inside-state so reloadGeofences cycles don't re-notify
+        let saved = UserDefaults.standard.stringArray(forKey: Self.insideGeofencesKey) ?? []
+        insideGeofences = Set(saved)
         super.init()
         manager.delegate = self
     }
@@ -123,31 +127,36 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
         isMonitoring = true
 
-        // Clear any existing regions first
-        for region in manager.monitoredRegions {
-            manager.stopMonitoring(for: region)
-        }
-
-        // Clear state
         allGeofences = configurations
         activeGeofences.removeAll()
         monitoredGeofenceIds.removeAll()
-        insideGeofences.removeAll()
         lastRegionUpdateLocation = nil
 
-        // Log all geofences loaded
+        // Rebuild state from regions iOS is already monitoring (persisted across termination).
+        // Do NOT stop-then-restart existing regions — that discards pending didEnterRegion
+        // events already queued by iOS before startMonitoring runs.
+        let configById = Dictionary(uniqueKeysWithValues: configurations.map { ($0.id, $0) })
+        for region in manager.monitoredRegions {
+            if let config = configById[region.identifier] {
+                activeGeofences[region.identifier] = config
+                monitoredGeofenceIds.insert(region.identifier)
+                logger.debug("Retained existing region: \(config.name)")
+            } else {
+                // Stale region no longer in configurations — remove it
+                manager.stopMonitoring(for: region)
+                logger.debug("Removed stale region: \(region.identifier)")
+            }
+        }
+
         for config in configurations {
             logger.debug("Loaded geofence: \(config.name) [\(config.id)] - \(config.radius)m radius")
         }
 
-        // Register geofences immediately so they work even if app is terminated
+        // Register/update nearest geofences based on current location
         if let lastLocation = manager.location {
-            // Use last known location to select nearest 20
             logger.info("Using last known location to select initial geofences")
             updateMonitoredRegions(for: lastLocation)
         } else {
-            // No location available - register first 20 as fallback
-            // These will be updated once we get an actual location
             logger.info("No location available, registering first \(self.maxMonitoredRegions) geofences as fallback")
             registerFallbackGeofences()
         }
@@ -276,16 +285,11 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
         switch state {
         case .inside:
-            // User is already inside this region when we started monitoring
-            // This handles the case where regions are re-registered while user is inside
             let wasInside = insideGeofences.contains(region.identifier)
             insideGeofences.insert(region.identifier)
 
             if !wasInside {
-                // Verify with GPS if we have a fresh fix. Include horizontalAccuracy so
-                // boundary-edge fixes don't produce false negatives.
-                // If no GPS fix yet (cold start, terminated wake, or background), trust iOS —
-                // the hardware geofence is more reliable than silently dropping the event.
+                // Verify with GPS if we have a fresh fix.
                 if let gpsLocation = verifiedGPSLocation {
                     let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
                     let gpsDistance = gpsLocation.distance(from: center)
@@ -299,7 +303,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
                 logger.info("🌍 REGION STATE INSIDE (was outside): \(config.name)")
                 notify(config)
             } else {
-                logger.debug("🌍 REGION STATE INSIDE (already tracked): \(config.name)")
+                logger.debug("🌍 REGION STATE INSIDE (already tracked, skipping): \(config.name)")
             }
 
         case .outside:
@@ -359,11 +363,11 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             manager.stopMonitoring(for: region)
         }
 
-        // Clear state
+        // Clear state (preserve insideGeofences — stopMonitoring is immediately followed
+        // by startMonitoring in reloadGeofences, and we need wasInside to stay accurate)
         allGeofences.removeAll()
         activeGeofences.removeAll()
         monitoredGeofenceIds.removeAll()
-        insideGeofences.removeAll()
         lastRegionUpdateLocation = nil
     }
 
@@ -435,13 +439,17 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             region.notifyOnEntry = true
             region.notifyOnExit = true
 
+            let isNew = !monitoredGeofenceIds.contains(config.id)
             manager.startMonitoring(for: region)
             activeGeofences[config.id] = config
             monitoredGeofenceIds.insert(config.id)
             logger.debug("Fallback registered: \(config.name)")
 
-            // Request current state to handle case where user is already inside
-            manager.requestState(for: region)
+            // Only request state for newly added regions — not existing ones that may have
+            // a pending didEnterRegion event queued, which requestState would race against.
+            if isNew {
+                manager.requestState(for: region)
+            }
         }
     }
 

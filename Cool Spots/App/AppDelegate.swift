@@ -61,10 +61,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         let center = UNUserNotificationCenter.current()
         center.delegate = notificationDelegate
 
+        // No .foreground option — allows the action to appear on Apple Watch mirrored
+        // notifications. The app opens via NavigationCoordinator in didReceive.
         let viewAction = UNNotificationAction(
             identifier: NotificationAction.viewOnPhone,
             title: "View on iPhone",
-            options: .foreground
+            options: []
         )
         let category = UNNotificationCategory(
             identifier: NotificationCategory.geofence,
