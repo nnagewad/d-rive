@@ -83,15 +83,28 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     // Cleared on every app restart so background/terminated entry events always fire a notification.
     private var insideGeofences: Set<String> = []
 
-    // Track last notification time to prevent duplicates (region + GPS triggering together)
+    // Track last notification time to prevent duplicates and suppress re-notification when
+    // the app is relaunched while the user is still inside a geofence.
+    // Persisted so the cooldown survives app restarts.
+    private static let lastNotificationTimeKey = "GeofenceManager.lastNotificationTime"
     private var lastNotificationTime: [String: Date] = [:]
-    private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
+    private let notificationCooldown: TimeInterval = 2 * 3600  // 2 hours between notifications
 
     override init() {
+        if let data = UserDefaults.standard.data(forKey: Self.lastNotificationTimeKey),
+           let dict = try? JSONDecoder().decode([String: Date].self, from: data) {
+            lastNotificationTime = dict
+        }
         super.init()
         manager.delegate = self
         // Remove stale insideGeofences key left by a previous app version
         UserDefaults.standard.removeObject(forKey: "GeofenceManager.insideGeofences")
+    }
+
+    private func persistLastNotificationTime() {
+        if let data = try? JSONEncoder().encode(lastNotificationTime) {
+            UserDefaults.standard.set(data, forKey: Self.lastNotificationTimeKey)
+        }
     }
 
     /// Returns a verified GPS location for cross-checking region events, or nil if none is available.
@@ -458,6 +471,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         }
 
         lastNotificationTime[configuration.id] = Date()
+        persistLastNotificationTime()
 
         // If app is active, show sheet directly instead of notification
         let appState = UIApplication.shared.applicationState
