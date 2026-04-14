@@ -75,3 +75,33 @@ For every .Swift document be sure to start with a comment based on the following
 //
 //  Created by Claude Code and Nikin Nagewadia on [YYYY-MM-DD].
 //
+
+---
+
+# Notification system - April 14, 2026
+
+## About
+- This is the main value proposition of the app. Only be notified when close proximity to a place (400m which is the equivalent of 5 minute walk). If it doesn't work then the app won't stand out from the crowd.
+
+## User story
+- The users sees a sheet when the app is in the foreground, no iOS notification since the user is already in the app
+  - This works if the user selects the *always* or *while in use* option for location access 
+- The user receieves an iOS notification when the app is in the background
+  - This works if the user selects the *always* or *while in use* option for location access 
+- The user receieves an iOS notification when the app is terminated
+  - This only works if the user selects the *always* option for location access
+  - Question I have is the app set up to be activated or check in the background when the user is in the 400m radius or outside of it
+- The user will not see any notifications (iOS or sheet) if they are already inside the 400m radius of a spot
+
+## Technical implementation
+- I know the app can detect when the user is outside of the 400m radius of a spot
+- I know the app can detect when the user is inside of the 400m radius of a spot
+- Can we use those indicators to help power the notification system?
+
+## Current situation
+- It's broken
+- Not getting any iOS notificaiton when the app is terminated or in the background
+- However, when the app is open/foreground notification appears
+- That doesn't align with the intended design
+- Is the current implement broken completely? Oddly though, it did work prior to March 28, 2026
+- Does it need to be rebuilt from the ground up or can we reuse the old code dating back to March 28?
