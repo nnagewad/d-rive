@@ -77,27 +77,21 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     // Maximum age of a cached location to be considered valid for GPS cross-checks
     private let maxLocationAge: TimeInterval = 30
 
-    // Track which geofences we're currently inside.
-    // Persisted so that after stopMonitoring+startMonitoring (e.g. reloadGeofences on every
-    // foreground resume), didDetermineState(.inside) sees wasInside=true and skips the notify.
-    // On a genuine first entry (terminated wake or new entry), wasInside=false → notifies.
-    private static let insideGeofencesKey = "GeofenceManager.insideGeofences"
-    private var insideGeofences: Set<String> {
-        didSet {
-            UserDefaults.standard.set(Array(insideGeofences), forKey: Self.insideGeofencesKey)
-        }
-    }
+    // Track which geofences we're currently inside — in-memory only.
+    // Preserved through stopMonitoring+startMonitoring reload cycles (within a session) so
+    // didDetermineState(.inside) sees wasInside=true and skips re-notification on foreground resume.
+    // Cleared on every app restart so background/terminated entry events always fire a notification.
+    private var insideGeofences: Set<String> = []
 
     // Track last notification time to prevent duplicates (region + GPS triggering together)
     private var lastNotificationTime: [String: Date] = [:]
     private let notificationCooldown: TimeInterval = 60  // 60 seconds between notifications
 
     override init() {
-        // Load persisted inside-state so reloadGeofences cycles don't re-notify
-        let saved = UserDefaults.standard.stringArray(forKey: Self.insideGeofencesKey) ?? []
-        insideGeofences = Set(saved)
         super.init()
         manager.delegate = self
+        // Remove stale insideGeofences key left by a previous app version
+        UserDefaults.standard.removeObject(forKey: "GeofenceManager.insideGeofences")
     }
 
     /// Returns a verified GPS location for cross-checking region events, or nil if none is available.
