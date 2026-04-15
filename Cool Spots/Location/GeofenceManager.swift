@@ -168,6 +168,20 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             registerFallbackGeofences()
         }
 
+        // Seed insideGeofences with any active geofences the user is currently inside.
+        // Without this, the first handleLocationUpdate call after startMonitoring would see
+        // wasInside=false for newly added geofences and fire an unwanted notification.
+        let seedLocation = currentLocation ?? manager.location
+        if let seedLoc = seedLocation {
+            for (id, config) in activeGeofences where !insideGeofences.contains(id) {
+                let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+                if seedLoc.distance(from: center) <= config.radius {
+                    insideGeofences.insert(id)
+                    logger.debug("Pre-seeding inside on start: \(config.name)")
+                }
+            }
+        }
+
         // Start significant location change monitoring (works when app is terminated)
         // This wakes the app when user travels several km, allowing us to update monitored geofences
         manager.startMonitoringSignificantLocationChanges()
@@ -222,9 +236,13 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
             let distance = location.distance(from: center)
             let wasInside = insideGeofences.contains(id)
-            let isInside = distance <= config.radius
 
             logger.debug("Distance to \(config.name): \(Int(distance))m (radius: \(Int(config.radius))m)")
+
+            // Require distance + GPS error to be within radius so inaccurate fixes don't
+            // fire spurious entries. horizontalAccuracy is -1 when unknown; clamp to 0.
+            let accuracy = max(location.horizontalAccuracy, 0)
+            let isInside = (distance + accuracy) <= config.radius
 
             if !wasInside && isInside {
                 insideGeofences.insert(id)
@@ -292,26 +310,22 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
 
         switch state {
         case .inside:
-            let wasInside = insideGeofences.contains(region.identifier)
-            insideGeofences.insert(region.identifier)
-
-            if !wasInside {
-                // Verify with GPS if we have a fresh fix.
-                if let gpsLocation = verifiedGPSLocation {
-                    let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
-                    let gpsDistance = gpsLocation.distance(from: center)
-                    let allowedDistance = config.radius + gpsLocation.horizontalAccuracy
-                    guard gpsDistance <= allowedDistance else {
-                        logger.info("🌍 REGION STATE INSIDE but GPS says \(Int(gpsDistance))m away (radius: \(Int(config.radius))m + \(Int(gpsLocation.horizontalAccuracy))m accuracy), ignoring: \(config.name)")
-                        insideGeofences.remove(region.identifier)
-                        return
-                    }
+            // Use GPS to validate region state accuracy if a fresh fix is available.
+            if let gpsLocation = verifiedGPSLocation {
+                let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
+                let gpsDistance = gpsLocation.distance(from: center)
+                let allowedDistance = config.radius + gpsLocation.horizontalAccuracy
+                guard gpsDistance <= allowedDistance else {
+                    logger.info("🌍 REGION STATE INSIDE but GPS says \(Int(gpsDistance))m away (radius: \(Int(config.radius))m + \(Int(gpsLocation.horizontalAccuracy))m accuracy), ignoring: \(config.name)")
+                    insideGeofences.remove(region.identifier)
+                    return
                 }
-                logger.info("🌍 REGION STATE INSIDE (was outside): \(config.name)")
-                notify(config)
-            } else {
-                logger.debug("🌍 REGION STATE INSIDE (already tracked, skipping): \(config.name)")
             }
+            // Only update tracking state — notifications fire exclusively from didEnterRegion.
+            // requestState is called on monitoring start, so .inside here means the user
+            // was already inside when monitoring began, not that they just crossed the boundary.
+            insideGeofences.insert(region.identifier)
+            logger.debug("🌍 REGION STATE INSIDE (tracking only): \(config.name)")
 
         case .outside:
             insideGeofences.remove(region.identifier)
@@ -365,13 +379,10 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         // Stop location updates
         manager.stopMonitoringSignificantLocationChanges()
 
-        // Stop region monitoring
-        for region in manager.monitoredRegions {
-            manager.stopMonitoring(for: region)
-        }
-
-        // Clear state (preserve insideGeofences — stopMonitoring is immediately followed
-        // by startMonitoring in reloadGeofences, and we need wasInside to stay accurate)
+        // Do NOT deregister regions here. startMonitoring's rebuild loop already retains
+        // valid regions and stops stale ones. Deregistering then re-registering causes iOS
+        // to fire didEnterRegion for any region it considers the user currently inside —
+        // even if they're far away — triggering spurious sheet presentations.
         allGeofences.removeAll()
         activeGeofences.removeAll()
         monitoredGeofenceIds.removeAll()
@@ -461,16 +472,8 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
-        // If app is active, show sheet directly — don't consume the notification cooldown
-        // so a subsequent terminated-state wake can still fire a notification.
-        let appState = UIApplication.shared.applicationState
-        if appState == .active {
-            logger.info("📱 App is active - showing sheet directly for: \(configuration.name)")
-            NavigationCoordinator.shared.showSpotDetail(spotId: configuration.id)
-            return
-        }
-
-        // Check cooldown to prevent duplicate OS notifications for the same spot
+        // Check cooldown first — applies to both sheets and OS notifications.
+        // Prevents repeated presentations when GPS oscillates around the boundary.
         if let lastTime = lastNotificationTime[configuration.id] {
             let elapsed = Date().timeIntervalSince(lastTime)
             if elapsed < notificationCooldown {
@@ -482,8 +485,13 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         lastNotificationTime[configuration.id] = Date()
         persistLastNotificationTime()
 
-        // Send immediately — no batch delay.
-        // The async Task.sleep approach is unreliable when iOS gives us a short execution window.
+        let appState = UIApplication.shared.applicationState
+        if appState == .active {
+            logger.info("📱 App is active - showing sheet directly for: \(configuration.name)")
+            NavigationCoordinator.shared.showSpotDetail(spotId: configuration.id)
+            return
+        }
+
         sendNotification(for: configuration)
     }
 

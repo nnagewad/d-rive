@@ -43,17 +43,21 @@ struct SpotsApp: App {
                     hasCompletedInitialSync = true
                 }
                 .onChange(of: scenePhase) { oldPhase, newPhase in
-                    // Sync when returning to foreground (but not on initial launch)
-                    if newPhase == .active && oldPhase == .background && hasCompletedInitialSync {
-                        Task {
-                            do {
-                                try await DataService.shared.syncFromSupabase()
-                            } catch {
-                                print("Failed to sync from Supabase on foreground: \(error)")
+                    if newPhase == .active {
+                        LocationManager.shared.start()
+                        // Sync when returning to foreground (but not on initial launch)
+                        if oldPhase == .background && hasCompletedInitialSync {
+                            Task {
+                                do {
+                                    try await DataService.shared.syncFromSupabase()
+                                } catch {
+                                    print("Failed to sync from Supabase on foreground: \(error)")
+                                }
+                                reloadGeofences()
                             }
-                            // Reload geofences after sync to ensure they're up to date
-                            reloadGeofences()
                         }
+                    } else if newPhase == .background {
+                        LocationManager.shared.stop()
                     }
                 }
         }

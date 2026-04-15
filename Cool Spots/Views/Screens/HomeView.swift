@@ -106,13 +106,9 @@ struct HomeView: View {
         }
         .onAppear {
             Task { await permissionService.refreshPermissionStatus() }
-            locationManager.start()
             if let spotId = navigationCoordinator.selectedSpotId, spotForSheet == nil {
                 spotForSheet = DataService.shared.getSpot(byId: spotId)
             }
-        }
-        .onDisappear {
-            locationManager.stop()
         }
         .onChange(of: navigationCoordinator.selectedSpotId) { _, newValue in
             if let spotId = newValue {
