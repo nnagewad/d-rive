@@ -461,7 +461,16 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
     }
 
     private func notify(_ configuration: GeofenceConfiguration) {
-        // Check cooldown to prevent duplicate notifications for the same spot
+        // If app is active, show sheet directly — don't consume the notification cooldown
+        // so a subsequent terminated-state wake can still fire a notification.
+        let appState = UIApplication.shared.applicationState
+        if appState == .active {
+            logger.info("📱 App is active - showing sheet directly for: \(configuration.name)")
+            NavigationCoordinator.shared.showSpotDetail(spotId: configuration.id)
+            return
+        }
+
+        // Check cooldown to prevent duplicate OS notifications for the same spot
         if let lastTime = lastNotificationTime[configuration.id] {
             let elapsed = Date().timeIntervalSince(lastTime)
             if elapsed < notificationCooldown {
@@ -473,15 +482,7 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         lastNotificationTime[configuration.id] = Date()
         persistLastNotificationTime()
 
-        // If app is active, show sheet directly instead of notification
-        let appState = UIApplication.shared.applicationState
-        if appState == .active {
-            logger.info("📱 App is active - showing sheet directly for: \(configuration.name)")
-            NavigationCoordinator.shared.showSpotDetail(spotId: configuration.id)
-            return
-        }
-
-        // In background/terminated send immediately — no batch delay.
+        // Send immediately — no batch delay.
         // The async Task.sleep approach is unreliable when iOS gives us a short execution window.
         sendNotification(for: configuration)
     }
