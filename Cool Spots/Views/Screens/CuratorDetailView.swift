@@ -26,12 +26,24 @@ struct CuratorDetailView: View {
                     if curator.instagramHandle != nil || curator.websiteURL != nil {
                         HStack(spacing: 16) {
                             if let instagram = curator.instagramHandle {
-                                Button("Instagram") { openURL.openInstagram(instagram) }
-                                    .accessibilityHint("Opens Instagram")
+                                Button { openURL.openInstagram(instagram) } label: {
+                                    Image("instagram")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                }
+                                .accessibilityLabel("Instagram")
+                                .accessibilityHint("Opens Instagram")
                             }
                             if let website = curator.websiteURL {
-                                Button("Website") { openURL.openWebsite(website) }
-                                    .accessibilityHint("Opens website in browser")
+                                Button { openURL.openWebsite(website) } label: {
+                                    Image(systemName: "globe")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                }
+                                .accessibilityLabel("Website")
+                                .accessibilityHint("Opens website in browser")
                             }
                         }
                         .glassButtonStyle()
