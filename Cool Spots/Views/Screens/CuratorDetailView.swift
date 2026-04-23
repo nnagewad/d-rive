@@ -23,7 +23,7 @@ struct CuratorDetailView: View {
                         Text(curator.bio)
                     }
 
-                    if curator.instagramHandle != nil || curator.websiteURL != nil {
+                    if curator.instagramHandle != nil || curator.websiteURL != nil || curator.blueskyHandle != nil {
                         HStack(spacing: 16) {
                             if let instagram = curator.instagramHandle {
                                 Button { openURL.openInstagram(instagram) } label: {
@@ -34,6 +34,16 @@ struct CuratorDetailView: View {
                                 }
                                 .accessibilityLabel("Instagram")
                                 .accessibilityHint("Opens Instagram")
+                            }
+                            if let bluesky = curator.blueskyHandle {
+                                Button { openURL.openBluesky(bluesky) } label: {
+                                    Image("bluesky")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                }
+                                .accessibilityLabel("Bluesky")
+                                .accessibilityHint("Opens Bluesky")
                             }
                             if let website = curator.websiteURL {
                                 Button { openURL.openWebsite(website) } label: {
@@ -132,7 +142,8 @@ private func makeCuratorDetailPreview() -> some View {
         bio: "Parisian food lover and weekend wanderer.",
         imageUrl: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800",
         instagramHandle: "@mariedupont",
-        websiteURL: "https://mariedupont.com"
+        websiteURL: "https://mariedupont.com",
+        blueskyHandle: "nikin"
     )
 
     let list1 = CuratedListData(name: "After Work Spots", isDownloaded: true, notifyWhenNearby: true)

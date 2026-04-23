@@ -18,4 +18,9 @@ extension OpenURLAction {
         let prefixed = urlString.hasPrefix("http") ? urlString : "https://\(urlString)"
         if let url = URL(string: prefixed) { self(url) }
     }
+
+    func openBluesky(_ handle: String) {
+        let clean = handle.trimmingCharacters(in: .init(charactersIn: "@"))
+        if let url = URL(string: "https://bsky.app/profile/\(clean)") { self(url) }
+    }
 }

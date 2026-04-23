@@ -58,6 +58,7 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
     let imageUrl: String?
     let instagramHandle: String?
     let websiteURL: String?
+    let blueskyHandle: String?
     let version: Int
     let lastUpdated: Date?
     let createdAt: Date?
@@ -69,6 +70,7 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
         case imageUrl = "image_url"
         case instagramHandle = "instagram_handle"
         case websiteURL = "website_url"
+        case blueskyHandle = "bluesky_handle"
         case version
         case lastUpdated = "last_updated"
         case createdAt = "created_at"

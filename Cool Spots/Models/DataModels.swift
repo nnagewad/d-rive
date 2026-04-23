@@ -81,6 +81,7 @@ final class CuratorData {
     var imageUrl: String?
     var instagramHandle: String?
     var websiteURL: String?
+    var blueskyHandle: String?
     var version: Int
 
     @Relationship(deleteRule: .nullify, inverse: \CuratedListData.curator)
@@ -93,6 +94,7 @@ final class CuratorData {
         imageUrl: String? = nil,
         instagramHandle: String? = nil,
         websiteURL: String? = nil,
+        blueskyHandle: String? = nil,
         version: Int = 1
     ) {
         self.id = id
@@ -101,6 +103,7 @@ final class CuratorData {
         self.imageUrl = imageUrl
         self.instagramHandle = instagramHandle
         self.websiteURL = websiteURL
+        self.blueskyHandle = blueskyHandle
         self.version = version
     }
 }
