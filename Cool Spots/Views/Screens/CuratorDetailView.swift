@@ -136,7 +136,6 @@ struct CuratorDetailView: View {
                         image
                             .resizable()
                             .scaledToFill()
-                            .transition(.opacity.animation(.easeInOut(duration: 0.3)))
                     }
                 }
                 .frame(width: 275, height: 275)
