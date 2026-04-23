@@ -42,21 +42,19 @@ struct CuratorDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
-            }
-        }
-        .safeAreaInset(edge: .bottom) {
-            if curator.lists.count > 1 {
-                NavigationLink {
-                    CuratorListsView(curator: curator)
-                } label: {
-                    Text("View their lists")
-                        .frame(maxWidth: .infinity)
+
+                if curator.lists.count > 1 {
+                    NavigationLink {
+                        CuratorListsView(curator: curator)
+                    } label: {
+                        Text("View their lists")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .glassProminentButtonStyle()
+                    .controlSize(.large)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
                 }
-                .glassProminentButtonStyle()
-                .controlSize(.large)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-                .background(.ultraThinMaterial)
             }
         }
         .background(Color(.systemGroupedBackground))
@@ -75,7 +73,7 @@ struct CuratorDetailView: View {
                 avatarCircle
                 Spacer()
             }
-            .padding(.top, 8)
+            .padding(.top, 0)
 
             Text(curator.name)
                 .font(.largeTitle.bold())
