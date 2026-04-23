@@ -38,25 +38,28 @@ struct CuratorDetailView: View {
                         .buttonBorderShape(.capsule)
                         .controlSize(.large)
                     }
-
-                    if curator.lists.count > 1 {
-                        NavigationLink {
-                            CuratorListsView(curator: curator)
-                        } label: {
-                            Text("View their lists")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .glassProminentButtonStyle()
-                        .controlSize(.large)
-                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            if curator.lists.count > 1 {
+                NavigationLink {
+                    CuratorListsView(curator: curator)
+                } label: {
+                    Text("View their lists")
+                        .frame(maxWidth: .infinity)
+                }
+                .glassProminentButtonStyle()
+                .controlSize(.large)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .background(.ultraThinMaterial)
+            }
+        }
         .background(Color(.systemGroupedBackground))
-        .ignoresSafeArea(edges: .top)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -66,59 +69,41 @@ struct CuratorDetailView: View {
 
     @ViewBuilder
     private var heroView: some View {
-        ZStack(alignment: .bottomLeading) {
-            dotPatternPlaceholder
-                .frame(maxWidth: .infinity)
-                .frame(height: 420)
-                .accessibilityHidden(true)
-
-            if let url = curator.imageUrl.flatMap(URL.init) {
-                AsyncImage(url: url) { phase in
-                    let isLoaded = phase.image != nil
-                    Group {
-                        if let image = phase.image {
-                            image.resizable().scaledToFill()
-                                .transition(.opacity)
-                        }
-                    }
-                    .animation(.easeInOut(duration: 0.3), value: isLoaded)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 420)
-                .clipped()
-                .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Spacer()
+                avatarCircle
+                Spacer()
             }
-
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.75)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .frame(height: 420)
-            .accessibilityHidden(true)
+            .padding(.top, 8)
 
             Text(curator.name)
                 .font(.largeTitle.bold())
-                .foregroundStyle(.white)
-                .padding(.horizontal, 32)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 24)
                 .accessibilityAddTraits(.isHeader)
         }
-        .frame(maxWidth: .infinity, minHeight: 420, maxHeight: 420)
     }
 
-    private var dotPatternPlaceholder: some View {
-        Canvas { context, size in
-            let spacing: CGFloat = 40
-            let radius: CGFloat = 7
-            for row in stride(from: spacing / 5, through: size.height, by: spacing) {
-                for col in stride(from: spacing / 5, through: size.width, by: spacing) {
-                    let rect = CGRect(x: col - radius, y: row - radius, width: radius * 5, height: radius * 5)
-                    context.fill(Path(ellipseIn: rect), with: .color(.white.opacity(0.35)))
+    private var avatarCircle: some View {
+        ZStack {
+            Circle()
+                .fill(Color.accentColor)
+                .frame(width: 300, height: 300)
+
+            if let url = curator.imageUrl.flatMap(URL.init) {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .transition(.opacity.animation(.easeInOut(duration: 0.3)))
+                    }
                 }
+                .frame(width: 300, height: 300)
+                .clipShape(Circle())
+                .accessibilityHidden(true)
             }
         }
-        .background(Color.accentColor)
     }
 
 }
