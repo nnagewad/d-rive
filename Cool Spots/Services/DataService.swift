@@ -401,6 +401,7 @@ final class DataService {
                     existing.instagramHandle = supabaseCurator.instagramHandle
                     existing.websiteURL = supabaseCurator.websiteURL
                     existing.blueskyHandle = supabaseCurator.blueskyHandle
+                    existing.youtubeHandle = supabaseCurator.youtubeHandle
                     existing.version = supabaseCurator.version
                 }
             } else {
@@ -412,6 +413,7 @@ final class DataService {
                     instagramHandle: supabaseCurator.instagramHandle,
                     websiteURL: supabaseCurator.websiteURL,
                     blueskyHandle: supabaseCurator.blueskyHandle,
+                    youtubeHandle: supabaseCurator.youtubeHandle,
                     version: supabaseCurator.version
                 ))
             }

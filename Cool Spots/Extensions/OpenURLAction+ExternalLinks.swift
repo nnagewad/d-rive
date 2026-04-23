@@ -23,4 +23,9 @@ extension OpenURLAction {
         let clean = handle.trimmingCharacters(in: .init(charactersIn: "@"))
         if let url = URL(string: "https://bsky.app/profile/\(clean)") { self(url) }
     }
+
+    func openYouTube(_ handle: String) {
+        let clean = handle.trimmingCharacters(in: .init(charactersIn: "@"))
+        if let url = URL(string: "https://youtube.com/@\(clean)") { self(url) }
+    }
 }

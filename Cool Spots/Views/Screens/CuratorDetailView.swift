@@ -23,7 +23,7 @@ struct CuratorDetailView: View {
                         Text(curator.bio)
                     }
 
-                    if curator.instagramHandle != nil || curator.websiteURL != nil || curator.blueskyHandle != nil {
+                    if curator.instagramHandle != nil || curator.websiteURL != nil || curator.blueskyHandle != nil || curator.youtubeHandle != nil {
                         HStack(spacing: 16) {
                             if let instagram = curator.instagramHandle {
                                 Button { openURL.openInstagram(instagram) } label: {
@@ -34,6 +34,16 @@ struct CuratorDetailView: View {
                                 }
                                 .accessibilityLabel("Instagram")
                                 .accessibilityHint("Opens Instagram")
+                            }
+                            if let youtube = curator.youtubeHandle {
+                                Button { openURL.openYouTube(youtube) } label: {
+                                    Image("youtube")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                }
+                                .accessibilityLabel("YouTube")
+                                .accessibilityHint("Opens YouTube channel")
                             }
                             if let bluesky = curator.blueskyHandle {
                                 Button { openURL.openBluesky(bluesky) } label: {
@@ -143,7 +153,8 @@ private func makeCuratorDetailPreview() -> some View {
         imageUrl: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800",
         instagramHandle: "@mariedupont",
         websiteURL: "https://mariedupont.com",
-        blueskyHandle: "nikin"
+        blueskyHandle: "nikin",
+        youtubeHandle: "nikin"
     )
 
     let list1 = CuratedListData(name: "After Work Spots", isDownloaded: true, notifyWhenNearby: true)
