@@ -18,11 +18,6 @@ extension View {
             .navigationBarTitleDisplayMode(.large)
     }
 
-    /// Applies `.glass` on iOS 26+ and `.bordered` on earlier versions.
-    func glassButtonStyle() -> some View {
-        modifier(GlassButtonStyleModifier())
-    }
-
     /// Applies `.glassProminent` on iOS 26+ and `.borderedProminent` on earlier versions.
     func glassProminentButtonStyle() -> some View {
         modifier(GlassProminentButtonStyleModifier())
@@ -30,16 +25,6 @@ extension View {
 }
 
 // MARK: - Button style modifiers
-
-private struct GlassButtonStyleModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            content.buttonStyle(.glass)
-        } else {
-            content.buttonStyle(.bordered)
-        }
-    }
-}
 
 private struct GlassProminentButtonStyleModifier: ViewModifier {
     func body(content: Content) -> some View {

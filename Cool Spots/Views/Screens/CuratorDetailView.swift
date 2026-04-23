@@ -76,7 +76,7 @@ struct CuratorDetailView: View {
                                 .accessibilityHint("Opens website in browser")
                             }
                         }
-                        .glassButtonStyle()
+                        .buttonStyle(.bordered)
                         .buttonBorderShape(.capsule)
                         .controlSize(.large)
                     }
