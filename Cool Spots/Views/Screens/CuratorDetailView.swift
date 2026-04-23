@@ -128,7 +128,7 @@ struct CuratorDetailView: View {
         ZStack {
             Circle()
                 .fill(Color.accentColor)
-                .frame(width: 300, height: 300)
+                .frame(width: 275, height: 275)
 
             if let url = curator.imageUrl.flatMap(URL.init) {
                 AsyncImage(url: url) { phase in
@@ -139,7 +139,7 @@ struct CuratorDetailView: View {
                             .transition(.opacity.animation(.easeInOut(duration: 0.3)))
                     }
                 }
-                .frame(width: 300, height: 300)
+                .frame(width: 275, height: 275)
                 .clipShape(Circle())
                 .accessibilityHidden(true)
             }
