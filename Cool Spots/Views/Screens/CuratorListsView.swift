@@ -11,6 +11,7 @@ import SwiftData
 
 struct CuratorListsView: View {
     let curator: CuratorData
+    @State private var isLoadingSpots = false
 
     private var listsGroupedByCity: [(city: CityData?, lists: [CuratedListData])] {
         let grouped = Dictionary(grouping: curator.lists, by: { $0.city?.id })
@@ -34,8 +35,8 @@ struct CuratorListsView: View {
                             Section {
                                 ForEach(group.lists) { list in
                                     let spotCount = list.spots.count
-                                let spotsLabel = spotCount == 1 ? "1 spot" : "\(spotCount) spots"
-                                CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) }, navigable: false, subtitle: spotsLabel)
+                                    let spotsLabel = isLoadingSpots && spotCount == 0 ? "Loading…" : (spotCount == 1 ? "1 spot" : "\(spotCount) spots")
+                                    CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) }, navigable: false, subtitle: spotsLabel)
                                 }
                             } header: {
                                 Text(cityName)
@@ -46,7 +47,19 @@ struct CuratorListsView: View {
                 }
             }
             .largeNavigationTitle(curator.name)
+            .task { await loadSpots() }
         }
+    }
+
+    private func loadSpots() async {
+        guard curator.lists.contains(where: { $0.spots.isEmpty }) else { return }
+        isLoadingSpots = true
+        await withTaskGroup(of: Void.self) { group in
+            for list in curator.lists {
+                group.addTask { try? await DataService.shared.fetchSpotsForList(list) }
+            }
+        }
+        isLoadingSpots = false
     }
 }
 
