@@ -28,4 +28,9 @@ extension OpenURLAction {
         let clean = handle.trimmingCharacters(in: .init(charactersIn: "@"))
         if let url = URL(string: "https://youtube.com/@\(clean)") { self(url) }
     }
+
+    func openTikTok(_ handle: String) {
+        let clean = handle.trimmingCharacters(in: .init(charactersIn: "@"))
+        if let url = URL(string: "https://tiktok.com/@\(clean)") { self(url) }
+    }
 }

@@ -402,6 +402,7 @@ final class DataService {
                     existing.websiteURL = supabaseCurator.websiteURL
                     existing.blueskyHandle = supabaseCurator.blueskyHandle
                     existing.youtubeHandle = supabaseCurator.youtubeHandle
+                    existing.tiktokHandle = supabaseCurator.tiktokHandle
                     existing.version = supabaseCurator.version
                 }
             } else {
@@ -414,6 +415,7 @@ final class DataService {
                     websiteURL: supabaseCurator.websiteURL,
                     blueskyHandle: supabaseCurator.blueskyHandle,
                     youtubeHandle: supabaseCurator.youtubeHandle,
+                    tiktokHandle: supabaseCurator.tiktokHandle,
                     version: supabaseCurator.version
                 ))
             }

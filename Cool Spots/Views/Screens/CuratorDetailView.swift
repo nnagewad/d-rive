@@ -23,24 +23,34 @@ struct CuratorDetailView: View {
                         Text(curator.bio)
                     }
 
-                    if curator.instagramHandle != nil || curator.websiteURL != nil || curator.blueskyHandle != nil || curator.youtubeHandle != nil {
+                    if curator.instagramHandle != nil || curator.websiteURL != nil || curator.blueskyHandle != nil || curator.youtubeHandle != nil || curator.tiktokHandle != nil {
                         HStack(spacing: 16) {
                             if let instagram = curator.instagramHandle {
                                 Button { openURL.openInstagram(instagram) } label: {
                                     Image("instagram")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 24, height: 24)
+                                        .frame(width: 22, height: 22)
                                 }
                                 .accessibilityLabel("Instagram")
                                 .accessibilityHint("Opens Instagram")
+                            }
+                            if let tiktok = curator.tiktokHandle {
+                                Button { openURL.openTikTok(tiktok) } label: {
+                                    Image("tiktok")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 22, height: 22)
+                                }
+                                .accessibilityLabel("TikTok")
+                                .accessibilityHint("Opens TikTok profile")
                             }
                             if let youtube = curator.youtubeHandle {
                                 Button { openURL.openYouTube(youtube) } label: {
                                     Image("youtube")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 24, height: 24)
+                                        .frame(width: 22, height: 22)
                                 }
                                 .accessibilityLabel("YouTube")
                                 .accessibilityHint("Opens YouTube channel")
@@ -50,7 +60,7 @@ struct CuratorDetailView: View {
                                     Image("bluesky")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 24, height: 24)
+                                        .frame(width: 22, height: 22)
                                 }
                                 .accessibilityLabel("Bluesky")
                                 .accessibilityHint("Opens Bluesky")
@@ -60,7 +70,7 @@ struct CuratorDetailView: View {
                                     Image(systemName: "globe")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 24, height: 24)
+                                        .frame(width: 22, height: 22)
                                 }
                                 .accessibilityLabel("Website")
                                 .accessibilityHint("Opens website in browser")
@@ -154,7 +164,8 @@ private func makeCuratorDetailPreview() -> some View {
         instagramHandle: "@mariedupont",
         websiteURL: "https://mariedupont.com",
         blueskyHandle: "nikin",
-        youtubeHandle: "nikin"
+        youtubeHandle: "nikin",
+        tiktokHandle: "nikin"
     )
 
     let list1 = CuratedListData(name: "After Work Spots", isDownloaded: true, notifyWhenNearby: true)

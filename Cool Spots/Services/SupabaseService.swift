@@ -60,6 +60,7 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
     let websiteURL: String?
     let blueskyHandle: String?
     let youtubeHandle: String?
+    let tiktokHandle: String?
     let version: Int
     let lastUpdated: Date?
     let createdAt: Date?
@@ -73,6 +74,7 @@ struct SupabaseCurator: Codable, Identifiable, Sendable {
         case websiteURL = "website_url"
         case blueskyHandle = "bluesky_handle"
         case youtubeHandle = "youtube_handle"
+        case tiktokHandle = "tiktok_handle"
         case version
         case lastUpdated = "last_updated"
         case createdAt = "created_at"
