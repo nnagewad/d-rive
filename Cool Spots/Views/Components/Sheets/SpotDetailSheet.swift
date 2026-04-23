@@ -47,7 +47,7 @@ struct SpotDetailSheet: View {
                 // Action buttons pinned to bottom
                 VStack(spacing: 10) {
                     Button(action: handleGetDirections) {
-                        Text("Get directions")
+                        Label("Get directions", systemImage: "location.fill")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -56,7 +56,15 @@ struct SpotDetailSheet: View {
 
                     if let instagram = spot.instagramHandle {
                         Button { openURL.openInstagram(instagram) } label: {
-                            Text("Instagram").frame(maxWidth: .infinity)
+                            Label {
+                                Text("Instagram")
+                            } icon: {
+                                Image("instagram")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 16, height: 16)
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                         .buttonBorderShape(.capsule)
@@ -65,7 +73,8 @@ struct SpotDetailSheet: View {
 
                     if let website = spot.websiteURL {
                         Button { openURL.openWebsite(website) } label: {
-                            Text("Website").frame(maxWidth: .infinity)
+                            Label("Website", systemImage: "globe")
+                                .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                         .buttonBorderShape(.capsule)
