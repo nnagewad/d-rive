@@ -14,6 +14,7 @@ struct ListDetailView: View {
     private let logger = Logger(subsystem: "com.nikin.spots", category: "ListDetailView")
     @Environment(\.modelContext) private var modelContext
     @Bindable var list: CuratedListData
+    var showCurator: Bool = true
     @State private var isLoadingSpots = false
     @State private var spotsLoadError: Error?
     @State private var isActivating = false
@@ -53,7 +54,7 @@ struct ListDetailView: View {
             }
 
             // Curator Section
-            if let curator = list.curator {
+            if showCurator, let curator = list.curator {
                 Section("List curated by") {
                     NavigationLink(value: curator) {
                         Text(curator.name)

@@ -36,7 +36,11 @@ struct CuratorListsView: View {
                                 ForEach(group.lists) { list in
                                     let spotCount = list.spots.count
                                     let spotsLabel = isLoadingSpots && spotCount == 0 ? "Loading…" : (spotCount == 1 ? "1 spot" : "\(spotCount) spots")
-                                    CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) }, navigable: false, subtitle: spotsLabel)
+                                    NavigationLink {
+                                        ListDetailView(list: list, showCurator: false)
+                                    } label: {
+                                        CuratedListRow(list: list, onFollow: { follow(list) }, onStop: { stop(list) }, navigable: false, subtitle: spotsLabel)
+                                    }
                                 }
                             } header: {
                                 Text(cityName)
