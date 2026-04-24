@@ -499,11 +499,10 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
         logger.info("🔔 Sending notification for: \(configuration.name)")
 
         let content = UNMutableNotificationContent()
-        content.categoryIdentifier = NotificationCategory.geofence
         content.sound = .default
         content.title = configuration.name
         if !configuration.group.isEmpty { content.subtitle = configuration.group }
-        content.body = "You're nearby"
+        content.body = "You're nearby. Open Spots to learn more."
         content.userInfo = [
             "geofenceId": configuration.id,
             "geofenceName": configuration.name,

@@ -9,13 +9,6 @@ import UIKit
 import UserNotifications
 import os.log
 
-enum NotificationCategory {
-    static let geofence = "GEOFENCE_NOTIFICATION"
-}
-
-enum NotificationAction {
-    static let viewOnPhone = "VIEW_ON_IPHONE"
-}
 
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
@@ -61,10 +54,7 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let name = userInfo["geofenceName"] as? String ?? "Unknown Location"
         let isGrouped = userInfo["isGrouped"] as? Bool ?? false
 
-        let isDefaultTap = actionIdentifier == UNNotificationDefaultActionIdentifier
-        let isViewOnPhone = actionIdentifier == NotificationAction.viewOnPhone
-
-        if isDefaultTap || isViewOnPhone {
+        if actionIdentifier == UNNotificationDefaultActionIdentifier {
             Task { @MainActor in
                 if isGrouped {
                     logger.info("🗺️ Grouped notification tapped - navigating home")
@@ -74,8 +64,6 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
                     NavigationCoordinator.shared.showSpotDetail(spotId: spotId)
                 }
             }
-        } else {
-            logger.warning("⚠️ Unknown action identifier: \(actionIdentifier)")
         }
 
         completionHandler()
