@@ -280,14 +280,17 @@ final class GeofenceManager: NSObject, ObservableObject, @preconcurrency CLLocat
             return
         }
 
-        // Cross-check with GPS if available. If not (background/terminated), trust iOS.
-        // Include horizontalAccuracy so boundary-hugging GPS fixes don't block legit entries.
-        if let gpsLocation = verifiedGPSLocation {
+        // Cross-check with the best available location. Prefer a fresh verified GPS fix;
+        // fall back to manager.location (last known) so cold-launch deferred entry events
+        // are blocked when the user is no longer near the spot. Only trust iOS blindly
+        // when no location is available at all.
+        let locationToCheck = verifiedGPSLocation ?? manager.location
+        if let gpsLocation = locationToCheck {
             let center = CLLocationCoordinate2D(latitude: config.latitude, longitude: config.longitude)
             let gpsDistance = gpsLocation.distance(from: center)
-            let allowedDistance = config.radius + gpsLocation.horizontalAccuracy
+            let allowedDistance = config.radius + max(gpsLocation.horizontalAccuracy, 0)
             guard gpsDistance <= allowedDistance else {
-                logger.info("🌍 REGION ENTER but GPS says \(Int(gpsDistance))m away (radius: \(Int(config.radius))m + \(Int(gpsLocation.horizontalAccuracy))m accuracy), ignoring")
+                logger.info("🌍 REGION ENTER but location says \(Int(gpsDistance))m away (radius: \(Int(config.radius))m + \(Int(gpsLocation.horizontalAccuracy))m accuracy), ignoring")
                 insideGeofences.remove(region.identifier)
                 return
             }
